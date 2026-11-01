@@ -43,6 +43,9 @@ build/
 Build/
 build-*/
 
+# Optional local application checkout for development, not part of ZxKit.
+/tests/spectacol/
+
 # CMake generated files
 CMakeFiles/
 CMakeCache.txt

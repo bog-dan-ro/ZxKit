@@ -54,6 +54,16 @@ public:
 
     UlaRenderer();
 
+    /// Bounded to 128 per side. Emulator applies machine-specific limits.
+    void setBorderMargins(BorderMargins margins) noexcept;
+    BorderMargins borderMargins() const noexcept { return m_margins; }
+    uint32_t outputWidth() const noexcept
+    {
+        return (m_margins.left + kScreenWidthPx + m_margins.right)
+               * (m_mode == VideoDisplayMode::TimexHiRes ? 2 : 1);
+    }
+    uint32_t outputHeight() const noexcept { return m_margins.top + kScreenLines + m_margins.bottom; }
+
     void reset() noexcept;
 
     void setVramSource(BankId bankId, uint16_t page16k, uint16_t offsetBytes = 0) noexcept;
@@ -72,7 +82,7 @@ public:
     void setDisplayMode(VideoDisplayMode mode) noexcept { m_mode = mode; }
     VideoDisplayMode displayMode() const noexcept { return m_mode; }
 
-    /// Renders a single visible output row `y` (0 .. 255) into `frame`.
+    /// Renders a single visible output row `y` into `frame`.
     void renderScanline(uint32_t y, const Mmu &mmu, VideoFrame &frame) const;
 
     void renderFullFrame(const Mmu &mmu, VideoFrame &frame);
@@ -95,6 +105,7 @@ public:
     void loadState(StateReader &r);
 
 private:
+    BorderMargins m_margins;
     const MemoryBank &m_mmuBank(const Mmu &mmu) const;
 
     VideoFrame m_rasterFrame;

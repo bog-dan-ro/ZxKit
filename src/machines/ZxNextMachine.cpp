@@ -808,7 +808,10 @@ void ZxNextMachine::onScanlineStart(uint16_t line, MachineContext &ctx)
 
 void ZxNextMachine::renderScanline(uint32_t y, const MachineContext &ctx, const UlaRenderer &ula, VideoFrame &frame)
 {
-    m_copper.tickScanline(static_cast<uint16_t>(y), m_nextReg);
+    // Full-border output moves the paper in the frame, not in Copper coordinates.
+    const int32_t copperLine = int32_t(y) - ula.borderMargins().top + 32;
+    if (copperLine >= 0 && copperLine < 256)
+        m_copper.tickScanline(uint16_t(copperLine), m_nextReg);
     m_nextVideo.renderScanline(y, ctx.mmu, m_ramBank, ula, m_nextReg, (m_port7ffd & 0x08) != 0, frame);
 }
 
@@ -821,7 +824,7 @@ void ZxNextMachine::onFrameEnd(MachineContext &ctx, UlaRenderer &ula)
 
 void ZxNextMachine::renderFullFrame(MachineContext &ctx, UlaRenderer &ula, VideoFrame &frame)
 {
-    for (uint32_t y = 0; y < UlaRenderer::kTotalHeightLines; ++y)
+    for (uint32_t y = 0; y < ula.outputHeight(); ++y)
         m_nextVideo.renderScanline(y, ctx.mmu, m_ramBank, ula, m_nextReg, (m_port7ffd & 0x08) != 0, frame);
 }
 

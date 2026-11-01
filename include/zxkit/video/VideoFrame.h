@@ -26,6 +26,18 @@
 
 namespace zxkit {
 
+/// Visible margins around the 256x192 ULA paper, in standard pixels/lines.
+/// Timex doubles horizontal pixels in hi-res; the Next doubles both axes.
+/// These are host presentation preferences, not emulated/snapshot state.
+struct BorderMargins {
+    uint16_t left = 32;
+    uint16_t top = 32;
+    uint16_t right = 32;
+    uint16_t bottom = 32;
+
+    bool operator==(const BorderMargins &) const = default;
+};
+
 /// Packs R, G, B, A into little-endian RGBA8888 (0xAABBGGRR in uint32_t on LE).
 constexpr uint32_t packRgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 0xFF) noexcept
 {
@@ -68,6 +80,17 @@ constexpr uint32_t rgb333ToRgba(uint16_t rgb333) noexcept
 
 class VideoFrame {
 public:
+    struct PaperRect {
+        uint32_t x = 32;
+        uint32_t y = 32;
+        uint32_t width = 256;
+        uint32_t height = 192;
+        bool operator==(const PaperRect &) const = default;
+    };
+    /// The ULA's paper rectangle, in this frame's pixel coordinates. Next layers
+    /// and CoBra's extra columns can also draw outside this reference rectangle.
+    PaperRect paperRect() const noexcept { return m_paperRect; }
+    void setPaperRect(PaperRect rect) noexcept { m_paperRect = rect; }
     static constexpr uint32_t kDefaultWidth  = 320;
     static constexpr uint32_t kDefaultHeight = 256;
 
@@ -109,6 +132,7 @@ public:
     }
 
 private:
+    PaperRect m_paperRect;
     uint32_t m_width = kDefaultWidth;
     uint32_t m_height = kDefaultHeight;
     uint64_t m_frameNumber = 0;

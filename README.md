@@ -41,6 +41,12 @@ engine.emulator().writeLock()->loadMedia(file);      // waits at most a scanline
 engine.emulator().writeLock()->setKeyState(zxkit::ZxKey::Space, true);
 ```
 
+Video uses the traditional 32-pixel border by default. Hosts that offer adjustable borders can construct an
+emulator with `EmulatorConfig{.fullBorder = true}` to receive the full scanned frame. `VideoFrame::paperRect()`
+locates the 256×192 ULA paper in the frame's native pixel coordinates (including the Timex and Next scaling).
+Crop each side in the host to change the displayed margins and aspect ratio without altering emulation or
+resetting the machine. Next layers and CoBra's extra text columns can also draw outside the ULA paper rectangle.
+
 ## Building and testing
 
 Requires CMake 3.25 or newer, a compiler with C++23 support, zlib and threads.
@@ -64,9 +70,9 @@ The tests include their media, reference images and ROMs under
 external test collection is needed. Missing required ROM fixtures fail the
 build configuration instead of silently skipping coverage.
 
-The 12 CTest entries cover the software video filters, CPU, machine, tape and storage tests,
+The 16 CTest entries cover the software video filters, CPU, machine, tape and storage tests,
 Sinclair timing boundaries, the Butler timing suites, incremental ULA raster
-rendering and an exact BASIC Border image comparison. Five known 128K Butler
+rendering, full-border geometry and an exact BASIC Border image comparison. Five known 128K Butler
 failures remain excluded from the passing suite; their case numbers and the
 remaining visual ULA differences are documented in the
 [fixture README](tests/fixtures/spectrum/README.md).

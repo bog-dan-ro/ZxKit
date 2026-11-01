@@ -111,7 +111,7 @@ private:
     };
     using Line = std::array<Cell, kFrameWidth>;
 
-    void renderUla(uint32_t y, std::span<const uint8_t> ram, const UlaRenderer &ula, const NextReg &nr,
+    void renderUla(int32_t y, std::span<const uint8_t> ram, const UlaRenderer &ula, const NextReg &nr,
                    bool shadowScreen, Line &out) const;
     void renderLayer2(uint32_t y, std::span<const uint8_t> ram, const NextReg &nr, Line &out) const;
     void renderSprites(uint32_t y, const NextReg &nr, Line &out) const;

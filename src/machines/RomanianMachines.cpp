@@ -349,7 +349,7 @@ void CobraMachine::renderFullFrame(MachineContext &ctx, UlaRenderer &ula, VideoF
 
 void CobraMachine::renderWideCells(uint32_t y, const MachineContext &ctx, const UlaRenderer &ula, VideoFrame &frame) const
 {
-    constexpr uint32_t kTop = UlaRenderer::kBorderTopLines;
+    const uint32_t kTop = ula.borderMargins().top;
     if (!m_wide || y < kTop || y >= kTop + UlaRenderer::kScreenLines)
         return;
 
@@ -361,7 +361,7 @@ void CobraMachine::renderWideCells(uint32_t y, const MachineContext &ctx, const 
     const auto attrLine = static_cast<uint16_t>(0x3800 | ((screenY >> 3) << 5));
     const auto &palette = ula.palette();
     auto line = frame.scanline(y);
-    const auto drawCell = [&](uint32_t x, uint32_t column) {
+    const auto drawCell = [&](int32_t x, uint32_t column) {
         const uint8_t bitmap = vram[pixelLine + column];
         const uint8_t attr = vram[attrLine + column];
         uint8_t ink = attr & 0x07;
@@ -369,12 +369,14 @@ void CobraMachine::renderWideCells(uint32_t y, const MachineContext &ctx, const 
         if ((attr & 0x80) && ula.flashInverted())
             std::swap(ink, paper);
         const uint8_t bright = (attr & 0x40) ? 8 : 0;
-        for (uint32_t bit = 0; bit < 8 && x + bit < line.size(); ++bit)
-            line[x + bit] = palette[((bitmap & (0x80 >> bit)) ? ink : paper) + bright];
+        for (int32_t bit = 0; bit < 8; ++bit) {
+            if (x + bit >= 0 && x + bit < int32_t(line.size()))
+                line[x + bit] = palette[((bitmap & (0x80 >> bit)) ? ink : paper) + bright];
+        }
     };
     for (uint32_t cell = 0; cell < 4; ++cell) {
-        drawCell(UlaRenderer::kBorderLeftPx - 32 + cell * 8, 28 + cell);
-        drawCell(UlaRenderer::kBorderLeftPx + UlaRenderer::kScreenWidthPx + cell * 8, cell);
+        drawCell(int32_t(ula.borderMargins().left) - 32 + int32_t(cell * 8), 28 + cell);
+        drawCell(ula.borderMargins().left + UlaRenderer::kScreenWidthPx + cell * 8, cell);
     }
 }
 

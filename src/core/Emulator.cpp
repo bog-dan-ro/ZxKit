@@ -356,6 +356,7 @@ void Emulator::updateDebuggerHook() noexcept
 void Emulator::beginFrame()
 {
     m_frameStarted = true;
+    m_ula.setBorderMargins(effectiveBorderMargins());
     if (m_machine->usesRasterUla())
         m_ula.beginRasterFrame(m_clock.timings());
     m_tapeDeck.onFrameStart(m_machine->is48kMode(), m_rzx.isPlaying() || m_rzx.isRecording());
@@ -390,10 +391,10 @@ RunStatus Emulator::runScanline()
     m_scheduler.processDue(m_clock.totalTstates());
     m_tapeDeck.update(m_context);
 
-    // Map the machine scanline to the visible 256 line window
+    // Presentation margins never change the machine's scanline timeline.
     const int32_t visY = static_cast<int32_t>(m_line) - static_cast<int32_t>(timings.topBorderLines)
-                         + static_cast<int32_t>(UlaRenderer::kBorderTopLines);
-    if (visY >= 0 && visY < static_cast<int32_t>(UlaRenderer::kTotalHeightLines)) {
+                         + static_cast<int32_t>(m_ula.borderMargins().top);
+    if (visY >= 0 && visY < static_cast<int32_t>(m_ula.outputHeight())) {
         auto frame = m_frame.writeLock();
         if (m_machine->usesRasterUla()) {
             m_ula.renderUntil(m_clock.frameBaseTstates(), m_mmu);
@@ -408,10 +409,10 @@ RunStatus Emulator::runScanline()
         // A short frame (the TS2068's 262 lines) ends before the window's last rows: the
         // bottom border goes on there
         const int32_t nextY = static_cast<int32_t>(timings.linesPerFrame) - static_cast<int32_t>(timings.topBorderLines)
-                              + static_cast<int32_t>(UlaRenderer::kBorderTopLines);
-        if (nextY < static_cast<int32_t>(UlaRenderer::kTotalHeightLines) && !m_machine->usesRasterUla()) {
+                              + static_cast<int32_t>(m_ula.borderMargins().top);
+        if (nextY < static_cast<int32_t>(m_ula.outputHeight()) && !m_machine->usesRasterUla()) {
             auto frame = m_frame.writeLock();
-            for (int32_t y = std::max(nextY, 0); y < static_cast<int32_t>(UlaRenderer::kTotalHeightLines); ++y)
+            for (int32_t y = std::max(nextY, 0); y < static_cast<int32_t>(m_ula.outputHeight()); ++y)
                 m_machine->renderScanline(static_cast<uint32_t>(y), m_context, m_ula, *frame);
         }
         endFrame();
@@ -485,10 +486,26 @@ const VideoFramePtr &Emulator::refreshFrame()
     {
         auto out = frame.writeLock();
         out->setFrameNumber(m_clock.frameCount());
-        m_machine->renderFullFrame(m_context, m_ula, *out);
+        // A paused refresh may happen mid-frame. Keep its raster intact.
+        auto renderer = m_ula;
+        renderer.setBorderMargins(effectiveBorderMargins());
+        m_machine->renderFullFrame(m_context, renderer, *out);
     }
     m_lastFrame = std::move(frame);
     return m_lastFrame;
+}
+
+BorderMargins Emulator::effectiveBorderMargins() const noexcept
+{
+    if (!m_config.fullBorder)
+        return {};
+    const auto &t = m_clock.timings();
+    // Leave one line before the topmost row for the left-border/fetch timeline.
+    // Short-frame machines retain at least the traditional 32-line presentation.
+    return {uint16_t(std::min<uint32_t>(128, t.leftBorderTstates * 2)),
+            uint16_t(std::clamp<int32_t>(int32_t(t.topBorderLines) - 1, 32, 128)),
+            uint16_t(std::min<uint32_t>(128, t.rightBorderTstates * 2)),
+            uint16_t(std::clamp<int32_t>(int32_t(t.bottomBorderLines), 32, 128))};
 }
 
 double Emulator::frameRateHz() const noexcept

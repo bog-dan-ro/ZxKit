@@ -87,5 +87,10 @@ target_link_libraries(test_ula_raster PRIVATE ZX::Kit)
 target_compile_options(test_ula_raster PRIVATE $<IF:$<CXX_COMPILER_ID:MSVC>,/UNDEBUG,-UNDEBUG>)
 add_test(NAME spectrum_ula_raster COMMAND test_ula_raster)
 
+add_executable(test_borders test_borders.cpp)
+target_link_libraries(test_borders PRIVATE ZX::Kit)
+target_compile_options(test_borders PRIVATE $<IF:$<CXX_COMPILER_ID:MSVC>,/UNDEBUG,-UNDEBUG>)
+add_test(NAME test_borders COMMAND test_borders)
+
 add_test(NAME spectrum_48k_basic_border COMMAND test_ula_raster
     ${CMAKE_CURRENT_SOURCE_DIR}/fixtures/spectrum ${ZXKIT_TEST_ROM_DIR})

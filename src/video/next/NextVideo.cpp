@@ -256,7 +256,7 @@ bool NextVideo::isGloballyTransparent(uint16_t rgb, const NextReg &nr) noexcept
     return (rgb >> 1) == nr.peek(0x14);
 }
 
-void NextVideo::renderUla(uint32_t y, std::span<const uint8_t> ram, const UlaRenderer &ula, const NextReg &nr,
+void NextVideo::renderUla(int32_t y, std::span<const uint8_t> ram, const UlaRenderer &ula, const NextReg &nr,
                           bool shadowScreen, Line &out) const
 {
     const uint8_t nr68 = nr.peek(0x68);
@@ -673,9 +673,15 @@ void NextVideo::renderTilemap(uint32_t y, std::span<const uint8_t> ram, const Ne
 void NextVideo::renderScanline(uint32_t y, const Mmu &mmu, BankId ramBankId, const UlaRenderer &ula,
                                const NextReg &nr, bool shadowScreen, VideoFrame &frame) const
 {
-    if (y >= UlaRenderer::kTotalHeightLines || ramBankId == 0 || frame.width() < kFrameWidth ||
-        frame.height() < kFrameHeight)
+    const auto margins = ula.borderMargins();
+    const uint32_t width = (margins.left + 256u + margins.right) * 2;
+    const uint32_t height = (margins.top + 192u + margins.bottom) * 2;
+    if (y >= height / 2 || ramBankId == 0)
         return;
+    frame.resize(width, height);
+    frame.setPaperRect({margins.left * 2u, margins.top * 2u, 512, 384});
+    const int32_t nativeY = int32_t(y) + 32 - margins.top;
+    const bool nativeLine = nativeY >= 0 && nativeY < 256;
 
     const auto ramSpan = mmu.bank(ramBankId).bytes();
     const uint8_t nr15 = nr.peek(0x15);
@@ -684,14 +690,14 @@ void NextVideo::renderScanline(uint32_t y, const Mmu &mmu, BankId ramBankId, con
     Line layer2{};
     Line sprites{};
     Line tilemap{};
-    renderUla(y, ramSpan, ula, nr, shadowScreen, ulaLine);
-    if (m_layer2Visible)
-        renderLayer2(y, ramSpan, nr, layer2);
-    if (nr15 & 0x01)
-        renderSprites(y, nr, sprites);
+    renderUla(nativeY, ramSpan, ula, nr, shadowScreen, ulaLine);
+    if (nativeLine && m_layer2Visible)
+        renderLayer2(uint32_t(nativeY), ramSpan, nr, layer2);
+    if (nativeLine && (nr15 & 0x01))
+        renderSprites(uint32_t(nativeY), nr, sprites);
     const bool tilemapOn = (nr.peek(0x6B) & 0x80) != 0;
-    if (tilemapOn)
-        renderTilemap(y, ramSpan, nr, tilemap);
+    if (nativeLine && tilemapOn)
+        renderTilemap(uint32_t(nativeY), ramSpan, nr, tilemap);
 
     const uint16_t fallback = rgb8to9(nr.peek(0x4A));
     const uint8_t order = (nr15 >> 2) & 0x07;
@@ -700,11 +706,15 @@ void NextVideo::renderScanline(uint32_t y, const Mmu &mmu, BankId ramBankId, con
     auto row0 = frame.scanline(y * 2);
     auto row1 = frame.scanline(y * 2 + 1);
 
-    for (uint32_t c = 0; c < kFrameWidth; ++c) {
+    const Cell emptyCell;
+    for (uint32_t x = 0; x < width; ++x) {
+        const int32_t nativeX = int32_t(x) + (32 - int32_t(margins.left)) * 2;
+        const bool native = nativeX >= 0 && nativeX < int32_t(kFrameWidth);
+        const uint32_t c = uint32_t(std::clamp(nativeX, 0, int32_t(kFrameWidth) - 1));
         const Cell &u = ulaLine[c];
-        const Cell &t = tilemap[c];
-        const Cell &l = layer2[c];
-        const Cell &s = sprites[c];
+        const Cell &t = native ? tilemap[c] : emptyCell;
+        const Cell &l = native ? layer2[c] : emptyCell;
+        const Cell &s = native ? sprites[c] : emptyCell;
         // ULA and tilemap make one layer
         const Cell &merged = (t.opaque && (!t.belowUla || !u.opaque)) ? t : u;
 
@@ -777,8 +787,8 @@ void NextVideo::renderScanline(uint32_t y, const Mmu &mmu, BankId ramBankId, con
                 rgb = mix();
         }
         const uint32_t pixel = rgba[rgb & 0x1FF];
-        row0[c] = pixel;
-        row1[c] = pixel;
+        row0[x] = pixel;
+        row1[x] = pixel;
     }
 }
 

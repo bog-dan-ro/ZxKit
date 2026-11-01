@@ -63,6 +63,9 @@ struct EmulatorConfig {
     MachineRegistry machines;
     /// Extra (or overriding) media formats for `loadMedia()` / `saveMedia()`.
     MediaRegistry mediaFormats;
+    /// Include the full scanned border rather than the traditional 32-pixel crop.
+    /// Hosts can crop the published frame using VideoFrame::paperRect().
+    bool fullBorder = false;
 };
 
 /// A media file's content, ready to be loaded. Reading (and unzipping) it is the
@@ -236,6 +239,7 @@ private:
     void updateMediaActivity();
     void updateDebuggerHook() noexcept;
     VideoFramePtr acquireFrame();
+    BorderMargins effectiveBorderMargins() const noexcept;
     std::vector<uint8_t> serializeState() const;
     void deserializeState(std::span<const uint8_t> bytes);
 

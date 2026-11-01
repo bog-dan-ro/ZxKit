@@ -2,6 +2,10 @@
 
 ZxKit is a standalone C++23 emulation library. Spectacol is a separate consumer,
 not a source of required files for ZxKit's build, scripts or unit tests.
+Local consumer checkouts such as `tests/spectacol` are development conveniences
+only. Never add them to ZxKit's index as files or gitlinks, or commit application
+revision pointers in this repository. Application changes belong in the
+application's own repository.
 
 ## Mandatory verification after every change
 

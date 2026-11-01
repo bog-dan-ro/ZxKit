@@ -27,6 +27,12 @@ UlaRenderer::UlaRenderer()
     reset();
 }
 
+void UlaRenderer::setBorderMargins(BorderMargins margins) noexcept
+{
+    m_margins = {std::min<uint16_t>(margins.left, 128), std::min<uint16_t>(margins.top, 128),
+                 std::min<uint16_t>(margins.right, 128), std::min<uint16_t>(margins.bottom, 128)};
+}
+
 void UlaRenderer::reset() noexcept
 {
     m_rasterActive = false;
@@ -75,27 +81,28 @@ void UlaRenderer::setScldRegister(uint8_t val) noexcept
 
 void UlaRenderer::renderScanline(uint32_t y, const Mmu &mmu, VideoFrame &frame) const
 {
-    if (y >= kTotalHeightLines)
+    if (y >= outputHeight())
         return;
 
     const bool hiRes = (m_mode == VideoDisplayMode::TimexHiRes);
-    const uint32_t targetWidth = hiRes ? 640 : kTotalWidthPx;
-    if (frame.width() != targetWidth || frame.height() != kTotalHeightLines)
-        frame.resize(targetWidth, kTotalHeightLines);
+    const uint32_t targetWidth = outputWidth();
+    frame.resize(targetWidth, outputHeight());
+    const uint32_t scale = hiRes ? 2 : 1;
+    frame.setPaperRect({m_margins.left * scale, m_margins.top, kScreenWidthPx * scale, kScreenLines});
 
     auto lineOut = frame.scanline(y);
     const uint32_t borderRgba = m_palette[m_borderColor & 0x07];
 
-    if (y < kBorderTopLines || y >= kBorderTopLines + kScreenLines || m_vramBankId == 0) {
+    if (y < m_margins.top || y >= m_margins.top + kScreenLines || m_vramBankId == 0) {
         std::ranges::fill(lineOut, borderRgba);
         return;
     }
 
-    const uint32_t screenY = y - kBorderTopLines; // 0 .. 191
+    const uint32_t screenY = y - m_margins.top; // 0 .. 191
     const auto &ramBank = m_mmuBank(mmu);
     const auto vram16k = ramBank.span16k(m_vramPage16k);
 
-    const uint32_t borderLeft = hiRes ? (kBorderLeftPx * 2) : kBorderLeftPx;
+    const uint32_t borderLeft = m_margins.left * (hiRes ? 2 : 1);
     for (uint32_t x = 0; x < borderLeft; ++x)
         lineOut[x] = borderRgba;
 
@@ -151,7 +158,7 @@ void UlaRenderer::renderScanline(uint32_t y, const Mmu &mmu, VideoFrame &frame) 
 
 void UlaRenderer::renderFullFrame(const Mmu &mmu, VideoFrame &frame)
 {
-    for (uint32_t y = 0; y < kTotalHeightLines; ++y)
+    for (uint32_t y = 0; y < outputHeight(); ++y)
         renderScanline(y, mmu, frame);
     advanceFlashCounter();
 }
@@ -159,8 +166,10 @@ void UlaRenderer::renderFullFrame(const Mmu &mmu, VideoFrame &frame)
 void UlaRenderer::beginRasterFrame(const FrameTimings &timings)
 {
     m_rasterTimings = timings;
-    m_rasterCursor = timings.firstScreenTstate() - kBorderTopLines * timings.tstatesPerLine
-                     - kBorderLeftPx / 2;
+    m_rasterFrame.resize(m_margins.left + kScreenWidthPx + m_margins.right, outputHeight());
+    // Keep the fetch one clock before the paper even with a zero left border.
+    m_rasterCursor = timings.firstScreenTstate() - m_margins.top * timings.tstatesPerLine
+                     - std::max(1u, (m_margins.left + 1u) / 2);
     m_bitmapLatch.fill(0);
     m_rasterActive = true;
 }
@@ -170,25 +179,34 @@ void UlaRenderer::renderUntil(uint32_t frameTstate, const Mmu &mmu)
     if (!m_rasterActive || frameTstate <= m_rasterCursor)
         return;
     const auto &t = m_rasterTimings;
-    const uint32_t first = t.firstScreenTstate() - kBorderTopLines * t.tstatesPerLine
-                           - kBorderLeftPx / 2;
-    const uint32_t end = std::min(frameTstate, first + kTotalHeightLines * t.tstatesPerLine);
+    const uint32_t prefix = std::max(1u, (m_margins.left + 1u) / 2);
+    const uint32_t first = t.firstScreenTstate() - m_margins.top * t.tstatesPerLine - prefix;
+    const uint32_t end = std::min(frameTstate, first + outputHeight() * t.tstatesPerLine);
     const auto vram = m_vramBankId ? mmu.bank(m_vramBankId).span16k(m_vramPage16k)
                                   : std::span<const uint8_t>{};
     while (m_rasterCursor < end) {
         const uint32_t relative = m_rasterCursor - first;
         const uint32_t y = relative / t.tstatesPerLine;
         const uint32_t tick = relative % t.tstatesPerLine;
-        if (tick >= kTotalWidthPx / 2) {
+        const int32_t screenTick = int32_t(tick) - int32_t(prefix);
+        if (screenTick >= 128 + (m_margins.right + 1) / 2) {
             m_rasterCursor += std::min(end - m_rasterCursor, t.tstatesPerLine - tick);
             continue;
         }
         auto row = m_rasterFrame.scanline(y);
-        const int32_t screenY = int32_t(y) - kBorderTopLines;
-        const int32_t screenTick = int32_t(tick) - kBorderLeftPx / 2;
+        const int32_t screenY = int32_t(y) - m_margins.top;
         const bool screenLine = screenY >= 0 && screenY < int32_t(kScreenLines) && !vram.empty();
         if (!screenLine || screenTick < 0 || screenTick >= 128) {
-            row[tick * 2] = row[tick * 2 + 1] = m_palette[m_borderColor];
+            const int32_t x = screenTick * 2 + m_margins.left;
+            if (uint32_t(x) < row.size() - 1) {
+                row[x] = row[x + 1] = m_palette[m_borderColor];
+            } else {
+                // Only an odd margin or the pre-paper fetch can straddle a crop edge.
+                for (int32_t pixel = x; pixel < x + 2; ++pixel) {
+                    if (pixel >= 0 && pixel < int32_t(row.size()))
+                        row[pixel] = m_palette[m_borderColor];
+                }
+            }
         }
         // A pair of characters is fetched on four consecutive clocks followed
         // by four idle clocks. Attribute fetch completes each character latch;
@@ -212,7 +230,7 @@ void UlaRenderer::renderUntil(uint32_t frameTstate, const Mmu &mmu)
                         std::swap(ink, paper);
                     const uint8_t bits = m_bitmapLatch[phase / 2];
                     for (uint32_t x = 0; x < 8; ++x)
-                        row[kBorderLeftPx + col * 8 + x] = m_palette[(bits & (0x80 >> x)) ? ink : paper];
+                        row[m_margins.left + col * 8 + x] = m_palette[(bits & (0x80 >> x)) ? ink : paper];
                 }
             }
         }
@@ -222,8 +240,8 @@ void UlaRenderer::renderUntil(uint32_t frameTstate, const Mmu &mmu)
 
 void UlaRenderer::copyRasterScanline(uint32_t y, VideoFrame &frame) const
 {
-    if (frame.width() != kTotalWidthPx || frame.height() != kTotalHeightLines)
-        frame.resize(kTotalWidthPx, kTotalHeightLines);
+    frame.resize(m_rasterFrame.width(), m_rasterFrame.height());
+    frame.setPaperRect({m_margins.left, m_margins.top, kScreenWidthPx, kScreenLines});
     std::ranges::copy(m_rasterFrame.scanline(y), frame.scanline(y).begin());
 }
 
