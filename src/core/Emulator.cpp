@@ -405,6 +405,15 @@ RunStatus Emulator::runScanline()
 
     m_lineStarted = false;
     if (++m_line >= timings.linesPerFrame) {
+        // A short frame (the TS2068's 262 lines) ends before the window's last rows: the
+        // bottom border goes on there
+        const int32_t nextY = static_cast<int32_t>(timings.linesPerFrame) - static_cast<int32_t>(timings.topBorderLines)
+                              + static_cast<int32_t>(UlaRenderer::kBorderTopLines);
+        if (nextY < static_cast<int32_t>(UlaRenderer::kTotalHeightLines) && !m_machine->usesRasterUla()) {
+            auto frame = m_frame.writeLock();
+            for (int32_t y = std::max(nextY, 0); y < static_cast<int32_t>(UlaRenderer::kTotalHeightLines); ++y)
+                m_machine->renderScanline(static_cast<uint32_t>(y), m_context, m_ula, *frame);
+        }
         endFrame();
         return RunStatus::FrameDone;
     }

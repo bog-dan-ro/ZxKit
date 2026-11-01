@@ -17,6 +17,7 @@
 
 #include "zxkit/machines/CloneMachines.h"
 
+#include "zxkit/audio/AudioMixer.h"
 #include "zxkit/cpu/Z80Cpu.h"
 #include "zxkit/machines/SinclairMachines.h"
 
@@ -51,80 +52,213 @@ std::string_view TimexMachine::name() const noexcept
 
 FrameTimings TimexMachine::timings() const noexcept
 {
-    return (m_variant == Variant::Ts2068) ? kTimings48kNtsc : kTimings48k;
+    switch (m_variant) {
+    case Variant::Ts2068: return kTimingsTimex60;
+    case Variant::SpecSe: return kTimings48k;
+    default:              return kTimingsTimex50;
+    }
 }
 
 void TimexMachine::initialize(MachineContext &ctx, UlaRenderer &ula)
 {
-    const std::size_t romPages = (m_variant == Variant::Tc2048) ? 1 : 2;
-    const std::size_t ramPages = (m_variant == Variant::SpecSe) ? 9 : 3;
-    m_romBank   = ctx.mmu.registerBank("rom", romPages * 16 * 1024, false, false);
-    m_ramBank   = ctx.mmu.registerBank("ram", ramPages * 16 * 1024, true, true);
-    m_dockBank  = ctx.mmu.registerBank("dock", 64 * 1024, true, false);
-    m_exromBank = ctx.mmu.registerBank("exrom", 64 * 1024, false, false);
+    const std::size_t romPages = isSe() ? 2 : 1;
+    const std::size_t ramPages = isSe() ? 9 : 3;
+    m_romBank = ctx.mmu.registerBank("rom", romPages * 16 * 1024, false, false);
+    m_ramBank = ctx.mmu.registerBank("ram", ramPages * 16 * 1024, true, true);
+    if (isSe()) {
+        // The SE's DOCK and EXROM are RAM
+        m_dockBank = ctx.mmu.registerBank("dock", 64 * 1024, true, true);
+        m_exromBank = ctx.mmu.registerBank("exrom", 64 * 1024, true, true);
+    } else {
+        // An empty DOCK (no cartridge) reads 0xFF; so does the TC2048's EXROM
+        m_dockBank = ctx.mmu.registerBank("dock", 8 * 1024, false, false);
+        m_exromBank = ctx.mmu.registerBank("exrom", 8 * 1024, false, false);
+        ctx.mmu.bank(m_dockBank).fill(0xFF);
+        ctx.mmu.bank(m_exromBank).fill(0xFF);
+    }
 
-    registerStandardUlaPort(ctx, ula);
-    if (m_variant != Variant::Tc2048)
-        registerStandardAyPorts(ctx);
+    // The ULA and the AY are fully decoded
+    registerStandardUlaPort(ctx, ula, 0x00FF, 0x00FE);
+    if (isSe()) {
+        ctx.audioMixer.setAyChipCount(1);
+        ctx.ioBus.registerSimpleHandler(
+            std::string(id()) + "_ay_reg",
+            0xFFFF,
+            0xFFFD,
+            [&ctx](uint16_t) -> uint8_t { return ctx.audioMixer.activeAy().readRegister(); },
+            [&ctx](uint16_t, uint8_t val) { ctx.audioMixer.activeAy().selectRegister(val); });
+        ctx.ioBus.registerSimpleHandler(
+            std::string(id()) + "_ay_data",
+            0xFFFF,
+            0xBFFD,
+            nullptr,
+            [&ctx](uint16_t, uint8_t val) { ctx.audioMixer.writeAyRegister(ctx.clock.frameBaseTstates(), val); });
+    }
+    if (m_variant != Variant::Tc2048) {
+        // The Timex AY: register 0xF5, data 0xF6. On the 2068 register 14 is the joystick port:
+        // 0xFF when its I/O port is an input (no joystick read yet)
+        if (!isSe())
+            ctx.audioMixer.setAyChipCount(1);
+        const bool joystickPort = !isSe();
+        ctx.ioBus.registerSimpleHandler(
+            std::string(id()) + "_ay_f5",
+            0x00FF,
+            0x00F5,
+            [&ctx, joystickPort](uint16_t) -> uint8_t {
+                const auto &ay = ctx.audioMixer.activeAy();
+                return (joystickPort && ay.selectedRegister() == 14) ? 0xFF : ay.readRegister();
+            },
+            [&ctx](uint16_t, uint8_t val) { ctx.audioMixer.activeAy().selectRegister(val); });
+        ctx.ioBus.registerSimpleHandler(
+            std::string(id()) + "_ay_f6",
+            0x00FF,
+            0x00F6,
+            joystickPort ? IoBus::SimpleReadFn([&ctx](uint16_t) -> uint8_t {
+                const auto &ay = ctx.audioMixer.activeAy();
+                if (ay.selectedRegister() != 14)
+                    return ay.readRegister();
+                return (ay.registers()[7] & 0x40) ? ay.registers()[14] : 0xFF;
+            }) : IoBus::SimpleReadFn{},
+            [&ctx](uint16_t, uint8_t val) { ctx.audioMixer.writeAyRegister(ctx.clock.frameBaseTstates(), val); });
+    }
 
-    // SCLD mode port 0xFF
+    // The SCLD's mode register 0xFF
     ctx.ioBus.registerSimpleHandler(
         std::string(id()) + "_scld_ff",
         0x00FF,
         0x00FF,
-        [&ula](uint16_t) -> uint8_t { return ula.scldRegister(); },
+        [this](uint16_t) -> uint8_t { return m_portFf; },
         [this, &ctx, &ula](uint16_t, uint8_t val) {
+            const bool bankChanged = ((m_portFf ^ val) & 0x80) != 0;
+            m_portFf = val;
             ula.setScldRegister(val);
-            updateMemoryMap(ctx);
+            if (bankChanged)
+                updateMemoryMap(ctx, ula);
         });
 
-    // Horizontal MMU port 0xF4 (8K chunk bitmask selecting Home vs Dock/ExRom)
+    // The horizontal select 0xF4: a bit for each 8K chunk, the DOCK / EXROM over the home bank
     ctx.ioBus.registerSimpleHandler(
         std::string(id()) + "_scld_f4",
         0x00FF,
         0x00F4,
         [this](uint16_t) -> uint8_t { return m_portF4; },
-        [this, &ctx](uint16_t, uint8_t val) {
+        [this, &ctx, &ula](uint16_t, uint8_t val) {
             m_portF4 = val;
-            updateMemoryMap(ctx);
+            updateMemoryMap(ctx, ula);
         });
+
+    if (isSe()) {
+        // The 128K paging, fully decoded and without the 48K lock
+        ctx.ioBus.registerSimpleHandler(
+            std::string(id()) + "_7ffd",
+            0xFFFF,
+            0x7FFD,
+            nullptr,
+            [this, &ctx, &ula](uint16_t, uint8_t val) {
+                m_port7ffd = val;
+                updateMemoryMap(ctx, ula);
+            });
+    }
 }
 
 void TimexMachine::reset(MachineContext &ctx, UlaRenderer &ula, ResetKind kind)
 {
     if (kind == ResetKind::Hard) {
         ctx.mmu.bank(m_ramBank).fill(0x00);
+        if (isSe()) {
+            ctx.mmu.bank(m_dockBank).fill(0x00);
+            ctx.mmu.bank(m_exromBank).fill(0x00);
+        }
         if (ctx.romResolver) {
-            if (m_variant == Variant::Tc2048) {
+            switch (m_variant) {
+            case Variant::Tc2048:
                 ctx.mmu.bank(m_romBank).loadData(0, ctx.loadRom("tc2048.rom", 16 * 1024));
-            } else if (m_variant == Variant::SpecSe) {
+                break;
+            case Variant::SpecSe:
                 ctx.mmu.bank(m_romBank).loadData(0, ctx.loadRom("se-0.rom", 16 * 1024));
                 ctx.mmu.bank(m_romBank).loadData(16 * 1024, ctx.loadRom("se-1.rom", 16 * 1024));
-            } else {
-                ctx.mmu.bank(m_romBank).loadData(0, ctx.loadRom("tc2068-0.rom", 8 * 1024));
+                break;
+            default:
+                // The TS2068 has the TC2068's ROMs (FUSE's defaults)
+                ctx.mmu.bank(m_romBank).loadData(0, ctx.loadRom("tc2068-0.rom", 16 * 1024));
                 ctx.mmu.bank(m_exromBank).loadData(0, ctx.loadRom("tc2068-1.rom", 8 * 1024));
+                break;
             }
         }
     }
     m_portF4 = 0;
+    m_portFf = 0;
+    m_port7ffd = 0;
     ula.setScldRegister(0);
-    updateMemoryMap(ctx);
-    ula.setVramSource(m_ramBank, 0);
+    updateMemoryMap(ctx, ula);
 }
 
-void TimexMachine::updateMemoryMap(MachineContext &ctx)
+void TimexMachine::onFrameStart(MachineContext &ctx)
 {
-    ctx.mmu.map16k(0x0000, m_romBank, 0, false);
-    ctx.mmu.map16k(0x4000, m_ramBank, 0, true);
-    ctx.mmu.map16k(0x8000, m_ramBank, 1, false);
-    ctx.mmu.map16k(0xC000, m_ramBank, 2, false);
+    // The SCLD's bit 6 disables the frame interrupt
+    if (!(m_portFf & 0x40))
+        MachineProfile::onFrameStart(ctx);
+}
 
-    if (m_portF4 != 0) {
-        for (int slot8k = 0; slot8k < 8; ++slot8k) {
-            if (m_portF4 & (1u << slot8k)) {
-                ctx.mmu.map8k(static_cast<uint16_t>(slot8k * 0x2000), m_dockBank, slot8k, false);
-            }
-        }
+uint8_t TimexMachine::lastPort7ffd() const noexcept
+{
+    return m_port7ffd;
+}
+
+void TimexMachine::setPagingPorts(uint8_t port7ffd, uint8_t /*port1ffd*/, MachineContext &ctx, UlaRenderer &ula)
+{
+    if (!isSe())
+        return;
+    m_port7ffd = port7ffd;
+    updateMemoryMap(ctx, ula);
+}
+
+void TimexMachine::saveState(StateWriter &w) const
+{
+    w.write(m_portF4);
+    w.write(m_portFf);
+    w.write(m_port7ffd);
+}
+
+void TimexMachine::loadState(StateReader &r, MachineContext &ctx, UlaRenderer &ula)
+{
+    m_portF4 = r.read<uint8_t>();
+    m_portFf = r.read<uint8_t>();
+    m_port7ffd = r.read<uint8_t>();
+    updateMemoryMap(ctx, ula);
+}
+
+void TimexMachine::updateMemoryMap(MachineContext &ctx, UlaRenderer &ula)
+{
+    // The home bank
+    if (isSe()) {
+        const uint8_t page = m_port7ffd & 0x07;
+        ctx.mmu.map16k(0x0000, m_romBank, (m_port7ffd & 0x10) ? 1 : 0, false);
+        ctx.mmu.map16k(0x4000, m_ramBank, 5, true);
+        ctx.mmu.map16k(0x8000, m_ramBank, 8, false);
+        ctx.mmu.map16k(0xC000, m_ramBank, page, (page & 1) != 0);
+        ula.setVramSource(m_ramBank, (m_port7ffd & 0x08) ? 7 : 5);
+    } else {
+        ctx.mmu.map16k(0x0000, m_romBank, 0, false);
+        ctx.mmu.map16k(0x4000, m_ramBank, 0, true);
+        ctx.mmu.map16k(0x8000, m_ramBank, 1, false);
+        ctx.mmu.map16k(0xC000, m_ramBank, 2, false);
+        ula.setVramSource(m_ramBank, 0);
+    }
+
+    // The horizontal select: the chunks of the EXROM (bit 7 of 0xFF) or of the DOCK, contended at
+    // 0x4000-0x7FFF. The 2068's 8K EXROM and an empty DOCK show the same 8K in every chunk.
+    const BankId bank = (m_portFf & 0x80) ? m_exromBank : m_dockBank;
+    for (uint8_t chunk = 0; chunk < 8; ++chunk) {
+        if (m_portF4 & (1u << chunk))
+            ctx.mmu.map8k(static_cast<uint16_t>(chunk * 0x2000), bank, isSe() ? chunk : 0, chunk == 2 || chunk == 3);
+    }
+    // The SE: with an odd page at 0xC000, bits 2 and 3 page in the chunks 6 and 7 too
+    if (isSe() && (m_port7ffd & 0x01)) {
+        if (m_portF4 & 0x04)
+            ctx.mmu.map8k(0xC000, bank, 6, false);
+        if (m_portF4 & 0x08)
+            ctx.mmu.map8k(0xE000, bank, 7, false);
     }
     ctx.romcs.refresh();
 }

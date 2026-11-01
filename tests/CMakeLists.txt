@@ -6,7 +6,7 @@ add_test(NAME test_video_filters COMMAND test_video_filters)
 
 foreach(rom 48.rom 128-0.rom 128-1.rom
         cobra1_boot.rom cobra1_sys-0.rom cobra1_sys-1.rom cobra1_sys-2.rom cobra1_sys-3.rom
-        cobra2_ts_boot.rom)
+        cobra2_ts_boot.rom tc2048.rom tc2068-0.rom tc2068-1.rom se-0.rom se-1.rom)
     if(NOT EXISTS "${ZXKIT_TEST_ROM_DIR}/${rom}")
         message(FATAL_ERROR "Missing bundled test ROM: ${rom}")
     endif()
@@ -49,11 +49,16 @@ add_executable(test_disks test_disks.cpp)
 target_link_libraries(test_disks PRIVATE ZX::Kit)
 add_test(NAME test_disks COMMAND test_disks)
 
-# The CoBra tests boot their ROMs and disks from tests/fixtures
+# The CoBra and Timex tests boot the ROMs (and the CoBra's CP/M disk) from tests/fixtures
 add_executable(test_cobra test_cobra.cpp)
 target_link_libraries(test_cobra PRIVATE ZX::Kit)
 target_compile_definitions(test_cobra PRIVATE ZXKIT_TEST_FIXTURES_DIR="${CMAKE_CURRENT_SOURCE_DIR}/fixtures")
 add_test(NAME test_cobra COMMAND test_cobra ${CMAKE_CURRENT_SOURCE_DIR}/fixtures)
+
+add_executable(test_timex test_timex.cpp)
+target_link_libraries(test_timex PRIVATE ZX::Kit)
+target_compile_definitions(test_timex PRIVATE ZXKIT_TEST_ROM_DIR="${ZXKIT_TEST_ROM_DIR}")
+add_test(NAME test_timex COMMAND test_timex ${ZXKIT_TEST_ROM_DIR})
 
 add_executable(test_teledisk test_teledisk.cpp)
 target_link_libraries(test_teledisk PRIVATE ZX::Kit)
@@ -61,7 +66,7 @@ target_compile_definitions(test_teledisk PRIVATE ZXKIT_TEST_FIXTURES_DIR="${CMAK
 add_test(NAME test_teledisk COMMAND test_teledisk ${CMAKE_CURRENT_SOURCE_DIR}/fixtures)
 
 # The tests check with assert(): keep it in Release builds too
-foreach(test_target test_foundation test_fuse_z80 test_z80n_mmu_machines test_storage_next test_tape test_disks test_cobra test_teledisk)
+foreach(test_target test_foundation test_fuse_z80 test_z80n_mmu_machines test_storage_next test_tape test_disks test_cobra test_timex test_teledisk)
     target_compile_options(${test_target} PRIVATE $<IF:$<CXX_COMPILER_ID:MSVC>,/UNDEBUG,-UNDEBUG>)
 endforeach()
 
