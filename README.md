@@ -9,6 +9,7 @@ Modern C++23/26 ZX Spectrum, Z80 Clones (HC-2000, CoBra 1/2, Pentagon, Scorpion,
 - **Real-time Engine that never sleeps on a lock**: `zxkit::Engine` runs an emulator on its own thread, taking the lock one scanline at a time. The lock is `SpinSharedMutex`, a fair (FIFO ticket) reader/writer spin lock, so the emulation thread is never suspended by the kernel while it runs and a host thread waits at most a scanline (microseconds). Pausing sleeps on an atomic wait, so a paused Engine costs no CPU.
 - **Weak callbacks**: frames, audio, pauses (breakpoints, watchpoints, user requests) and errors reach the host through `Weak<std::function<...>>` callbacks, called with no emulator lock held. `CallbackHandle` owns one: destroying it waits for a call in progress, so whatever the callback captured can go right after.
 - **Recycled immutable video frames**: `VideoFramePtr` (`Shared<VideoFrame>`) frames are never written once published; the emulator recycles a frame only after every holder released it.
+- **Composable software video filters**: A separate `ZX::VideoFilters` library provides 32 variants across HQ, xBRZ, Scale/AdvMAME, SaI/Eagle, TV, dot matrix, bilinear, nearest neighbour, scanline and RGB mask filters. Consumers opt in by linking and calling it; hardware rendering needs only `ZX::Kit`. See the [filter guide and source credits](src/video/filters/README.md).
 - **Exception-based errors**: typed exception hierarchy (`zxkit::Exception`, `IoException`, `FormatException`, `RomMissingException`, `PeripheralException`, `DebuggerException`) thrown straight to the caller.
 - **High-Performance Z80 + Z80N CPU**: Passes 1,356/1,356 FUSE Z80 compliance tests + full ZX Spectrum Next Z80N instruction set, with a single-branch `m_activeHooksMask` gating M1, RFSH (R7 edge), RETN, and debugger hooks.
 - **64×1 KB Page-Table MMU**: Supports 1 KB, 2 KB, 4 KB, 8 KB, and 16 KB banking, independent read/write pages, prioritized `/ROMCS` peripheral overlays, and CP/M hardware banking flips (HC-2000 ports `0x7E` & `0xC5`/`0xC7` A13 pull-high, CoBra 1/2 8255 + `R7` falling-edge flip-flops).
@@ -63,7 +64,7 @@ The tests include their media, reference images and ROMs under
 external test collection is needed. Missing required ROM fixtures fail the
 build configuration instead of silently skipping coverage.
 
-The 11 CTest entries cover the existing CPU, machine, tape and storage tests,
+The 12 CTest entries cover the software video filters, CPU, machine, tape and storage tests,
 Sinclair timing boundaries, the Butler timing suites, incremental ULA raster
 rendering and an exact BASIC Border image comparison. Five known 128K Butler
 failures remain excluded from the passing suite; their case numbers and the

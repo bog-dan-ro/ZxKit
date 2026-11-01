@@ -1,4 +1,9 @@
 set(ZXKIT_TEST_ROM_DIR "${CMAKE_CURRENT_SOURCE_DIR}/fixtures/roms")
+add_executable(test_video_filters test_video_filters.cpp)
+target_link_libraries(test_video_filters PRIVATE ZX::VideoFilters)
+target_compile_options(test_video_filters PRIVATE $<IF:$<CXX_COMPILER_ID:MSVC>,/UNDEBUG,-UNDEBUG>)
+add_test(NAME test_video_filters COMMAND test_video_filters)
+
 foreach(rom 48.rom 128-0.rom 128-1.rom)
     if(NOT EXISTS "${ZXKIT_TEST_ROM_DIR}/${rom}")
         message(FATAL_ERROR "Missing bundled test ROM: ${rom}")

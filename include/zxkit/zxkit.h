@@ -42,6 +42,7 @@
 
 #include "zxkit/video/UlaRenderer.h"
 #include "zxkit/video/VideoFrame.h"
+#include "zxkit/video/VideoFilters.h"
 #include "zxkit/video/next/NextVideo.h"
 
 #include "zxkit/audio/AudioMixer.h"

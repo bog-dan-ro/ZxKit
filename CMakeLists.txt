@@ -59,6 +59,7 @@ set(ZXKIT_PUBLIC_HEADERS
     include/zxkit/bus/RomcsStack.h
     include/zxkit/video/UlaRenderer.h
     include/zxkit/video/VideoFrame.h
+    include/zxkit/video/VideoFilters.h
     include/zxkit/video/next/NextVideo.h
     include/zxkit/audio/AudioMixer.h
     include/zxkit/audio/Ay8912.h
@@ -189,6 +190,17 @@ target_link_libraries(zxkit
 
 set_target_properties(zxkit PROPERTIES EXPORT_NAME Kit)
 
+# Optional presentation library: the emulator and hardware-rendering consumers
+# never depend on it. All algorithm sources are bundled; no extra downloads.
+add_library(zxkit_video_filters
+    src/video/filters/VideoFilters.cpp
+    src/video/filters/fuse/FuseScalers.cpp
+    src/video/filters/xbrz/xbrz.cpp
+)
+add_library(ZX::VideoFilters ALIAS zxkit_video_filters)
+target_link_libraries(zxkit_video_filters PUBLIC ZX::Kit)
+set_target_properties(zxkit_video_filters PROPERTIES EXPORT_NAME VideoFilters)
+
 # ----------------------------------------------------------------- tests
 
 if(ZXKIT_BUILD_TESTS)
@@ -207,6 +219,17 @@ if(ZXKIT_INSTALL)
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
+
+    install(TARGETS zxkit_video_filters
+        EXPORT zxkitTargets
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    )
+    install(FILES src/video/filters/README.md
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/zxkit/video-filters)
+    install(FILES src/video/filters/xbrz/License.txt
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/zxkit/video-filters/xbrz)
 
     install(DIRECTORY include/zxkit
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
