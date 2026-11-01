@@ -40,9 +40,50 @@ engine.emulator().writeLock()->loadMedia(file);      // waits at most a scanline
 engine.emulator().writeLock()->setKeyState(zxkit::ZxKey::Space, true);
 ```
 
+## Building and testing
+
+Requires CMake 3.25 or newer, a compiler with C++23 support, zlib and threads.
+CMake fetches SafeCpp if it is not already available.
+
+```sh
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DZXKIT_BUILD_TESTS=ON
+cmake --build build --parallel
+ctest --test-dir build --output-on-failure
+```
+
+**After every change, building and passing the full unit test suite is
+mandatory before committing or reporting completion.** For emulation-core
+changes, run the full suite in both Debug and Release (use a separate
+`build-release` directory with `-DCMAKE_BUILD_TYPE=Release`). Assertions remain
+enabled in the test executables in both configurations. See [AGENTS.md](AGENTS.md)
+for the contributor instructions.
+
+The tests include their media, reference images and ROMs under
+[`tests/fixtures`](tests/fixtures/spectrum/README.md). No Spectacol checkout or
+external test collection is needed. Missing required ROM fixtures fail the
+build configuration instead of silently skipping coverage.
+
+The 11 CTest entries cover the existing CPU, machine, tape and storage tests,
+Sinclair timing boundaries, the Butler timing suites, incremental ULA raster
+rendering and an exact BASIC Border image comparison. Five known 128K Butler
+failures remain excluded from the passing suite; their case numbers and the
+remaining visual ULA differences are documented in the
+[fixture README](tests/fixtures/spectrum/README.md).
+
+The optional collection smoke audit uses Python's standard library and defaults
+to bundled fixtures, the built runner and bundled ROMs. It writes its report and
+screenshots under `build/spectrum-audit`:
+
+```sh
+python3 tests/tools/audit_spectrum_collection.py
+```
+
+Smoke completion does not establish a hardware pass. Use `--help` for explicit
+collection, runner, ROM-directory and output-directory overrides.
+
 ## Checking a machine boots
 
-`tests/tools/zxrun` runs a machine headless from a script of key presses and saves screenshots:
+`build/tests/zxrun` runs a machine headless from a script of key presses and saves screenshots:
 
 ```sh
 zxrun --machine hc2000 --roms DIR "disk:0:CPM.dsk" wait:150 key:P key:CS+SS key:L type:14446 key:ENTER wait:300 shot:cpm.png
@@ -64,4 +105,6 @@ target_link_libraries(myapp PUBLIC ZX::Kit)
 
 ## License
 
-GPL-3.0-or-later. See [LICENSE](LICENSE).
+GPL-3.0-or-later. See [LICENSE](LICENSE). Third-party test programs, reference
+images and ROM fixtures retain their original notices and distribution terms;
+see the fixture READMEs and [ROM notice](tests/fixtures/roms/README.copyright).

@@ -45,6 +45,15 @@ struct FrameTimings {
     uint16_t ulaOriginHc       = 116;
     uint16_t ulaOriginVc       = 64;
 
+    // First pixel relative to topBorderLines * tstatesPerLine; the frame
+    // origin is the interrupt edge, not the beginning of the left border.
+    int16_t screenStartOffset = 0;
+
+    constexpr uint32_t firstScreenTstate() const noexcept
+    {
+        return static_cast<uint32_t>(int32_t(topBorderLines) * tstatesPerLine + screenStartOffset);
+    }
+
     constexpr uint32_t tstatesPerFrame() const noexcept
     {
         return static_cast<uint32_t>(tstatesPerLine) * linesPerFrame;

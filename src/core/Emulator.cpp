@@ -163,6 +163,7 @@ void Emulator::installMachine(std::unique_ptr<MachineProfile> machine)
     m_romcs.clear();
     m_cpu.clearPeripheralHooks();
     m_cpu.setZ80nEnabled(machine->supportsZ80n());
+    m_cpu.setInterruptRetrigger(!machine->supportsZ80n());
     m_cpu.setEvenM1(false);
 
     m_mmu.clear();
@@ -226,6 +227,16 @@ void Emulator::installMachine(std::unique_ptr<MachineProfile> machine)
                                && m_machine->frameHeight() == machine->frameHeight();
     m_machine = std::move(machine);
     m_machine->initialize(m_context, m_ula);
+    if (m_machine->usesRasterUla()) {
+        m_mmu.setVideoWriteCallback(m_machine->ramBankId(), [this] {
+            m_ula.renderUntil(m_clock.frameBaseTstates(), m_mmu);
+        });
+        m_ioBus.addObserver([this](uint16_t, uint8_t, bool isWrite) {
+            if (isWrite)
+                m_ula.renderUntil(m_clock.frameBaseTstates(), m_mmu);
+        });
+    }
+
 
     for (auto &periph : m_peripherals)
         periph->onAttach(m_context);
@@ -303,6 +314,7 @@ OptionalRef<DiskImage> Emulator::diskDrive(std::size_t drive) noexcept
 
 void Emulator::reset(ResetKind kind)
 {
+    m_ula.endRasterFrame();
     m_clock.reset();
     m_cpu.reset(kind == ResetKind::Hard);
     m_machine->reset(m_context, m_ula, kind);
@@ -343,6 +355,8 @@ void Emulator::updateDebuggerHook() noexcept
 void Emulator::beginFrame()
 {
     m_frameStarted = true;
+    if (m_machine->usesRasterUla())
+        m_ula.beginRasterFrame(m_clock.timings());
     m_tapeDeck.onFrameStart(m_machine->is48kMode(), m_rzx.isPlaying() || m_rzx.isRecording());
     for (auto &periph : m_peripherals)
         periph->onFrameStart();
@@ -380,7 +394,12 @@ RunStatus Emulator::runScanline()
                          + static_cast<int32_t>(UlaRenderer::kBorderTopLines);
     if (visY >= 0 && visY < static_cast<int32_t>(UlaRenderer::kTotalHeightLines)) {
         auto frame = m_frame.writeLock();
-        m_machine->renderScanline(static_cast<uint32_t>(visY), m_context, m_ula, *frame);
+        if (m_machine->usesRasterUla()) {
+            m_ula.renderUntil(m_clock.frameBaseTstates(), m_mmu);
+            m_ula.copyRasterScanline(static_cast<uint32_t>(visY), *frame);
+        } else {
+            m_machine->renderScanline(static_cast<uint32_t>(visY), m_context, m_ula, *frame);
+        }
     }
 
     m_lineStarted = false;
@@ -408,6 +427,7 @@ void Emulator::endFrame()
         m_rzx.advancePlaybackFrame(m_ioBus);
 
     m_audioSamples = m_audioMixer.endFrame(executedFrameTs);
+    m_ula.endRasterFrame();
     m_clock.beginNewFrame();
     updateMediaActivity();
 
@@ -570,6 +590,7 @@ void Emulator::saveMediaFile(const std::filesystem::path &path)
 
 void Emulator::loadSnapshot(std::span<const uint8_t> data, std::string_view extension)
 {
+    m_ula.endRasterFrame();
     const std::string ext = normalizedExtension(extension);
     SnapshotMachineState state{m_context, *m_machine, m_ula};
     if (ext == ".sna")
@@ -582,6 +603,9 @@ void Emulator::loadSnapshot(std::span<const uint8_t> data, std::string_view exte
         SnapshotFormats::loadNex(data, state);
     else
         throw FormatException(std::format("Unsupported snapshot format '{}'", ext));
+
+    if (m_machine->usesRasterUla())
+        m_ula.beginRasterFrame(m_clock.timings());
 
     // Continue the frame from wherever the snapshot's clock is
     const auto &timings = m_clock.timings();

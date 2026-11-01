@@ -1,0 +1,416 @@
+[
+  {
+    "machine": "48k",
+    "test": 1,
+    "verdict": "pass",
+    "display": "Timing 48k Spectrum             \n                                \nTest 0 {Uncontended}            \nEarly/Late Timing               \n                                \nTYPE1 (Early) timings detected. \n                                \nTest 1 {Uncontended}            \nJR; INC BC; LD BC,(nn);LD (nn),B\nC                               \nR=43  loop=1201  sp=56806  Pass \n---------------------------     \n                                \nTest 1 {Contended}              \nJR; INC BC; LD BC,(nn);LD (nn),B\nC                               \nR=74  loop=1014  sp=23296  Pass \n---------------------------     \nAll Tests Complete 100% Pass    \nPress any Key."
+  },
+  {
+    "machine": "48k",
+    "test": 2,
+    "verdict": "pass",
+    "display": "Timing 48k Spectrum             \n                                \nTest 0 {Uncontended}            \nEarly/Late Timing               \n                                \nTYPE1 (Early) timings detected. \n                                \nTest 2 {Uncontended}            \nINC dd; DEC dd                  \nR=116  loop=657  sp=56797  Pass \n---------------------------     \n                                \nTest 2 {Contended}              \nINC dd; DEC dd                  \nR=67  loop=571  sp=23301  Pass  \n---------------------------     \nAll Tests Complete 100% Pass    \nPress any Key."
+  },
+  {
+    "machine": "48k",
+    "test": 3,
+    "verdict": "pass",
+    "display": "Timing 48k Spectrum             \n                                \nTest 0 {Uncontended}            \nEarly/Late Timing               \n                                \nTYPE1 (Early) timings detected. \n                                \nTest 3 {Uncontended}            \nNOP; LD r,r; INC r; DEC r       \nR=61  loop=491  sp=56810  Pass  \n---------------------------     \n                                \nTest 3 {Contended}              \nNOP; LD r,r; INC r; DEC r       \nR=50  loop=405  sp=23316  Pass  \n---------------------------     \nAll Tests Complete 100% Pass    \nPress any Key."
+  },
+  {
+    "machine": "48k",
+    "test": 4,
+    "verdict": "pass",
+    "display": "Timing 48k Spectrum             \n                                \nTest 0 {Uncontended}            \nEarly/Late Timing               \n                                \nTYPE1 (Early) timings detected. \n                                \nTest 4 {Uncontended}            \n(ADD/ADC/SUB/SBC/AND/XOR/OR/CP) \nA,r & A,(HL)                    \nR=3  loop=201  sp=56806  Pass   \n---------------------------     \n                                \nTest 4 {Contended}              \n(ADD/ADC/SUB/SBC/AND/XOR/OR/CP) \nA,r & A,(HL)                    \nR=88  loop=169  sp=23358  Pass  \n---------------------------     \nAll Tests Complete 100% Pass    \nPress any Key."
+  },
+  {
+    "machine": "48k",
+    "test": 5,
+    "verdict": "pass",
+    "display": "Timing 48k Spectrum             \n                                \nTest 0 {Uncontended}            \nEarly/Late Timing               \n                                \nTYPE1 (Early) timings detected. \n                                \nTest 5 {Uncontended}            \nEXX; EX AF,AF'; EX DE,HL        \nR=85  loop=849  sp=56802  Pass  \n---------------------------     \n                                \nTest 5 {Contended}              \nEXX; EX AF,AF'; EX DE,HL        \nR=64  loop=709  sp=23310  Pass  \n---------------------------     \nAll Tests Complete 100% Pass    \nPress any Key."
+  },
+  {
+    "machine": "48k",
+    "test": 6,
+    "verdict": "pass",
+    "display": "Timing 48k Spectrum             \n                                \nTest 0 {Uncontended}            \nEarly/Late Timing               \n                                \nTYPE1 (Early) timings detected. \n                                \nTest 6 {Uncontended}            \n; DAA; CPL; CCF; SCF            \nR=74  loop=941  sp=56801  Pass  \n---------------------------     \n                                \nTest 6 {Contended}              \n; DAA; CPL; CCF; SCF            \nR=48  loop=785  sp=23296  Pass  \n---------------------------     \nAll Tests Complete 100% Pass    \nPress any Key."
+  },
+  {
+    "machine": "48k",
+    "test": 7,
+    "verdict": "pass",
+    "display": "Timing 48k Spectrum             \n                                \nTest 0 {Uncontended}            \nEarly/Late Timing               \n                                \nTYPE1 (Early) timings detected. \n                                \nTest 7 {Uncontended}            \nPUSH dd; POP dd;EX (SP),HL      \nR=100  loop=412  sp=56801  Pass \n---------------------------     \n                                \nTest 7 {Contended}              \nPUSH dd; POP dd;EX (SP),HL      \nR=64  loop=350  sp=48059  Pass  \n---------------------------     \nAll Tests Complete 100% Pass    \nPress any Key."
+  },
+  {
+    "machine": "48k",
+    "test": 8,
+    "verdict": "pass",
+    "display": "Timing 48k Spectrum             \n                                \nTest 0 {Uncontended}            \nEarly/Late Timing               \n                                \nTYPE1 (Early) timings detected. \n                                \nTest 8 {Uncontended}            \nRLA; RAA; RLCA; RRCA; RLD; RRD  \nR=38  loop=633  sp=56801  Pass  \n---------------------------     \n                                \nTest 8 {Contended}              \nRLA; RAA; RLCA; RRCA; RLD; RRD  \nR=120  loop=511  sp=23296  Pass \n---------------------------     \nAll Tests Complete 100% Pass    \nPress any Key."
+  },
+  {
+    "machine": "48k",
+    "test": 9,
+    "verdict": "pass",
+    "display": "Timing 48k Spectrum             \n                                \nTest 0 {Uncontended}            \nEarly/Late Timing               \n                                \nTYPE1 (Early) timings detected. \n                                \nTest 9 {Uncontended}            \nLD HL,nn; LD HL,(nn); LD (nn),HL\n; LD (HL),n                     \nR=66  loop=633  sp=56801  Pass  \n---------------------------     \n                                \nTest 9 {Contended}              \nLD HL,nn; LD HL,(nn); LD (nn),HL\n; LD (HL),n                     \nR=63  loop=531  sp=23305  Pass  \n---------------------------     \nAll Tests Complete 100% Pass    \nPress any Key."
+  },
+  {
+    "machine": "48k",
+    "test": 10,
+    "verdict": "pass",
+    "display": "Timing 48k Spectrum             \n                                \nTest 0 {Uncontended}            \nEarly/Late Timing               \n                                \nTYPE1 (Early) timings detected. \n                                \nTest 10 {Uncontended}           \nPUSH; POP; CALL; JP cc; [ALL FLA\nGS RESET]                       \nR=108  loop=93  sp=56838  Pass  \n---------------------------     \n                                \nTest 10 {Contended}             \nPUSH; POP; CALL; JP cc; [ALL FLA\nGS RESET]                       \nR=124  loop=84  sp=23334  Pass  \n---------------------------     \nAll Tests Complete 100% Pass    \nPress any Key."
+  },
+  {
+    "machine": "48k",
+    "test": 11,
+    "verdict": "pass",
+    "display": "Timing 48k Spectrum             \n                                \nTest 0 {Uncontended}            \nEarly/Late Timing               \n                                \nTYPE1 (Early) timings detected. \n                                \nTest 11 {Uncontended}           \nPUSH; POP; CALL; JP cc; [ALL FLA\nGS SET]                         \nR=35  loop=119  sp=56802  Pass  \n---------------------------     \n                                \nTest 11 {Contended}             \nPUSH; POP; CALL; JP cc; [ALL FLA\nGS SET]                         \nR=74  loop=106  sp=53256  Pass  \n---------------------------     \nAll Tests Complete 100% Pass    \nPress any Key."
+  },
+  {
+    "machine": "48k",
+    "test": 12,
+    "verdict": "pass",
+    "display": "Timing 48k Spectrum             \n                                \nTest 0 {Uncontended}            \nEarly/Late Timing               \n                                \nTYPE1 (Early) timings detected. \n                                \nTest 12 {Uncontended}           \nRLC/RRC/RL/RR/SLA/SRA/SRL r & (H\nL)                              \nR=82  loop=124  sp=56832  Pass  \n---------------------------     \n                                \nTest 12 {Contended}             \nRLC/RRC/RL/RR/SLA/SRA/SRL r & (H\nL)                              \nR=121  loop=103  sp=23309  Pass \n---------------------------     \nAll Tests Complete 100% Pass    \nPress any Key."
+  },
+  {
+    "machine": "48k",
+    "test": 13,
+    "verdict": "pass",
+    "display": "Timing 48k Spectrum             \n                                \nTest 0 {Uncontended}            \nEarly/Late Timing               \n                                \nTYPE1 (Early) timings detected. \n                                \nTest 13 {Uncontended}           \nBIT b,r                         \nR=117  loop=138  sp=56874  Pass \n---------------------------     \n                                \nTest 13 {Contended}             \nBIT b,r                         \nR=95  loop=114  sp=23367  Pass  \n---------------------------     \nAll Tests Complete 100% Pass    \nPress any Key."
+  },
+  {
+    "machine": "48k",
+    "test": 14,
+    "verdict": "pass",
+    "display": "Timing 48k Spectrum             \n                                \nTest 0 {Uncontended}            \nEarly/Late Timing               \n                                \nTYPE1 (Early) timings detected. \n                                \nTest 14 {Uncontended}           \nSET b,r; RES b,r                \nR=23  loop=375  sp=56814  Pass  \n---------------------------     \n                                \nTest 14 {Contended}             \nSET b,r; RES b,r                \nR=13  loop=310  sp=23301  Pass  \n---------------------------     \nAll Tests Complete 100% Pass    \nPress any Key."
+  },
+  {
+    "machine": "48k",
+    "test": 15,
+    "verdict": "pass",
+    "display": "Timing 48k Spectrum             \n                                \nTest 0 {Uncontended}            \nEarly/Late Timing               \n                                \nTYPE1 (Early) timings detected. \n                                \nTest 15 {Uncontended}           \nIM 0 1 2; LD A,I; LD I,A; LD R,A\n; LD A,R                        \nR=55  loop=553  sp=56818  Pass  \n---------------------------     \n                                \nTest 15 {Contended}             \nIM 0 1 2; LD A,I; LD I,A; LD R,A\n; LD A,R                        \nR=29  loop=462  sp=23321  Pass  \n---------------------------     \nAll Tests Complete 100% Pass    \nPress any Key."
+  },
+  {
+    "machine": "48k",
+    "test": 16,
+    "verdict": "pass",
+    "display": "Timing 48k Spectrum             \n                                \nTest 0 {Uncontended}            \nEarly/Late Timing               \n                                \nTYPE1 (Early) timings detected. \n                                \nTest 16 {Uncontended}           \nLD SP,HL; ADD HL,dd; ADC HL,dd; \nSBC HL,dd                       \nR=53  loop=280  sp=56823  Pass  \n---------------------------     \n                                \nTest 16 {Contended}             \nLD SP,HL; ADD HL,dd; ADC HL,dd; \nSBC HL,dd                       \nR=94  loop=242  sp=23313  Pass  \n---------------------------     \nAll Tests Complete 100% Pass    \nPress any Key."
+  },
+  {
+    "machine": "48k",
+    "test": 17,
+    "verdict": "pass",
+    "display": "Timing 48k Spectrum             \n                                \nTest 0 {Uncontended}            \nEarly/Late Timing               \n                                \nTYPE1 (Early) timings detected. \n                                \nTest 17 {Uncontended}           \n(ADD/ADC/SUB/SBC/AND/XOR/OR/CP) \nA,0-3                           \nR=47  loop=247  sp=56870  Pass  \n---------------------------     \n                                \nTest 17 {Contended}             \n(ADD/ADC/SUB/SBC/AND/XOR/OR/CP) \nA,0-3                           \nR=12  loop=199  sp=23363  Pass  \n---------------------------     \nAll Tests Complete 100% Pass    \nPress any Key."
+  },
+  {
+    "machine": "48k",
+    "test": 18,
+    "verdict": "pass",
+    "display": "Timing 48k Spectrum             \n                                \nTest 0 {Uncontended}            \nEarly/Late Timing               \n                                \nTYPE1 (Early) timings detected. \n                                \nTest 18 {Uncontended}           \n(ADD/ADC/SUB/SBC/AND/XOR/OR/CP) \nA,4-7                           \nR=47  loop=247  sp=56870  Pass  \n---------------------------     \n                                \nTest 18 {Contended}             \n(ADD/ADC/SUB/SBC/AND/XOR/OR/CP) \nA,4-7                           \nR=12  loop=199  sp=23363  Pass  \n---------------------------     \nAll Tests Complete 100% Pass    \nPress any Key."
+  },
+  {
+    "machine": "48k",
+    "test": 19,
+    "verdict": "pass",
+    "display": "Timing 48k Spectrum             \n                                \nTest 0 {Uncontended}            \nEarly/Late Timing               \n                                \nTYPE1 (Early) timings detected. \n                                \nTest 19 {Uncontended}           \nLD r,n; LD rr,nn;LD A,(nn);LD (n\nn),A;LD dd,(nn);LD (nn),dd      \nR=40  loop=215  sp=56820  Pass  \n---------------------------     \n                                \nTest 19 {Contended}             \nLD r,n; LD rr,nn;LD A,(nn);LD (n\nn),A;LD dd,(nn);LD (nn),dd      \nR=119  loop=178  sp=23367  Pass \n---------------------------     \nAll Tests Complete 100% Pass    \nPress any Key."
+  },
+  {
+    "machine": "48k",
+    "test": 20,
+    "verdict": "pass",
+    "display": "Timing 48k Spectrum             \n                                \nTest 0 {Uncontended}            \nEarly/Late Timing               \n                                \nTYPE1 (Early) timings detected. \n                                \nTest 20 {Uncontended}           \nLD r,(ss); LD (ss),r            \nR=61  loop=298  sp=56825  Pass  \n---------------------------     \n                                \nTest 20 {Contended}             \nLD r,(ss); LD (ss),r            \nR=59  loop=258  sp=23334  Pass  \n---------------------------     \nAll Tests Complete 100% Pass    \nPress any Key."
+  },
+  {
+    "machine": "48k",
+    "test": 21,
+    "verdict": "pass",
+    "display": "Timing 48k Spectrum             \n                                \nTest 0 {Uncontended}            \nEarly/Late Timing               \n                                \nTYPE1 (Early) timings detected. \n                                \nTest 21 {Uncontended}           \nPUSH ii;POP ii; LD (ii+n),r; LD \n(ii+n),n                        \nR=91  loop=153  sp=56860  Pass  \n---------------------------     \n                                \nTest 21 {Contended}             \nPUSH ii;POP ii; LD (ii+n),r; LD \n(ii+n),n                        \nR=103  loop=123  sp=23320  Pass \n---------------------------     \nAll Tests Complete 100% Pass    \nPress any Key."
+  },
+  {
+    "machine": "48k",
+    "test": 22,
+    "verdict": "pass",
+    "display": "Timing 48k Spectrum             \n                                \nTest 0 {Uncontended}            \nEarly/Late Timing               \n                                \nTYPE1 (Early) timings detected. \n                                \nTest 22 {Uncontended}           \nLD A,(ii+n); LD r,(ii+n)        \nR=113  loop=211  sp=56809  Pass \n---------------------------     \n                                \nTest 22 {Contended}             \nLD A,(ii+n); LD r,(ii+n)        \nR=53  loop=171  sp=23338  Pass  \n---------------------------     \nAll Tests Complete 100% Pass    \nPress any Key."
+  },
+  {
+    "machine": "48k",
+    "test": 23,
+    "verdict": "pass",
+    "display": "Timing 48k Spectrum             \n                                \nTest 0 {Uncontended}            \nEarly/Late Timing               \n                                \nTYPE1 (Early) timings detected. \n                                \nTest 23 {Uncontended}           \nLD A,(IX+n); LD r,(IX+n); BIT (I\nX+n);RES (iX+n);SET (IX+n)      \nR=75  loop=108  sp=56892  Pass  \n---------------------------     \n                                \nTest 23 {Contended}             \nLD A,(IX+n); LD r,(IX+n); BIT (I\nX+n);RES (iX+n);SET (IX+n)      \nR=29  loop=90  sp=23411  Pass   \n---------------------------     \nAll Tests Complete 100% Pass    \nPress any Key."
+  },
+  {
+    "machine": "48k",
+    "test": 24,
+    "verdict": "pass",
+    "display": "Timing 48k Spectrum             \n                                \nTest 0 {Uncontended}            \nEarly/Late Timing               \n                                \nTYPE1 (Early) timings detected. \n                                \nTest 24 {Uncontended}           \nLD A,(IY+n); LD r,(IY+n);BIT (IY\n+n);RES (IY+n);SET (IY+n)       \nR=75  loop=108  sp=56892  Pass  \n---------------------------     \n                                \nTest 24 {Contended}             \nLD A,(IY+n); LD r,(IY+n);BIT (IY\n+n);RES (IY+n);SET (IY+n)       \nR=29  loop=90  sp=23411  Pass   \n---------------------------     \nAll Tests Complete 100% Pass    \nPress any Key."
+  },
+  {
+    "machine": "48k",
+    "test": 25,
+    "verdict": "pass",
+    "display": "Timing 48k Spectrum             \n                                \nTest 0 {Uncontended}            \nEarly/Late Timing               \n                                \nTYPE1 (Early) timings detected. \n                                \nTest 25 {Uncontended}           \n(ADD/ADC/SUB/SBC/AND/XOR/OR/CP) \nA,(IX+n)                        \nR=83  loop=179  sp=56838  Pass  \n---------------------------     \n                                \nTest 25 {Contended}             \n(ADD/ADC/SUB/SBC/AND/XOR/OR/CP) \nA,(IX+n)                        \nR=89  loop=143  sp=23309  Pass  \n---------------------------     \nAll Tests Complete 100% Pass    \nPress any Key."
+  },
+  {
+    "machine": "48k",
+    "test": 26,
+    "verdict": "pass",
+    "display": "Timing 48k Spectrum             \n                                \nTest 0 {Uncontended}            \nEarly/Late Timing               \n                                \nTYPE1 (Early) timings detected. \n                                \nTest 26 {Uncontended}           \n(ADD/ADC/SUB/SBC/AND/XOR/OR/CP) \nA,(IX+n)                        \nR=93  loop=171  sp=56850  Pass  \n---------------------------     \n                                \nTest 26 {Contended}             \n(ADD/ADC/SUB/SBC/AND/XOR/OR/CP) \nA,(IX+n)                        \nR=85  loop=144  sp=23337  Pass  \n---------------------------     \nAll Tests Complete 100% Pass    \nPress any Key."
+  },
+  {
+    "machine": "48k",
+    "test": 27,
+    "verdict": "pass",
+    "display": "Timing 48k Spectrum             \n                                \nTest 0 {Uncontended}            \nEarly/Late Timing               \n                                \nTYPE1 (Early) timings detected. \n                                \nTest 27 {Uncontended}           \nBIT (HL);RES (HL);SET (HL);INC (\nHL);DEC (HL)                    \nR=107  loop=164  sp=56829  Pass \n---------------------------     \n                                \nTest 27 {Contended}             \nBIT (HL);RES (HL);SET (HL);INC (\nHL);DEC (HL)                    \nR=66  loop=143  sp=23332  Pass  \n---------------------------     \nAll Tests Complete 100% Pass    \nPress any Key."
+  },
+  {
+    "machine": "48k",
+    "test": 28,
+    "verdict": "pass",
+    "display": "Timing 48k Spectrum             \n                                \nTest 0 {Uncontended}            \nEarly/Late Timing               \n                                \nTYPE1 (Early) timings detected. \n                                \nTest 28 {Uncontended}           \nRET; RET cc; RETI; RETN         \nR=32  loop=57  sp=56894  Pass   \n---------------------------     \n                                \nTest 28 {Contended}             \nRET; RET cc; RETI; RETN         \nR=20  loop=52  sp=23335  Pass   \n---------------------------     \nAll Tests Complete 100% Pass    \nPress any Key."
+  },
+  {
+    "machine": "48k",
+    "test": 29,
+    "verdict": "pass",
+    "display": "Timing 48k Spectrum             \n                                \nTest 0 {Uncontended}            \nEarly/Late Timing               \n                                \nTYPE1 (Early) timings detected. \n                                \nTest 29 {Uncontended}           \nCALL CC,n; JR cc,n; DJNZ        \nR=55  loop=117  sp=56802  Pass  \n---------------------------     \n                                \nTest 29 {Contended}             \nCALL CC,n; JR cc,n; DJNZ        \nR=33  loop=98  sp=0  Pass       \n---------------------------     \nAll Tests Complete 100% Pass    \nPress any Key."
+  },
+  {
+    "machine": "48k",
+    "test": 30,
+    "verdict": "pass",
+    "display": "Timing 48k Spectrum             \n                                \nTest 0 {Uncontended}            \nEarly/Late Timing               \n                                \nTYPE1 (Early) timings detected. \n                                \nTest 30 {Uncontended}           \nLDI; LDIR; LDD; LDDR            \nR=59  loop=201  sp=56806  Pass  \n---------------------------     \n                                \nTest 30 {Contended}             \nLDI; LDIR; LDD; LDDR            \nR=117  loop=168  sp=23357  Pass \n---------------------------     \nAll Tests Complete 100% Pass    \nPress any Key."
+  },
+  {
+    "machine": "48k",
+    "test": 31,
+    "verdict": "pass",
+    "display": "Timing 48k Spectrum             \n                                \nTest 0 {Uncontended}            \nEarly/Late Timing               \n                                \nTYPE1 (Early) timings detected. \n                                \nTest 31 {Uncontended}           \nCPI; CPIR; CPD; CPDR            \nR=42  loop=203  sp=56801  Pass  \n---------------------------     \n                                \nTest 31 {Contended}             \nCPI; CPIR; CPD; CPDR            \nR=72  loop=174  sp=23325  Pass  \n---------------------------     \nAll Tests Complete 100% Pass    \nPress any Key."
+  },
+  {
+    "machine": "48k",
+    "test": 32,
+    "verdict": "pass",
+    "display": "Timing 48k Spectrum             \n                                \nTest 0 {Uncontended}            \nEarly/Late Timing               \n                                \nTYPE1 (Early) timings detected. \n                                \nTest 32 {Uncontended}           \nINI; INIR; IND; INDR            \nR=93  loop=221  sp=56844  Pass  \n---------------------------     \n                                \nTest 32 {Contended}             \nINI; INIR; IND; INDR            \nR=105  loop=192  sp=23305  Pass \n---------------------------     \nAll Tests Complete 100% Pass    \nPress any Key."
+  },
+  {
+    "machine": "48k",
+    "test": 33,
+    "verdict": "pass",
+    "display": "Timing 48k Spectrum             \n                                \nTest 0 {Uncontended}            \nEarly/Late Timing               \n                                \nTYPE1 (Early) timings detected. \n                                \nTest 33 {Uncontended}           \nOUTI; OTIR; OUTD; OTDR          \nR=91  loop=221  sp=56844  Pass  \n---------------------------     \n                                \nTest 33 {Contended}             \nOUTI; OTIR; OUTD; OTDR          \nR=111  loop=192  sp=23315  Pass \n---------------------------     \nAll Tests Complete 100% Pass    \nPress any Key."
+  },
+  {
+    "machine": "48k",
+    "test": 34,
+    "verdict": "pass",
+    "display": "Timing 48k Spectrum             \n                                \nTest 0 {Uncontended}            \nEarly/Late Timing               \n                                \nTYPE1 (Early) timings detected. \n                                \nTest 34 {Uncontended}           \nRST 18                          \nR=46  loop=455  sp=56807  Pass  \n---------------------------     \n                                \nTest 34 {Contended}             \nRST 18                          \nR=124  loop=418  sp=23306  Pass \n---------------------------     \nAll Tests Complete 100% Pass    \nPress any Key."
+  },
+  {
+    "machine": "48k",
+    "test": 35,
+    "verdict": "pass",
+    "display": "ZXSPECTRUMZXSPECTRUMZXSPECTRUMZX\n                                \nTest 35 {Contended}             \nIN A,(n); OUT (n),A; IN r,(C); O\nUT (C),r [CLS]                  \nR=54  loop=237  sp=23300  Pass  \n---------------------------     \nAll Tests Complete 100% Pass    \nPress any Key."
+  },
+  {
+    "machine": "128k",
+    "test": 1,
+    "verdict": "pass",
+    "display": "Timing 128k Spectrum            \n** MUST RUN IN 48k MODE **      \n                                \nTest 1 {Uncontended}            \nJR; INC BC; LD BC,(nn);LD (nn),B\nC                               \n57866                           \nR=17  loop=1218  sp=56806  Pass \n---------------------------     \n                                \nTest 1 {Contended}              \nJR; INC BC; LD BC,(nn);LD (nn),B\nC                               \n57871                           \nR=96  loop=1039  sp=23296  Pass \n---------------------------     \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n9 STOP statement, 1350:1"
+  },
+  {
+    "machine": "128k",
+    "test": 2,
+    "verdict": "pass",
+    "display": "Timing 128k Spectrum            \n** MUST RUN IN 48k MODE **      \n                                \nTest 2 {Uncontended}            \nINC dd; DEC dd                  \n57876                           \nR=119  loop=667  sp=56806  Pass \n---------------------------     \n                                \nTest 2 {Contended}              \nINC dd; DEC dd                  \n57881                           \nR=97  loop=574  sp=23305  Pass  \n---------------------------     \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n9 STOP statement, 1350:1"
+  },
+  {
+    "machine": "128k",
+    "test": 3,
+    "verdict": "pass",
+    "display": "Timing 128k Spectrum            \n** MUST RUN IN 48k MODE **      \n                                \nTest 3 {Uncontended}            \nNOP; LD r,r; INC r; DEC r       \n57886                           \nR=120  loop=498  sp=56808  Pass \n---------------------------     \n                                \nTest 3 {Contended}              \nNOP; LD r,r; INC r; DEC r       \n57891                           \nR=21  loop=413  sp=23296  Pass  \n---------------------------     \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n9 STOP statement, 1350:1"
+  },
+  {
+    "machine": "128k",
+    "test": 4,
+    "verdict": "fail",
+    "display": "Timing 128k Spectrum            \n** MUST RUN IN 48k MODE **      \n                                \nTest 4 {Uncontended}            \n(ADD/ADC/SUB/SBC/AND/XOR/OR/CP) \nA,r & A,(HL)                    \n57896                           \nR=82  loop=203  sp=56873  Pass  \n---------------------------     \n                                \nTest 4 {Contended}              \n(ADD/ADC/SUB/SBC/AND/XOR/OR/CP) \nA,r & A,(HL)                    \n57901                           \nR=6  loop=174  sp=23305  Fail   \nExpecting:                      \nR=4  loop=173  sp=23301         \n---------------------------     \n                                \nPress any key for next test."
+  },
+  {
+    "machine": "128k",
+    "test": 5,
+    "verdict": "pass",
+    "display": "Timing 128k Spectrum            \n** MUST RUN IN 48k MODE **      \n                                \nTest 5 {Uncontended}            \nEXX; EX AF,AF'; EX DE,HL        \n57906                           \nR=101  loop=861  sp=56802  Pass \n---------------------------     \n                                \nTest 5 {Contended}              \nEXX; EX AF,AF'; EX DE,HL        \n57911                           \nR=102  loop=712  sp=23296  Pass \n---------------------------     \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n9 STOP statement, 1350:1"
+  },
+  {
+    "machine": "128k",
+    "test": 6,
+    "verdict": "pass",
+    "display": "Timing 128k Spectrum            \n** MUST RUN IN 48k MODE **      \n                                \nTest 6 {Uncontended}            \n; DAA; CPL; CCF; SCF            \n57916                           \nR=79  loop=955  sp=56806  Pass  \n---------------------------     \n                                \nTest 6 {Contended}              \n; DAA; CPL; CCF; SCF            \n57921                           \nR=62  loop=799  sp=23300  Pass  \n---------------------------     \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n9 STOP statement, 1350:1"
+  },
+  {
+    "machine": "128k",
+    "test": 7,
+    "verdict": "pass",
+    "display": "Timing 128k Spectrum            \n** MUST RUN IN 48k MODE **      \n                                \nTest 7 {Uncontended}            \nPUSH dd; POP dd;EX (SP),HL      \n57926                           \nR=72  loop=418  sp=56797  Pass  \n---------------------------     \n                                \nTest 7 {Contended}              \nPUSH dd; POP dd;EX (SP),HL      \n57931                           \nR=90  loop=352  sp=23305  Pass  \n---------------------------     \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n9 STOP statement, 1350:1"
+  },
+  {
+    "machine": "128k",
+    "test": 8,
+    "verdict": "pass",
+    "display": "Timing 128k Spectrum            \n** MUST RUN IN 48k MODE **      \n                                \nTest 8 {Uncontended}            \nRLA; RAA; RLCA; RRCA; RLD; RRD  \n57936                           \nR=36  loop=642  sp=56801  Pass  \n---------------------------     \n                                \nTest 8 {Contended}              \nRLA; RAA; RLCA; RRCA; RLD; RRD  \n57941                           \nR=13  loop=522  sp=23309  Pass  \n---------------------------     \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n9 STOP statement, 1350:1"
+  },
+  {
+    "machine": "128k",
+    "test": 9,
+    "verdict": "pass",
+    "display": "Timing 128k Spectrum            \n** MUST RUN IN 48k MODE **      \n                                \nTest 9 {Uncontended}            \nLD HL,nn; LD HL,(nn); LD (nn),HL\n; LD (HL),n                     \n57946                           \nR=28  loop=642  sp=56801  Pass  \n---------------------------     \n                                \nTest 9 {Contended}              \nLD HL,nn; LD HL,(nn); LD (nn),HL\n; LD (HL),n                     \n57951                           \nR=40  loop=541  sp=23296  Pass  \n---------------------------     \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n9 STOP statement, 1350:1"
+  },
+  {
+    "machine": "128k",
+    "test": 10,
+    "verdict": "pass",
+    "display": "Timing 128k Spectrum            \n** MUST RUN IN 48k MODE **      \n                                \nTest 10 {Uncontended}           \nPUSH; POP; CALL; JP cc; [ALL FLA\nGS RESET]                       \n57956                           \nR=70  loop=94  sp=56850  Pass   \n---------------------------     \n                                \nTest 10 {Contended}             \nPUSH; POP; CALL; JP cc; [ALL FLA\nGS RESET]                       \n57961                           \nR=17  loop=84  sp=23349  Pass   \n---------------------------     \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n9 STOP statement, 1350:1"
+  },
+  {
+    "machine": "128k",
+    "test": 11,
+    "verdict": "pass",
+    "display": "Timing 128k Spectrum            \n** MUST RUN IN 48k MODE **      \n                                \nTest 11 {Uncontended}           \nPUSH; POP; CALL; JP cc; [ALL FLA\nGS SET]                         \n57966                           \nR=126  loop=121  sp=56847  Pass \n---------------------------     \n                                \nTest 11 {Contended}             \nPUSH; POP; CALL; JP cc; [ALL FLA\nGS SET]                         \n57971                           \nR=41  loop=108  sp=23331  Pass  \n---------------------------     \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n9 STOP statement, 1350:1"
+  },
+  {
+    "machine": "128k",
+    "test": 12,
+    "verdict": "pass",
+    "display": "Timing 128k Spectrum            \n** MUST RUN IN 48k MODE **      \n                                \nTest 12 {Uncontended}           \nRLC/RRC/RL/RR/SLA/SRA/SRL r & (H\nL)                              \n57976                           \nR=35  loop=125  sp=56801  Pass  \n---------------------------     \n                                \nTest 12 {Contended}             \nRLC/RRC/RL/RR/SLA/SRA/SRL r & (H\nL)                              \n57981                           \nR=19  loop=105  sp=23353  Pass  \n---------------------------     \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n9 STOP statement, 1350:1"
+  },
+  {
+    "machine": "128k",
+    "test": 13,
+    "verdict": "pass",
+    "display": "Timing 128k Spectrum            \n** MUST RUN IN 48k MODE **      \n                                \nTest 13 {Uncontended}           \nBIT b,r                         \n57986                           \nR=91  loop=140  sp=56868  Pass  \n---------------------------     \n                                \nTest 13 {Contended}             \nBIT b,r                         \n57991                           \nR=85  loop=116  sp=23377  Pass  \n---------------------------     \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n9 STOP statement, 1350:1"
+  },
+  {
+    "machine": "128k",
+    "test": 14,
+    "verdict": "pass",
+    "display": "Timing 128k Spectrum            \n** MUST RUN IN 48k MODE **      \n                                \nTest 14 {Uncontended}           \nSET b,r; RES b,r                \n57996                           \nR=99  loop=380  sp=56828  Pass  \n---------------------------     \n                                \nTest 14 {Contended}             \nSET b,r; RES b,r                \n58001                           \nR=99  loop=316  sp=23327  Pass  \n---------------------------     \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n9 STOP statement, 1350:1"
+  },
+  {
+    "machine": "128k",
+    "test": 15,
+    "verdict": "pass",
+    "display": "Timing 128k Spectrum            \n** MUST RUN IN 48k MODE **      \n                                \nTest 15 {Uncontended}           \nIM 0 1 2; LD A,I; LD I,A; LD R,A\n; LD A,R                        \n58006                           \nR=100  loop=2226  sp=56808  Pass\n---------------------------     \n                                \nTest 15 {Contended}             \nIM 0 1 2; LD A,I; LD I,A; LD R,A\n; LD A,R                        \n58011                           \nR=45  loop=469  sp=23301  Pass  \n---------------------------     \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n9 STOP statement, 1350:1"
+  },
+  {
+    "machine": "128k",
+    "test": 16,
+    "verdict": "pass",
+    "display": "Timing 128k Spectrum            \n** MUST RUN IN 48k MODE **      \n                                \nTest 16 {Uncontended}           \nLD SP,HL; ADD HL,dd; ADC HL,dd; \nSBC HL,dd                       \n58016                           \nR=39  loop=284  sp=56821  Pass  \n---------------------------     \n                                \nTest 16 {Contended}             \nLD SP,HL; ADD HL,dd; ADC HL,dd; \nSBC HL,dd                       \n58021                           \nR=73  loop=245  sp=23300  Pass  \n---------------------------     \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n9 STOP statement, 1350:1"
+  },
+  {
+    "machine": "128k",
+    "test": 17,
+    "verdict": "fail",
+    "display": "Timing 128k Spectrum            \n** MUST RUN IN 48k MODE **      \n                                \nTest 17 {Uncontended}           \n(ADD/ADC/SUB/SBC/AND/XOR/OR/CP) \nA,0-3                           \n58026                           \nR=51  loop=251  sp=56830  Pass  \n---------------------------     \n                                \nTest 17 {Contended}             \n(ADD/ADC/SUB/SBC/AND/XOR/OR/CP) \nA,0-3                           \n58031                           \nR=22  loop=203  sp=23335  Fail  \nExpecting:                      \nR=23  sp=23337                  \n---------------------------     \n                                \nPress any key for next test."
+  },
+  {
+    "machine": "128k",
+    "test": 18,
+    "verdict": "fail",
+    "display": "Timing 128k Spectrum            \n** MUST RUN IN 48k MODE **      \n                                \nTest 18 {Uncontended}           \n(ADD/ADC/SUB/SBC/AND/XOR/OR/CP) \nA,4-7                           \n58036                           \nR=51  loop=251  sp=56830  Pass  \n---------------------------     \n                                \nTest 18 {Contended}             \n(ADD/ADC/SUB/SBC/AND/XOR/OR/CP) \nA,4-7                           \n58041                           \nR=22  loop=203  sp=23335  Fail  \nExpecting:                      \nR=23  sp=23337                  \n---------------------------     \n                                \nPress any key for next test."
+  },
+  {
+    "machine": "128k",
+    "test": 19,
+    "verdict": "pass",
+    "display": "Timing 128k Spectrum            \n** MUST RUN IN 48k MODE **      \n                                \nTest 19 {Uncontended}           \nLD r,n; LD rr,nn;LD A,(nn);LD (n\nn),A;LD dd,(nn);LD (nn),dd      \n58046                           \nR=12  loop=218  sp=56823  Pass  \n---------------------------     \n                                \nTest 19 {Contended}             \nLD r,n; LD rr,nn;LD A,(nn);LD (n\nn),A;LD dd,(nn);LD (nn),dd      \n58051                           \nR=27  loop=179  sp=23300  Pass  \n---------------------------     \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n9 STOP statement, 1350:1"
+  },
+  {
+    "machine": "128k",
+    "test": 20,
+    "verdict": "pass",
+    "display": "Timing 128k Spectrum            \n** MUST RUN IN 48k MODE **      \n                                \nTest 20 {Uncontended}           \nLD r,(ss); LD (ss),r            \n58056                           \nR=55  loop=302  sp=56835  Pass  \n---------------------------     \n                                \nTest 20 {Contended}             \nLD r,(ss); LD (ss),r            \n58061                           \nR=68  loop=263  sp=23320  Pass  \n---------------------------     \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n9 STOP statement, 1350:1"
+  },
+  {
+    "machine": "128k",
+    "test": 21,
+    "verdict": "pass",
+    "display": "Timing 128k Spectrum            \n** MUST RUN IN 48k MODE **      \n                                \nTest 21 {Uncontended}           \nPUSH ii;POP ii; LD (ii+n),r; LD \n(ii+n),n                        \n58066                           \nR=71  loop=155  sp=56872  Pass  \n---------------------------     \n                                \nTest 21 {Contended}             \nPUSH ii;POP ii; LD (ii+n),r; LD \n(ii+n),n                        \n58071                           \nR=9  loop=123  sp=23374  Pass   \n---------------------------     \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n9 STOP statement, 1350:1"
+  },
+  {
+    "machine": "128k",
+    "test": 22,
+    "verdict": "pass",
+    "display": "Timing 128k Spectrum            \n** MUST RUN IN 48k MODE **      \n                                \nTest 22 {Uncontended}           \nLD A,(ii+n); LD r,(ii+n)        \n58076                           \nR=14  loop=211  sp=56801  Pass  \n---------------------------     \n                                \nTest 22 {Contended}             \nLD A,(ii+n); LD r,(ii+n)        \n58081                           \nR=67  loop=175  sp=23347  Pass  \n---------------------------     \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n9 STOP statement, 1350:1"
+  },
+  {
+    "machine": "128k",
+    "test": 23,
+    "verdict": "pass",
+    "display": "Timing 128k Spectrum            \n** MUST RUN IN 48k MODE **      \n                                \nTest 23 {Uncontended}           \nLD A,(IX+n); LD r,(IX+n); BIT (I\nX+n);RES (iX+n);SET (IX+n)      \n58086                           \nR=39  loop=110  sp=56836  Pass  \n---------------------------     \n                                \nTest 23 {Contended}             \nLD A,(IX+n); LD r,(IX+n); BIT (I\nX+n);RES (iX+n);SET (IX+n)      \n58091                           \nR=1  loop=92  sp=23371  Pass    \n---------------------------     \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n9 STOP statement, 1350:1"
+  },
+  {
+    "machine": "128k",
+    "test": 24,
+    "verdict": "pass",
+    "display": "Timing 128k Spectrum            \n** MUST RUN IN 48k MODE **      \n                                \nTest 24 {Uncontended}           \nLD A,(IY+n); LD r,(IY+n);BIT (IY\n+n);RES (IY+n);SET (IY+n)       \n58096                           \nR=39  loop=110  sp=56836  Pass  \n---------------------------     \n                                \nTest 24 {Contended}             \nLD A,(IY+n); LD r,(IY+n);BIT (IY\n+n);RES (IY+n);SET (IY+n)       \n58101                           \nR=1  loop=92  sp=23371  Pass    \n---------------------------     \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n9 STOP statement, 1350:1"
+  },
+  {
+    "machine": "128k",
+    "test": 25,
+    "verdict": "pass",
+    "display": "Timing 128k Spectrum            \n** MUST RUN IN 48k MODE **      \n                                \nTest 25 {Uncontended}           \n(ADD/ADC/SUB/SBC/AND/XOR/OR/CP) \nA,(IX+n)                        \n58106                           \nR=61  loop=182  sp=56806  Pass  \n---------------------------     \n                                \nTest 25 {Contended}             \n(ADD/ADC/SUB/SBC/AND/XOR/OR/CP) \nA,(IX+n)                        \n58111                           \nR=19  loop=144  sp=23333  Pass  \n---------------------------     \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n9 STOP statement, 1350:1"
+  },
+  {
+    "machine": "128k",
+    "test": 26,
+    "verdict": "fail",
+    "display": "Timing 128k Spectrum            \n** MUST RUN IN 48k MODE **      \n                                \nTest 26 {Uncontended}           \n(ADD/ADC/SUB/SBC/AND/XOR/OR/CP) \nA,(IX+n)                        \n58116                           \nR=57  loop=174  sp=56806  Pass  \n---------------------------     \n                                \nTest 26 {Contended}             \n(ADD/ADC/SUB/SBC/AND/XOR/OR/CP) \nA,(IX+n)                        \n58121                           \nR=75  loop=147  sp=23345  Fail  \nExpecting:                      \nR=77  sp=23349                  \n---------------------------     \n                                \nPress any key for next test."
+  },
+  {
+    "machine": "128k",
+    "test": 27,
+    "verdict": "pass",
+    "display": "Timing 128k Spectrum            \n** MUST RUN IN 48k MODE **      \n                                \nTest 27 {Uncontended}           \nBIT (HL);RES (HL);SET (HL);INC (\nHL);DEC (HL)                    \n58126                           \nR=113  loop=166  sp=56849  Pass \n---------------------------     \n                                \nTest 27 {Contended}             \nBIT (HL);RES (HL);SET (HL);INC (\nHL);DEC (HL)                    \n58131                           \nR=93  loop=146  sp=23316  Pass  \n---------------------------     \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n9 STOP statement, 1350:1"
+  },
+  {
+    "machine": "128k",
+    "test": 28,
+    "verdict": "pass",
+    "display": "Timing 128k Spectrum            \n** MUST RUN IN 48k MODE **      \n                                \nTest 28 {Uncontended}           \nRET; RET cc; RETI; RETN         \n58136                           \nR=124  loop=58  sp=56879  Pass  \n---------------------------     \n                                \nTest 28 {Contended}             \nRET; RET cc; RETI; RETN         \n58141                           \nR=106  loop=53  sp=23314  Pass  \n---------------------------     \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n9 STOP statement, 1350:1"
+  },
+  {
+    "machine": "128k",
+    "test": 29,
+    "verdict": "pass",
+    "display": "Timing 128k Spectrum            \n** MUST RUN IN 48k MODE **      \n                                \nTest 29 {Uncontended}           \nCALL CC,n; JR cc,n; DJNZ        \n58146                           \nR=15  loop=119  sp=0  Pass      \n---------------------------     \n                                \nTest 29 {Contended}             \nCALL CC,n; JR cc,n; DJNZ        \n58151                           \nR=27  loop=100  sp=23393  Pass  \n---------------------------     \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n9 STOP statement, 1350:1"
+  },
+  {
+    "machine": "128k",
+    "test": 30,
+    "verdict": "pass",
+    "display": "Timing 128k Spectrum            \n** MUST RUN IN 48k MODE **      \n                                \nTest 30 {Uncontended}           \nLDI; LDIR; LDD; LDDR            \n58156                           \nR=39  loop=203  sp=56858  Pass  \n---------------------------     \n                                \nTest 30 {Contended}             \nLDI; LDIR; LDD; LDDR            \n58161                           \nR=57  loop=174  sp=23305  Pass  \n---------------------------     \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n9 STOP statement, 1350:1"
+  },
+  {
+    "machine": "128k",
+    "test": 31,
+    "verdict": "pass",
+    "display": "Timing 128k Spectrum            \n** MUST RUN IN 48k MODE **      \n                                \nTest 31 {Uncontended}           \nCPI; CPIR; CPD; CPDR            \n58166                           \nR=23  loop=206  sp=56848  Pass  \n---------------------------     \n                                \nTest 31 {Contended}             \nCPI; CPIR; CPD; CPDR            \n58171                           \nR=102  loop=175  sp=23317  Pass \n---------------------------     \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n9 STOP statement, 1350:1"
+  },
+  {
+    "machine": "128k",
+    "test": 32,
+    "verdict": "pass",
+    "display": "Timing 128k Spectrum            \n** MUST RUN IN 48k MODE **      \n                                \nTest 32 {Uncontended}           \nINI; INIR; IND; INDR            \n58176                           \nR=81  loop=225  sp=56816  Pass  \n---------------------------     \n                                \nTest 32 {Contended}             \nINI; INIR; IND; INDR            \n58181                           \nR=71  loop=194  sp=23343  Pass  \n---------------------------     \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n9 STOP statement, 1350:1"
+  },
+  {
+    "machine": "128k",
+    "test": 33,
+    "verdict": "fail",
+    "display": "Timing 128k Spectrum            \n** MUST RUN IN 48k MODE **      \n                                \nTest 33 {Uncontended}           \nOUTI; OTIR; OUTD; OTDR          \n58186                           \nR=83  loop=225  sp=56818  Pass  \n---------------------------     \n                                \nTest 33 {Contended}             \nOUTI; OTIR; OUTD; OTDR          \n58191                           \nR=119  loop=196  sp=23315  Fail \nExpecting:                      \nR=117  sp=23313                 \n---------------------------     \n                                \nPress any key for next test."
+  },
+  {
+    "machine": "128k",
+    "test": 34,
+    "verdict": "pass",
+    "display": "Timing 128k Spectrum            \n** MUST RUN IN 48k MODE **      \n                                \nTest 34 {Uncontended}           \nRST 18                          \n58196                           \nR=95  loop=467  sp=56807  Pass  \n---------------------------     \n                                \nTest 34 {Contended}             \nRST 18                          \n58201                           \nR=21  loop=419  sp=23300  Pass  \n---------------------------     \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n                                \n9 STOP statement, 1350:1"
+  }
+]

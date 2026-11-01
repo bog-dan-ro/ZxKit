@@ -72,8 +72,13 @@ public:
     /// or until the debugger traps (`m_trapped == true`).
     void runUntil(uint32_t targetFrameTstates);
 
+    // ULA /INT is a level pulse. Interrupt generators which latch individual
+    // events (e.g. Next legacy interrupts) consume the event on acknowledge.
+    void setInterruptRetrigger(bool enabled) noexcept { m_interruptRetrigger = enabled; }
+
     void requestNmi(bool stackless = false) noexcept;
-    void requestInterrupt(uint8_t vector = 0xFF) noexcept;
+    /// elapsedTstates locates an already asserted pulse (e.g. a crossed frame edge).
+    void requestInterrupt(uint8_t vector = 0xFF, uint32_t elapsedTstates = 0) noexcept;
 
     Z80Registers &registers() noexcept { return m_regs; }
     const Z80Registers &registers() const noexcept { return m_regs; }
@@ -236,6 +241,7 @@ private:
     bool m_iff2Read = false;
     bool m_nmiPending = false;
     bool m_nmiStackless = false;
+    bool m_interruptRetrigger = true;
     bool m_intPending = false;
     uint8_t m_intVector = 0xFF;
     bool m_stacklessRetnActive = false;

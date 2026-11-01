@@ -1,0 +1,3882 @@
+[
+  {
+    "file": "+2A-+3 Floating Bus Test v1.2 (2017-09-13)(Hikaru)[!].tap",
+    "member": "+2A-+3 Floating Bus Test v1.2 (2017-09-13)(Hikaru)[!].tap",
+    "group": "plus2a-plus3",
+    "machine": "plus3",
+    "screenshot": "8b08ab90cef8be85.png",
+    "returncode": 0,
+    "output": "PC=1F3D SP=7FF8 AF=005C BC=0000 DE=5E66 HL=5E61 IX=829A IY=5C3A I=00 IM=1\nsaved 8b08ab90cef8be85.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "+2A-+3 Floating Bus Test v1.2 (2017-09-15)(Hikaru)[!].tap",
+    "member": "+2A-+3 Floating Bus Test v1.2 (2017-09-15)(Hikaru)[!].tap",
+    "group": "plus2a-plus3",
+    "machine": "plus3",
+    "screenshot": "bd61fde419dc37fc.png",
+    "returncode": 0,
+    "output": "PC=1F3D SP=7FF8 AF=005C BC=0000 DE=5E66 HL=5E61 IX=82B5 IY=5C3A I=00 IM=1\nsaved bd61fde419dc37fc.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "+2A-+3 Paging Tests (2021-12-17)(Woodmass, Mark)[!].tap",
+    "member": "+2A-+3 Paging Tests (2021-12-17)(Woodmass, Mark)[!].tap",
+    "group": "plus2a-plus3",
+    "machine": "plus3",
+    "screenshot": "a789817f97ca4cc3.png",
+    "returncode": 0,
+    "output": "PC=8193 SP=7FE6 AF=0044 BC=7FFD DE=8132 HL=BFFF IX=8541 IY=5C3A I=00 IM=1\nsaved a789817f97ca4cc3.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "+2A-+3 Paging Tests (2026-02-23)(Woodmass, Mark)[!].zip",
+    "member": "paging.tap",
+    "group": "plus2a-plus3",
+    "machine": "plus3",
+    "screenshot": "db1f9285283b8a6d.png",
+    "returncode": 0,
+    "output": "PC=8193 SP=7FE6 AF=0044 BC=7FFD DE=8132 HL=BFFF IX=8541 IY=5C3A I=00 IM=1\nsaved db1f9285283b8a6d.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "+2A-+3 Screen Switching Test (2024-11-30)(Weiv)(BASIC)[!].tap",
+    "member": "+2A-+3 Screen Switching Test (2024-11-30)(Weiv)(BASIC)[!].tap",
+    "group": "plus2a-plus3",
+    "machine": "plus3",
+    "screenshot": "d14ee65cbb285e8e.png",
+    "returncode": 0,
+    "output": "PC=800A SP=FF3A AF=0044 BC=7FFD DE=5DE6 HL=2D2B IX=5DE0 IY=5C3A I=00 IM=1\nsaved d14ee65cbb285e8e.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "+2A-+3 Screen Switching Test (2024-11-30)(Weiv)[!].szx",
+    "member": "+2A-+3 Screen Switching Test (2024-11-30)(Weiv)[!].szx",
+    "group": "plus2a-plus3",
+    "machine": "plus3",
+    "screenshot": "8fcced8bd958f9ba.png",
+    "returncode": 0,
+    "output": "PC=1875 SP=5BFB AF=085D BC=0800 DE=0708 HL=5C3B IX=FD98 IY=5C3A I=00 IM=1\nsaved 8fcced8bd958f9ba.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "+2A-+3 Screen Switching Test (2024-11-30)(Weiv)[!].tap",
+    "member": "+2A-+3 Screen Switching Test (2024-11-30)(Weiv)[!].tap",
+    "group": "plus2a-plus3",
+    "machine": "plus3",
+    "screenshot": "909f7532e4d034e8.png",
+    "returncode": 0,
+    "output": "PC=800A SP=FF3A AF=0044 BC=7FFD DE=5CEC HL=2D2B IX=8031 IY=5C3A I=00 IM=1\nsaved 909f7532e4d034e8.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "+2A-+3 Screen Switching Test (2024-11-30)(Weiv)[!].z80",
+    "member": "+2A-+3 Screen Switching Test (2024-11-30)(Weiv)[!].z80",
+    "group": "plus2a-plus3",
+    "machine": "plus3",
+    "screenshot": "1fcb2efbb82e30e2.png",
+    "returncode": 0,
+    "output": "PC=1875 SP=5BFB AF=085D BC=0800 DE=0708 HL=5C3B IX=FD98 IY=5C3A I=00 IM=1\nsaved 1fcb2efbb82e30e2.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "48K NEC Contention Test Suite (2008-09-14)(Woodmass, Mark)[!].tap",
+    "member": "48K NEC Contention Test Suite (2008-09-14)(Woodmass, Mark)[!].tap",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "4379467f2e6fac1e.png",
+    "returncode": 0,
+    "output": "PC=EAA8 SP=EEDE AF=0044 BC=1753 DE=EC4F HL=5C91 IX=EEE2 IY=5C3A I=3F IM=1\nsaved 4379467f2e6fac1e.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "AY Detection (2020-02-15)(Veleba, Jiří)[!].zip",
+    "member": "aydete.TAP",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "b92655c589f174f7.png",
+    "returncode": 0,
+    "output": "PC=C351 SP=7519 AF=5054 BC=C350 DE=5DC7 HL=2D2B IX=C3B4 IY=5C3A I=3F IM=1\nsaved b92655c589f174f7.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "AY Undocumented Test (2023-02-22)(Weiv)[!].zip",
+    "member": "AYundocTestByWeiv1.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "e37605e4fb60e9d0.png",
+    "returncode": 0,
+    "output": "PC=15FF SP=80DC AF=005C BC=170A DE=5CB9 HL=0000 IX=8126 IY=5C3A I=3F IM=1\nsaved e37605e4fb60e9d0.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "AY and CPU Detection (2023-02-19)(azesmbog)[!].tap",
+    "member": "AY and CPU Detection (2023-02-19)(azesmbog)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "973b9107290f9b9b.png",
+    "returncode": 0,
+    "output": "PC=15E8 SP=7523 AF=005C BC=170B DE=5CB9 HL=0000 IX=C385 IY=5C3A I=3F IM=1\nsaved 973b9107290f9b9b.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "AY-YM Test (2023-02-21)(Weiv)[!].tap",
+    "member": "AY-YM Test (2023-02-21)(Weiv)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "a92b3dafbb31e3d7.png",
+    "returncode": 0,
+    "output": "PC=10AC SP=FF48 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=5D6F IY=5C3A I=3F IM=1\nsaved a92b3dafbb31e3d7.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "AY-YM Test (var 2) (2023-02-21)(Weiv)[!].tap",
+    "member": "AY-YM Test (var 2) (2023-02-21)(Weiv)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "1d0c6b33b250fe6c.png",
+    "returncode": 0,
+    "output": "PC=10B4 SP=FF34 AF=7E5C BC=171A DE=5CB9 HL=10A8 IX=5D60 IY=5C3A I=3F IM=1\nsaved 1d0c6b33b250fe6c.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "BASIC Border (2001-09-30)(Wynne, Michael D.).z80",
+    "member": "BASIC Border (2001-09-30)(Wynne, Michael D.).z80",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "ac7412a095629f66.png",
+    "returncode": 0,
+    "output": "PC=1F3D SP=FF52 AF=0154 BC=0001 DE=5DC1 HL=5DBC IX=03D4 IY=5C3A I=3F IM=1\nsaved ac7412a095629f66.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "BBG (2005-11)(Putnik, Pera)[!].zip",
+    "member": "BBG128.Z80",
+    "group": "128k-plus2",
+    "machine": "128k",
+    "screenshot": "061a1a2edb8caf43.png",
+    "returncode": 0,
+    "output": "PC=C395 SP=FF40 AF=DF49 BC=0000 DE=5CE1 HL=0000 IX=03D4 IY=5C3A I=3F IM=1\nsaved 061a1a2edb8caf43.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "BBG (2005-11)(Putnik, Pera)[!].zip",
+    "member": "BBG48.TAP",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "82afd50e6f538437.png",
+    "returncode": 0,
+    "output": "PC=C395 SP=C338 AF=DF49 BC=0700 DE=5CFC HL=0000 IX=C444 IY=5C3A I=3F IM=1\nsaved 82afd50e6f538437.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Border Time (2007)(Bobrowski, Jan)[!].tap",
+    "member": "Border Time (2007)(Bobrowski, Jan)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "6f4496b2c53e8e66.png",
+    "returncode": 0,
+    "output": "PC=C38F SP=C336 AF=0054 BC=C35F DE=FF07 HL=0006 IX=C535 IY=5C3A I=FE IM=2\nsaved 6f4496b2c53e8e66.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Border Time (2011-08-20)(Bobrowski, Jan)[!].tap",
+    "member": "Border Time (2011-08-20)(Bobrowski, Jan)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "881e472b989ddaae.png",
+    "returncode": 0,
+    "output": "PC=C045 SP=BFE6 AF=0054 BC=C015 DE=C007 HL=FFF2 IX=C101 IY=5C3A I=FD IM=2\nsaved 881e472b989ddaae.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Bright Miner (2008-11-14)(Woodmass, Mark)[!].tap",
+    "member": "Bright Miner (2008-11-14)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "a8adcf0318ce7917.png",
+    "returncode": 0,
+    "output": "PC=A10E SP=9FE6 AF=AA44 BC=00CD DE=9A33 HL=9A32 IX=A2E0 IY=5C3A I=FD IM=2\nsaved a8adcf0318ce7917.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "CPD-Test v0.66b (2025-04-05)(Sapach, Michael)[!].zip",
+    "member": "cpd-test.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "ac3deb2c6c48e418.png",
+    "returncode": 0,
+    "output": "PC=15E8 SP=6582 AF=005C BC=1717 DE=5CB9 HL=0000 IX=0000 IY=5C3A I=3F IM=1\nsaved ac3deb2c6c48e418.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "CPD-Test v0.777b (2025-05-07)(Sapach, Michael)[!].zip",
+    "member": "cpd-test.tzx",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "7925cf31812f29de.png",
+    "returncode": 0,
+    "output": "PC=F214 SP=6570 AF=0054 BC=8009 DE=0B7E HL=2608 IX=A49F IY=5C3A I=3F IM=1\nsaved 7925cf31812f29de.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "CPD-Test v0.7b (2025-04-29)(Sapach, Michael)(TAP)[!].zip",
+    "member": "cpd-test1250429.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "f65428ded3a73e7f.png",
+    "returncode": 0,
+    "output": "PC=8251 SP=656A AF=2006 BC=1F09 DE=2038 HL=FF08 IX=8605 IY=8220 I=3F IM=1\nsaved f65428ded3a73e7f.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "CPD-Test v0.7b (2025-04-29)(Sapach, Michael)(TZX)[!].zip",
+    "member": "cpd-test1250429.tzx",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "2c537d4d4fdaa3ae.png",
+    "returncode": 0,
+    "output": "PC=F217 SP=656E AF=0054 BC=80FD DE=1486 HL=ED0B IX=9B1A IY=5C3A I=3F IM=1\nsaved 2c537d4d4fdaa3ae.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Colour Panels (2022-12-24)(Bobrowski, Jan)[!].tap",
+    "member": "Colour Panels (2022-12-24)(Bobrowski, Jan)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "09f601a309814c03.png",
+    "returncode": 0,
+    "output": "PC=80DE SP=7FE6 AF=DF5D BC=0007 DE=8010 HL=0000 IX=8069 IY=5C3A I=3F IM=1\nsaved 09f601a309814c03.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Contention (2005-03-03)(Woodmass, Mark)[!].tap",
+    "member": "Contention (2005-03-03)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "c97e1842880a3f28.png",
+    "returncode": 0,
+    "output": "PC=10AC SP=9C1C AF=7E5C BC=171A DE=5CB9 HL=10A8 IX=9D08 IY=5C3A I=3F IM=1\nsaved c97e1842880a3f28.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Crap1 (200x)(Woodmass, Mark)[!].tap",
+    "member": "Crap1 (200x)(Woodmass, Mark)[!].tap",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "53ca54fd61a1801a.png",
+    "returncode": 0,
+    "output": "PC=EB73 SP=0002 AF=5600 BC=00FE DE=FF00 HL=5B14 IX=0000 IY=5C3A I=C2 IM=2\nsaved 53ca54fd61a1801a.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Currah uSpeech Tests v1.0 (2017-10-23)(maziac)[GitHub cbe9d52a42d09d31b7194af4205c73f7533ce9b3].tar.gz",
+    "member": "currah_uspeech_tests-1.0/currah_uspeech_tests.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "23c05d28818cb2a0.png",
+    "returncode": 0,
+    "output": "PC=8039 SP=7FE8 AF=0044 BC=0000 DE=5B00 HL=5AFF IX=859A IY=5C3A I=3F IM=1\nsaved 23c05d28818cb2a0.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Currah uSpeech Tests v1.1 (2017-10-24)(maziac)[GitHub 5930b9e5817fecd3b2d7782eeb80089ccaf60ad2].tar.gz",
+    "member": "currah_uspeech_tests-1.1/currah_uspeech_tests.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "4a2d42e91cc91f03.png",
+    "returncode": 0,
+    "output": "PC=8039 SP=7FE8 AF=0044 BC=0000 DE=5B00 HL=5AFF IX=85F6 IY=5C3A I=3F IM=1\nsaved 4a2d42e91cc91f03.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Currah uSpeech Tests v1.2 (2017-10-31)(maziac)[GitHub eb6d84ad7086d5ae2993277ce049a3c56f28b2e9].tar.gz",
+    "member": "currah_uspeech_tests-1.2/currah_uspeech_tests.sna",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "309418fc6d8ba557.png",
+    "returncode": 0,
+    "output": "PC=8091 SP=5DA1 AF=3521 BC=010B DE=5B00 HL=5AFF IX=03D4 IY=5C3A I=3F IM=1\nsaved 309418fc6d8ba557.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Currah uSpeech Tests v1.2 (2017-10-31)(maziac)[GitHub eb6d84ad7086d5ae2993277ce049a3c56f28b2e9].tar.gz",
+    "member": "currah_uspeech_tests-1.2/currah_uspeech_tests.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "e9ce8a1a03ad5e7e.png",
+    "returncode": 0,
+    "output": "PC=80B1 SP=7FE2 AF=BFA9 BC=7FFE DE=5B00 HL=5AFF IX=88F6 IY=5C3A I=3F IM=1\nsaved e9ce8a1a03ad5e7e.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Currah uSpeech Tests v1.3 (2017-11-12)(maziac)[GitHub 999607f4c35a67759f0b2a443338d9ac2a9d886c].tar.gz",
+    "member": "currah_uspeech_tests-1.3/currah_uspeech_tests.sna",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "61f20b4f9e7d9484.png",
+    "returncode": 0,
+    "output": "PC=8091 SP=5DA1 AF=3521 BC=010B DE=5B00 HL=5AFF IX=03D4 IY=5C3A I=3F IM=1\nsaved 61f20b4f9e7d9484.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Currah uSpeech Tests v1.3 (2017-11-12)(maziac)[GitHub 999607f4c35a67759f0b2a443338d9ac2a9d886c].tar.gz",
+    "member": "currah_uspeech_tests-1.3/currah_uspeech_tests.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "1d2219c28cc1b9e7.png",
+    "returncode": 0,
+    "output": "PC=80B1 SP=7FE2 AF=BFA9 BC=7FFE DE=5B00 HL=5AFF IX=89C6 IY=5C3A I=3F IM=1\nsaved 1d2219c28cc1b9e7.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "DRAMfade (2021-09-17)(Woodmass, Mark)[!].tap",
+    "member": "DRAMfade (2021-09-17)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "527506dde5b7eb93.png",
+    "returncode": 0,
+    "output": "PC=15E8 SP=7522 AF=005C BC=1717 DE=5CB9 HL=0000 IX=9800 IY=5C3A I=3F IM=1\nsaved 527506dde5b7eb93.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "DRAMfade (2021-10-13)(Woodmass, Mark)[!].zip",
+    "member": "DRAMfade.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "725dd72e59416ebc.png",
+    "returncode": 0,
+    "output": "PC=15E8 SP=7522 AF=005C BC=1717 DE=5CB9 HL=0000 IX=9800 IY=5C3A I=3F IM=1\nsaved 725dd72e59416ebc.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ED777F (2017-01-25)(Woodmass, Mark)[!].tap",
+    "member": "ED777F (2017-01-25)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "80a1a089c077f0e4.png",
+    "returncode": 0,
+    "output": "PC=162C SP=7FF0 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=80B8 IY=5C3A I=3F IM=1\nsaved 80a1a089c077f0e4.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "EI48K (2021-09-27)(Woodmass, Mark)[!].tap",
+    "member": "EI48K (2021-09-27)(Woodmass, Mark)[!].tap",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "321f476aeb34d39f.png",
+    "returncode": 0,
+    "output": "PC=15E6 SP=C344 AF=005C BC=004B DE=0006 HL=107F IX=C440 IY=5C3A I=3F IM=1\nsaved 321f476aeb34d39f.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "EIHALT (2021-09-28)(Woodmass, Mark)[!].zip",
+    "member": "eihalt.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "971fa9c16747a457.png",
+    "returncode": 0,
+    "output": "PC=15EB SP=C342 AF=005C BC=1717 DE=5CB9 HL=5CB6 IX=C476 IY=5C3A I=3F IM=1\nsaved 971fa9c16747a457.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "EIHALT (2021-10-23)(Woodmass, Mark)[!].zip",
+    "member": "eihalt.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "b706de9a34b6e46b.png",
+    "returncode": 0,
+    "output": "PC=15EB SP=C342 AF=005C BC=1717 DE=5CB9 HL=5CB6 IX=C476 IY=5C3A I=3F IM=1\nsaved b706de9a34b6e46b.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "EX (2009-05-23)(Woodmass, Mark)[!].tap",
+    "member": "EX (2009-05-23)(Woodmass, Mark)[!].tap",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "e4ea0293a2c840ea.png",
+    "returncode": 0,
+    "output": "PC=EAA3 SP=752F AF=8003 BC=0002 DE=8101 HL=8182 IX=3FFF IY=7FFF I=80 IM=2\nsaved e4ea0293a2c840ea.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Errors (1998)(Gimeno Fortea, Pedro)[!].zip",
+    "member": "ERRORS.TAP",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "8e136fff0aa933ff.png",
+    "returncode": 0,
+    "output": "PC=15FF SP=FF4C AF=005C BC=1718 DE=5CB9 HL=0000 IX=61E7 IY=5C3A I=3F IM=1\nsaved 8e136fff0aa933ff.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "FDDD (2008-03-08)(Woodmass, Mark)[!].tap",
+    "member": "FDDD (2008-03-08)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "f5e4b66b6eafe9a5.png",
+    "returncode": 0,
+    "output": "PC=15FF SP=FF4C AF=005C BC=1621 DE=5CB9 HL=2758 IX=803F IY=5C3A I=3F IM=1\nsaved f5e4b66b6eafe9a5.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "FDDD2 (2022-05-30)(Helcmanovsky, Peter)[!].zip",
+    "member": "FDDD2.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "460a6f4842f672db.png",
+    "returncode": 0,
+    "output": "PC=10B4 SP=7FF0 AF=005C BC=170C DE=5CB9 HL=10A8 IX=8035 IY=5C3A I=3F IM=1\nsaved 460a6f4842f672db.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "FE Delay (2023-04-10)(Weiv)[!].zip",
+    "member": "FEdelay.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "5f829bb50042ec14.png",
+    "returncode": 0,
+    "output": "PC=31FA SP=7FDC AF=8090 BC=EA04 DE=0000 HL=0000 IX=8020 IY=5C3A I=3F IM=1\nsaved 5f829bb50042ec14.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "FPGA 48K (2026-10-09)(azesmbog)[!].tap",
+    "member": "FPGA 48K (2026-10-09)(azesmbog)[!].tap",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "479a14e6988cfcd1.png",
+    "returncode": 0,
+    "output": "PC=623B SP=5DE8 AF=004A BC=01FE DE=FF01 HL=0506 IX=0202 IY=5C3A I=FE IM=2\nsaved 479a14e6988cfcd1.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Float+3 (2017-09-08)(Woodmass, Mark)[!].tap",
+    "member": "Float+3 (2017-09-08)(Woodmass, Mark)[!].tap",
+    "group": "plus2a-plus3",
+    "machine": "plus3",
+    "screenshot": "cbb3aeaad1965856.png",
+    "returncode": 0,
+    "output": "PC=162C SP=7FDC AF=7E5C BC=171A DE=5CB9 HL=10A8 IX=EAF6 IY=5C3A I=09 IM=1\nsaved cbb3aeaad1965856.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Float128K (2008-04-02)(Woodmass, Mark)[!].szx",
+    "member": "Float128K (2008-04-02)(Woodmass, Mark)[!].szx",
+    "group": "128k-plus2",
+    "machine": "128k",
+    "screenshot": "1fe6d6893fc39c21.png",
+    "returncode": 0,
+    "output": "PC=3685 SP=5BFB AF=DD74 BC=0001 DE=EC39 HL=5C3B IX=FD6C IY=5C3A I=09 IM=1\nsaved 1fe6d6893fc39c21.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Float128K (2008-04-02)(Woodmass, Mark)[!].tap",
+    "member": "Float128K (2008-04-02)(Woodmass, Mark)[!].tap",
+    "group": "128k-plus2",
+    "machine": "128k",
+    "screenshot": "32f4e6e1e5bd1ba5.png",
+    "returncode": 0,
+    "output": "PC=10AC SP=7FDC AF=7E5C BC=171A DE=5CB9 HL=10A8 IX=EAF6 IY=5C3A I=09 IM=1\nsaved 32f4e6e1e5bd1ba5.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Float48K (2008-03-24)(Woodmass, Mark)[!].tap",
+    "member": "Float48K (2008-03-24)(Woodmass, Mark)[!].tap",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "8c28293cf9171a22.png",
+    "returncode": 0,
+    "output": "PC=15E8 SP=7FDE AF=7E5C BC=171A DE=5CB9 HL=5C3B IX=EAF6 IY=5C3A I=09 IM=1\nsaved 8c28293cf9171a22.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "FloatFFD (2018-02-24)(Woodmass, Mark)[!].tap",
+    "member": "FloatFFD (2018-02-24)(Woodmass, Mark)[!].tap",
+    "group": "128k-plus2",
+    "machine": "128k",
+    "screenshot": "d1a66a3d931995f0.png",
+    "returncode": 0,
+    "output": "PC=811D SP=BDF2 AF=0048 BC=0000 DE=DB00 HL=5B00 IX=8207 IY=5C3A I=BE IM=2\nsaved d1a66a3d931995f0.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "FloatFFD (2023-02-28)(Woodmass, Mark)[!].zip",
+    "member": "Float7ffd/floatffd.tap",
+    "group": "128k-plus2",
+    "machine": "128k",
+    "screenshot": "938356e08bc8c2a6.png",
+    "returncode": 0,
+    "output": "PC=811D SP=BDF2 AF=0048 BC=0000 DE=DB00 HL=5B00 IX=8207 IY=5C3A I=BE IM=2\nsaved 938356e08bc8c2a6.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "FloatFFD (2023-02-28)(Woodmass, Mark)[!].zip",
+    "member": "Float7ffd/floatffd.z80",
+    "group": "128k-plus2",
+    "machine": "128k",
+    "screenshot": "3f84730b535490d5.png",
+    "returncode": 0,
+    "output": "PC=3683 SP=5BFB AF=5D74 BC=0001 DE=EC39 HL=5C3B IX=FD6C IY=5C3A I=00 IM=1\nsaved 3f84730b535490d5.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Floating Spy v0.33 (2002-04)(Ramsoft)[!].zip",
+    "member": "floatspy.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "1c9b91f449f7acbd.png",
+    "returncode": 0,
+    "output": "PC=8019 SP=BFE8 AF=8048 BC=0000 DE=C014 HL=C000 IX=80FC IY=5C3A I=80 IM=2\nsaved 1c9b91f449f7acbd.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Frame (200x)(Woodmass, Mark)[!].tap",
+    "member": "Frame (200x)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "514617688bc5ddd0.png",
+    "returncode": 0,
+    "output": "PC=15FF SP=80F4 AF=005C BC=1717 DE=5CB9 HL=0000 IX=85C8 IY=5C3A I=3F IM=1\nsaved 514617688bc5ddd0.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Frame Test (2005-03-06)(Woodmass, Mark)[!].tzx",
+    "member": "Frame Test (2005-03-06)(Woodmass, Mark)[!].tzx",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "ed4607c28fcf5d2c.png",
+    "returncode": 0,
+    "output": "PC=10B4 SP=7FF0 AF=005C BC=170A DE=5CB9 HL=10A8 IX=C15E IY=5C3A I=3F IM=1\nsaved ed4607c28fcf5d2c.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Fuse Test (2008-03-28)(Kendall, Philip)[!].zip",
+    "member": "fusetest/fusetest.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "08c3bff03818f482.png",
+    "returncode": 0,
+    "output": "PC=15E6 SP=9FF4 AF=005C BC=004B DE=0006 HL=107F IX=A1F7 IY=5C3A I=BE IM=1\nsaved 08c3bff03818f482.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Fuse Test (2008-03-28)(Kendall, Philip)[!].zip",
+    "member": "fusetest/contention.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "13dfd18caa1e8dfc.png",
+    "returncode": 0,
+    "output": "PC=C020 SP=BFE8 AF=0042 BC=0000 DE=C0D7 HL=C05D IX=C329 IY=5C3A I=BE IM=2\nsaved 13dfd18caa1e8dfc.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "HALT Contention Test (2021-09-14)(Woodmass, Mark)[!].tap",
+    "member": "HALT Contention Test (2021-09-14)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "43a26d052efe58e6.png",
+    "returncode": 0,
+    "output": "PC=10AC SP=EA50 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=8001 IY=5C3A I=3F IM=1\nsaved 43a26d052efe58e6.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "HALT2INT (alpha) (2021-09-19)(Woodmass, Mark)[!].tap",
+    "member": "HALT2INT (alpha) (2021-09-19)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "2794ca88e057720d.png",
+    "returncode": 0,
+    "output": "PC=15F7 SP=EA52 AF=005C BC=1717 DE=5CB9 HL=5CB8 IX=EC7B IY=5C3A I=3F IM=1\nsaved 2794ca88e057720d.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "HALT2INT (beta) (2021-09-19)(Woodmass, Mark)[!].tap",
+    "member": "HALT2INT (beta) (2021-09-19)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "9695302200338831.png",
+    "returncode": 0,
+    "output": "PC=10AC SP=EA50 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=FFFF IY=5C3A I=3F IM=1\nsaved 9695302200338831.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "HALT2INT (beta.1) (2021-09-20)(Woodmass, Mark)[!].zip",
+    "member": "halt2int.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "58e045fd6f210523.png",
+    "returncode": 0,
+    "output": "PC=162C SP=EA50 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=FFFF IY=5C3A I=3F IM=1\nsaved 58e045fd6f210523.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "HALT2INT (beta.2) (2021-09-20)(Woodmass, Mark)[!].tap",
+    "member": "HALT2INT (beta.2) (2021-09-20)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "25f7d83bfa4fce2f.png",
+    "returncode": 0,
+    "output": "PC=15F7 SP=EA52 AF=005C BC=1717 DE=5CB9 HL=5CB8 IX=FFFF IY=5C3A I=3F IM=1\nsaved 25f7d83bfa4fce2f.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "HALT2INT v1 (2021-09-21)(Woodmass, Mark)[!].zip",
+    "member": "halt2int.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "e6fc444304257cbb.png",
+    "returncode": 0,
+    "output": "PC=15EB SP=C342 AF=005C BC=1717 DE=5CB9 HL=5CB6 IX=FFFF IY=5C3A I=3F IM=1\nsaved e6fc444304257cbb.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "HALT2INT v1-pre (2021-09-21)(Woodmass, Mark)[!].zip",
+    "member": "halt2int.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "0fafa4c104b90285.png",
+    "returncode": 0,
+    "output": "PC=15F7 SP=EA52 AF=005C BC=1717 DE=5CB9 HL=5CB8 IX=FFFF IY=5C3A I=3F IM=1\nsaved 0fafa4c104b90285.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "HALT2INT v2 (2021-09-26)(Woodmass, Mark)[!].zip",
+    "member": "halt2int.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "bb2135255206dcef.png",
+    "returncode": 0,
+    "output": "PC=162C SP=C340 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=FFFF IY=5C3A I=3F IM=1\nsaved bb2135255206dcef.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "HALT2INT v2 (2021-10-23)(Woodmass, Mark)[!].zip",
+    "member": "halt2int.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "584a70c99e94a30f.png",
+    "returncode": 0,
+    "output": "PC=162C SP=C340 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=FFFF IY=5C3A I=3F IM=1\nsaved 584a70c99e94a30f.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "HALT2INT v3 (2022-01-04)(Woodmass, Mark)[!].zip",
+    "member": "halt2int.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "54ee8fca0da8b40f.png",
+    "returncode": 0,
+    "output": "PC=162C SP=C340 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=FFFF IY=5C3A I=3F IM=1\nsaved 54ee8fca0da8b40f.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "HALT2INT v3 (2022-01-04)(Woodmass, Mark)[!].zip",
+    "member": "halt2int128.tap",
+    "group": "128k-plus2",
+    "machine": "128k",
+    "screenshot": "d6c24ae7cad5f090.png",
+    "returncode": 0,
+    "output": "PC=25E5 SP=5BFF AF=DC74 BC=0053 DE=0012 HL=5C3B IX=FD6C IY=5C3A I=3F IM=1\nsaved d6c24ae7cad5f090.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "IFF2 Bug (2012-08-16)(Woodmass, Mark)[!].tap",
+    "member": "IFF2 Bug (2012-08-16)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "7824e546ed4aa78f.png",
+    "returncode": 0,
+    "output": "PC=15EB SP=EA52 AF=005C BC=1717 DE=5CB9 HL=5CB6 IX=EB21 IY=5C3A I=3F IM=1\nsaved 7824e546ed4aa78f.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "IFF2 Bug (2021-09-19)(Woodmass, Mark)[!].tap",
+    "member": "IFF2 Bug (2021-09-19)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "e6fd686a196b0645.png",
+    "returncode": 0,
+    "output": "PC=10AC SP=EA50 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=EC7F IY=5C3A I=3F IM=1\nsaved e6fd686a196b0645.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "IFF2 Bug (2021-11-26)(Woodmass, Mark)[!].szx",
+    "member": "IFF2 Bug (2021-11-26)(Woodmass, Mark)[!].szx",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "d64c2c41a528021b.png",
+    "returncode": 0,
+    "output": "PC=10B4 SP=EA50 AF=005C BC=1721 DE=5CB9 HL=10A8 IX=03D4 IY=5C3A I=3F IM=1\nsaved d64c2c41a528021b.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "IFF2 Bug (2023-04-30)(Woodmass, Mark)[!].tap",
+    "member": "IFF2 Bug (2023-04-30)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "5544c07395630170.png",
+    "returncode": 0,
+    "output": "PC=162C SP=EA50 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=EC9B IY=5C3A I=3F IM=1\nsaved 5544c07395630170.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "IFF2 Bug (2023-04-30)(Woodmass, Mark)[!].z80",
+    "member": "IFF2 Bug (2023-04-30)(Woodmass, Mark)[!].z80",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "51f9f212fad92e84.png",
+    "returncode": 0,
+    "output": "PC=15F7 SP=EA52 AF=005C BC=1721 DE=5CB9 HL=5CB8 IX=03D4 IY=5C3A I=3F IM=1\nsaved 51f9f212fad92e84.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "IFF2 Bug 128K (2023-12-11)(Woodmass, Mark)[!].tap",
+    "member": "IFF2 Bug 128K (2023-12-11)(Woodmass, Mark)[!].tap",
+    "group": "128k-plus2",
+    "machine": "128k",
+    "screenshot": "7d47926f27b29733.png",
+    "returncode": 0,
+    "output": "PC=25E3 SP=5BFF AF=DC74 BC=0053 DE=0012 HL=5C3B IX=FD6C IY=5C3A I=3F IM=1\nsaved 7d47926f27b29733.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "IM0-2 (2019-11-24)(Woodmass, Mark)[!].tap",
+    "member": "IM0-2 (2019-11-24)(Woodmass, Mark)[!].tap",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "7943c78385bc272e.png",
+    "returncode": 0,
+    "output": "PC=10B4 SP=7FF0 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=80F9 IY=5C3A I=3F IM=1\nsaved 7943c78385bc272e.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "IN-MEMPTR v0.1 (2021-12-20)(Helcmanovsky, Peter; Sainz de Baranda y Goñi, Manuel)[!].tar.xz",
+    "member": "IN-MEMPTR/IN-MEMPTR.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "8977778edee1c6eb.png",
+    "returncode": 0,
+    "output": "PC=801E SP=7FE7 AF=0044 BC=1853 DE=FF10 HL=8043 IX=805F IY=5C3A I=3F IM=1\nsaved 8977778edee1c6eb.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "INI H and C Flags Clearing Test (2024-12-20)(Ala-Könni, Jussi)[!].tap",
+    "member": "INI H and C Flags Clearing Test (2024-12-20)(Ala-Könni, Jussi)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "5cb03cf033e2117f.png",
+    "returncode": 0,
+    "output": "PC=162C SP=7FF0 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=8017 IY=5C3A I=3F IM=1\nsaved 5cb03cf033e2117f.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "INI H and C Flags Clearing Test (beta) (2024-12-20)(Ala-Könni, Jussi)[!].tap",
+    "member": "INI H and C Flags Clearing Test (beta) (2024-12-20)(Ala-Könni, Jussi)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "d40ba91a790f326e.png",
+    "returncode": 0,
+    "output": "PC=10B4 SP=7FF0 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=8017 IY=5C3A I=3F IM=1\nsaved d40ba91a790f326e.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "INT Tester (2005-03-05)(Woodmass, Mark)[!].tzx",
+    "member": "INT Tester (2005-03-05)(Woodmass, Mark)[!].tzx",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "d8342f5a6a7ab27a.png",
+    "returncode": 0,
+    "output": "PC=15E8 SP=7FF2 AF=005C BC=170B DE=5CB9 HL=0000 IX=C0CD IY=5C3A I=3F IM=1\nsaved d8342f5a6a7ab27a.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "IO Contend (2021-03-02)(Woodmass, Mark)[!].tap",
+    "member": "IO Contend (2021-03-02)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "1908c05701230fd7.png",
+    "returncode": 0,
+    "output": "PC=8030 SP=7FE8 AF=1F4A BC=00FE DE=BF00 HL=8055 IX=8080 IY=5C3A I=BE IM=2\nsaved 1908c05701230fd7.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "IR Contention (2006-07-17)(Woodmass, Mark)[!].tap",
+    "member": "IR Contention (2006-07-17)(Woodmass, Mark)[!].tap",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "832a1cb9ac125ca3.png",
+    "returncode": 0,
+    "output": "PC=875E SP=85FF AF=DF4D BC=00FE DE=0600 HL=0000 IX=879A IY=5C3A I=82 IM=2\nsaved 832a1cb9ac125ca3.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "IR Contention (2023-01-08)(Woodmass, Mark)[!].tap",
+    "member": "IR Contention (2023-01-08)(Woodmass, Mark)[!].tap",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "bb36e233fc73a239.png",
+    "returncode": 0,
+    "output": "PC=875E SP=85FF AF=DF4D BC=00FE DE=0600 HL=0000 IX=8798 IY=5C3A I=82 IM=2\nsaved bb36e233fc73a239.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "IR Contention 128 (2023-07-02)(Woodmass, Mark)[!].tap",
+    "member": "IR Contention 128 (2023-07-02)(Woodmass, Mark)[!].tap",
+    "group": "128k-plus2",
+    "machine": "128k",
+    "screenshot": "f9cfff4e1c5a3c68.png",
+    "returncode": 0,
+    "output": "PC=876C SP=85FF AF=DF4D BC=00FE DE=0600 HL=0001 IX=880D IY=5C3A I=82 IM=2\nsaved f9cfff4e1c5a3c68.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "InFF (2009-01-20)(Stains, Robert)[!].tap",
+    "member": "InFF (2009-01-20)(Stains, Robert)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "016903726806e411.png",
+    "returncode": 0,
+    "output": "PC=9CCC SP=9D20 AF=FFAC BC=72FF DE=00C7 HL=C100 IX=9CD0 IY=5C3A I=C0 IM=2\nsaved 016903726806e411.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Interrupt Retriggering Test (2021-12-17)(Woodmass, Mark)[!].tap",
+    "member": "Interrupt Retriggering Test (2021-12-17)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "127da5518d1b608b.png",
+    "returncode": 0,
+    "output": "PC=15E8 SP=7FF2 AF=005C BC=1717 DE=5CB9 HL=0000 IX=81FF IY=5C3A I=3F IM=1\nsaved 127da5518d1b608b.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Issue 2 Test (2023-06-09)(Weiv)[!].tap",
+    "member": "Issue 2 Test (2023-06-09)(Weiv)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "f4970cfdde7a1ede.png",
+    "returncode": 0,
+    "output": "PC=28E7 SP=FF46 AF=0054 BC=0078 DE=0000 HL=5DB4 IX=5E1B IY=5C3A I=3F IM=1\nsaved f4970cfdde7a1ede.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Issue 2-3 (2010-03-12)(Woodmass, Mark)[!].tap",
+    "member": "Issue 2-3 (2010-03-12)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "292b5ab597d49b07.png",
+    "returncode": 0,
+    "output": "PC=162C SP=7FF0 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=807D IY=5C3A I=3F IM=1\nsaved 292b5ab597d49b07.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Issue 2-3 (2023-03-30)(Woodmass, Mark)[!].tap",
+    "member": "Issue 2-3 (2023-03-30)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "718272f76a02a868.png",
+    "returncode": 0,
+    "output": "PC=15E8 SP=7FF2 AF=005C BC=1717 DE=5CB9 HL=0000 IX=80A8 IY=5C3A I=3F IM=1\nsaved 718272f76a02a868.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Issue 2-3 (BASIC) (2021-09-18)(Woodmass, Mark)[!].z80",
+    "member": "Issue 2-3 (BASIC) (2021-09-18)(Woodmass, Mark)[!].z80",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "64dfb08eb0b28edc.png",
+    "returncode": 0,
+    "output": "PC=15E8 SP=7FEF AF=005C BC=1721 DE=5CB9 HL=2758 IX=03D4 IY=5C3A I=3F IM=1\nsaved 64dfb08eb0b28edc.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "KeyJoyTest v002.094 (2019-12-24)(Luzie)[!].zip",
+    "member": "KeyJoyTest-v.002.094.z80",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "6ee3fc98a1efebc5.png",
+    "returncode": 0,
+    "output": "PC=837F SP=7FE8 AF=649F BC=007F DE=587B HL=89BA IX=92BF IY=5C3A I=3F IM=1\nsaved 6ee3fc98a1efebc5.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "KeyJoyTest v002.095 (2019-12-25)(Luzie)[!].zip",
+    "member": "KeyJoyTest-v.002.095.z80",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "d83deca5feb2d481.png",
+    "returncode": 0,
+    "output": "PC=837F SP=7FE8 AF=649F BC=007F DE=587B HL=89BA IX=92BF IY=5C3A I=3F IM=1\nsaved d83deca5feb2d481.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "KeyJoyTest v003.025 (2019-12-27)(Luzie)[!].zip",
+    "member": "KeyJoyTest-v.003.025.z80",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "2e193a08823dae7a.png",
+    "returncode": 0,
+    "output": "PC=8227 SP=7FE8 AF=FFB8 BC=007F DE=0000 HL=5918 IX=9279 IY=5C3A I=3F IM=1\nsaved 2e193a08823dae7a.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Keyboard (2013)(Bobrowski, Jan)[!].tap",
+    "member": "Keyboard (2013)(Bobrowski, Jan)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "ab9a6bcac4686b4c.png",
+    "returncode": 0,
+    "output": "PC=35BF SP=EA42 AF=5A20 BC=2D5E DE=5E62 HL=5E5D IX=59A0 IY=5C3A I=3F IM=1\nsaved ab9a6bcac4686b4c.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Keyboard (2022-12-05)(Bobrowski, Jan)[!].tap",
+    "member": "Keyboard (2022-12-05)(Bobrowski, Jan)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "cb8f9fdd2ee44b45.png",
+    "returncode": 0,
+    "output": "PC=80BA SP=7FE4 AF=3800 BC=F710 DE=5860 HL=805D IX=5860 IY=5C3A I=3F IM=1\nsaved cb8f9fdd2ee44b45.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Keyview (2025-05-05)(O'Neill, Melissa)[!].zip",
+    "member": "keyview/keyview.sna",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "4e0c3c1b1c7c449b.png",
+    "returncode": 0,
+    "output": "PC=0BEC SP=B939 AF=0700 BC=0000 DE=0007 HL=5884 IX=B95F IY=5C3A I=3F IM=1\nsaved 4e0c3c1b1c7c449b.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Keyview (2025-05-05)(O'Neill, Melissa)[!].zip",
+    "member": "keyview/keyview-comp.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "ef0ff7a0b60ca021.png",
+    "returncode": 0,
+    "output": "PC=203C SP=B945 AF=00A7 BC=0001 DE=BEE9 HL=5CFD IX=BEB2 IY=5C3A I=3F IM=1\nsaved ef0ff7a0b60ca021.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Keyview (2025-05-05)(O'Neill, Melissa)[!].zip",
+    "member": "keyview/keyview-uncomp.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "84a06d72755160be.png",
+    "returncode": 0,
+    "output": "PC=162C SP=FF48 AF=005C BC=1715 DE=5CB9 HL=10A8 IX=625F IY=5C3A I=3F IM=1\nsaved 84a06d72755160be.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "LDIR-LDDR (2021-12-17)(Woodmass, Mark)[!].tap",
+    "member": "LDIR-LDDR (2021-12-17)(Woodmass, Mark)[!].tap",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "e31c2a1dc1a53860.png",
+    "returncode": 0,
+    "output": "PC=EAE4 SP=EA5F AF=06BA BC=0000 DE=FF00 HL=3FF4 IX=EAE5 IY=5C3A I=C0 IM=2\nsaved e31c2a1dc1a53860.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Latency (2020-12-13)(Gimeno Fortea, Pedro)[!].tap",
+    "member": "Latency (2020-12-13)(Gimeno Fortea, Pedro)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "8b227549c5759455.png",
+    "returncode": 0,
+    "output": "PC=15FF SP=FF4C AF=005C BC=1718 DE=5CB9 HL=0000 IX=5E7C IY=5C3A I=3F IM=1\nsaved 8b227549c5759455.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "MCTest2 (2011-10-07)(Makeev, Alexander)[!].zip",
+    "member": "mctest2.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "b8331dc95ed86d19.png",
+    "returncode": 0,
+    "output": "PC=805C SP=A000 AF=0B42 BC=17FE DE=0117 HL=0204 IX=8127 IY=5C3A I=FE IM=2\nsaved b8331dc95ed86d19.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "MemTest+3 (2023-04-23)(Woodmass, Mark)[!].zip",
+    "member": "memtest+3.tap",
+    "group": "plus2a-plus3",
+    "machine": "plus3",
+    "screenshot": "f911c3324d3fac02.png",
+    "returncode": 0,
+    "output": "PC=81B5 SP=80E8 AF=0710 BC=1FFD DE=0404 HL=C000 IX=82D7 IY=5C3A I=00 IM=1\nsaved f911c3324d3fac02.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Micromira Electrónica (1987)(Rojo Bustos, Juan Ángel).tap",
+    "member": "Micromira Electrónica (1987)(Rojo Bustos, Juan Ángel).tap",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "2d57ec3454b7890d.png",
+    "returncode": 0,
+    "output": "PC=EEED SP=EA5A AF=E002 BC=0000 DE=05E0 HL=58E0 IX=F547 IY=5C3A I=FE IM=1\nsaved 2d57ec3454b7890d.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Minfo (2011-08-20)(Bobrowski, Jan)[!].tap",
+    "member": "Minfo (2011-08-20)(Bobrowski, Jan)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "9033d9446a6a716d.png",
+    "returncode": 0,
+    "output": "PC=C201 SP=BFDC AF=0054 BC=1100 DE=C203 HL=C0AE IX=C217 IY=5C3A I=FD IM=2\nsaved 9033d9446a6a716d.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Multicolor (2011-03-30)(Rak, Patrik)[!].z80",
+    "member": "Multicolor (2011-03-30)(Rak, Patrik)[!].z80",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "9be9efc1f9eb996c.png",
+    "returncode": 0,
+    "output": "PC=C40C SP=FFF4 AF=0054 BC=000C DE=0004 HL=CDD1 IX=03D2 IY=5C3A I=39 IM=2\nsaved 9be9efc1f9eb996c.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Non-Standard Tape Test (2023-03-26)(azesmbog)[!].tap",
+    "member": "Non-Standard Tape Test (2023-03-26)(azesmbog)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "11314bcf6eb268b7.png",
+    "returncode": 0,
+    "output": "PC=FD82 SP=FF38 AF=4702 BC=0CFE DE=0836 HL=FC21 IX=58E5 IY=5C3A I=3F IM=1\nsaved 11314bcf6eb268b7.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Non-Standard Tape Test (var 1) (2023-03-26)(azesmbog)[!].tap",
+    "member": "Non-Standard Tape Test (var 1) (2023-03-26)(azesmbog)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "80f6ffd4966b85b7.png",
+    "returncode": 0,
+    "output": "PC=FD82 SP=FF38 AF=4702 BC=0C01 DE=0836 HL=FC21 IX=58E5 IY=5C3A I=3F IM=1\nsaved 80f6ffd4966b85b7.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Non-Standard Tape Test (var 3) (2023-03-26)(azesmbog)[!].tap",
+    "member": "Non-Standard Tape Test (var 3) (2023-03-26)(azesmbog)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "a5c3186c21fcd159.png",
+    "returncode": 0,
+    "output": "PC=FD3C SP=FF38 AF=BFA1 BC=00FE DE=0836 HL=FC21 IX=58E3 IY=5C3A I=3F IM=1\nsaved a5c3186c21fcd159.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Non-Standard Tape Test (var 4) (2023-03-26)(azesmbog)[!].tap",
+    "member": "Non-Standard Tape Test (var 4) (2023-03-26)(azesmbog)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "a8ee9f152ccdac5e.png",
+    "returncode": 0,
+    "output": "PC=FD82 SP=FF38 AF=4702 BC=0C01 DE=0836 HL=FC21 IX=58E5 IY=5C3A I=3F IM=1\nsaved a8ee9f152ccdac5e.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Non-Standard Tape Test (var 5) (2023-04-01)(azesmbog)[!].tap",
+    "member": "Non-Standard Tape Test (var 5) (2023-04-01)(azesmbog)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "0ad3f6d2479a3bf7.png",
+    "returncode": 0,
+    "output": "PC=FD82 SP=FF38 AF=4702 BC=0C01 DE=0836 HL=FC21 IX=58E5 IY=5C3A I=3F IM=1\nsaved 0ad3f6d2479a3bf7.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "OTIR-OTDR (2009-05-23)(Woodmass, Mark)[!].tap",
+    "member": "OTIR-OTDR (2009-05-23)(Woodmass, Mark)[!].tap",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "5cfdb212ea8b940e.png",
+    "returncode": 0,
+    "output": "PC=EAA8 SP=0000 AF=C003 BC=0002 DE=9D41 HL=9D40 IX=EACD IY=5C3A I=C0 IM=2\nsaved 5cfdb212ea8b940e.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "OUTI Time (2021-12-07)(Woodmass, Mark)[!].tap",
+    "member": "OUTI Time (2021-12-07)(Woodmass, Mark)[!].tap",
+    "group": "128k-plus2",
+    "machine": "128k",
+    "screenshot": "a07bbc3d375d4513.png",
+    "returncode": 0,
+    "output": "PC=88F6 SP=8C31 AF=9301 BC=71FC DE=0020 HL=DA56 IX=84F8 IY=5C3A I=BF IM=2\nsaved a07bbc3d375d4513.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "OUTI Time (2021-12-08)(Woodmass, Mark)[!].tap",
+    "member": "OUTI Time (2021-12-08)(Woodmass, Mark)[!].tap",
+    "group": "128k-plus2",
+    "machine": "128k",
+    "screenshot": "b59ed7f22f4fb772.png",
+    "returncode": 0,
+    "output": "PC=8932 SP=8CDA AF=3321 BC=71FC DE=0020 HL=DA5C IX=8529 IY=5C3A I=BF IM=2\nsaved b59ed7f22f4fb772.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Out48K (2016-08-27)(Woodmass, Mark)[!].sna",
+    "member": "Out48K (2016-08-27)(Woodmass, Mark)[!].sna",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "e14769e0e9718748.png",
+    "returncode": 0,
+    "output": "PC=10B4 SP=7FF0 AF=005C BC=1721 DE=5CB9 HL=10A8 IX=03D4 IY=5C3A I=09 IM=1\nsaved e14769e0e9718748.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Out7FFC (2023-03-18)(Woodmass, Mark)[!].zip",
+    "member": "out7ffc.tap",
+    "group": "128k-plus2",
+    "machine": "128k",
+    "screenshot": "75897636d7f33d7d.png",
+    "returncode": 0,
+    "output": "PC=25E3 SP=5BFF AF=DC74 BC=0053 DE=0012 HL=5C3B IX=FD6C IY=5C3A I=00 IM=1\nsaved 75897636d7f33d7d.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Pattern (2021-09-25)(Woodmass, Mark)[!].tap",
+    "member": "Pattern (2021-09-25)(Woodmass, Mark)[!].tap",
+    "group": "128k-plus2",
+    "machine": "128k",
+    "screenshot": "6db64c7019fa570a.png",
+    "returncode": 0,
+    "output": "PC=C4FE SP=F0F8 AF=5081 BC=00FE DE=0020 HL=F32A IX=AFF3 IY=5C3A I=F1 IM=2\nsaved 6db64c7019fa570a.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Pattern (2021-09-26)(Woodmass, Mark)[!].tap",
+    "member": "Pattern (2021-09-26)(Woodmass, Mark)[!].tap",
+    "group": "128k-plus2",
+    "machine": "128k",
+    "screenshot": "69e66a5801dadd3d.png",
+    "returncode": 0,
+    "output": "PC=C4FE SP=F0F8 AF=5081 BC=00FE DE=0020 HL=F32A IX=AFF3 IY=5C3A I=F1 IM=2\nsaved 69e66a5801dadd3d.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Pattern (2023-04-29)(Woodmass, Mark)[!].zip",
+    "member": "pattern/pattern.tap",
+    "group": "128k-plus2",
+    "machine": "128k",
+    "screenshot": "6f65182d04f197c6.png",
+    "returncode": 0,
+    "output": "PC=C4FE SP=F0F8 AF=5081 BC=00FE DE=0020 HL=F32A IX=AFF3 IY=5C3A I=F1 IM=2\nsaved 6f65182d04f197c6.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Prefixes (2022-06-12)(Woodmass, Mark)[!].tap",
+    "member": "Prefixes (2022-06-12)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "028f362e205cdbbb.png",
+    "returncode": 0,
+    "output": "PC=EB18 SP=EA5F AF=1B09 BC=00FE DE=0602 HL=FF01 IX=EB00 IY=5C3A I=C2 IM=2\nsaved 028f362e205cdbbb.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Quick & Dirty Benchmark (2002-02-23)(Woigk, Günter)[!].z80",
+    "member": "Quick & Dirty Benchmark (2002-02-23)(Woigk, Günter)[!].z80",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "2fddc19d2b071f77.png",
+    "returncode": 0,
+    "output": "PC=15F7 SP=FF4A AF=005C BC=1718 DE=5CB9 HL=5CB8 IX=5CCB IY=5C3A I=3F IM=1\nsaved 2fddc19d2b071f77.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Quick & Dirty Benchmark (2007-08-13)(Woigk, Günter)[!].tap",
+    "member": "Quick & Dirty Benchmark (2007-08-13)(Woigk, Günter)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "c82412522a571c81.png",
+    "returncode": 0,
+    "output": "PC=15FF SP=FF4C AF=005C BC=1718 DE=5CB9 HL=0000 IX=6343 IY=5C3A I=3F IM=1\nsaved c82412522a571c81.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ROM Boundary Test (2025-07-18)(Ala-Könni, Jussi)[!].zip",
+    "member": "Rom_Boundary_Test.TAP",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "77b28e076b3a9181.png",
+    "returncode": 0,
+    "output": "PC=15E6 SP=FF4C AF=005C BC=004B DE=0006 HL=107F IX=803C IY=5C3A I=3F IM=1\nsaved 77b28e076b3a9181.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "RST 38h (2022-06-13)(azesmbog)[!].tap",
+    "member": "RST 38h (2022-06-13)(azesmbog)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "60997998a5f2d2c8.png",
+    "returncode": 0,
+    "output": "PC=EB2D SP=EA5F AF=6125 BC=00FE DE=0401 HL=FF01 IX=EB00 IY=5C3A I=C2 IM=2\nsaved 60997998a5f2d2c8.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "SCF (2008-05-06)(Woodmass, Mark)[!].tap",
+    "member": "SCF (2008-05-06)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "7dd6813bef9d8c16.png",
+    "returncode": 0,
+    "output": "PC=80E9 SP=7FE2 AF=0044 BC=0010 DE=0028 HL=FF80 IX=C010 IY=5C3A I=3F IM=1\nsaved 7dd6813bef9d8c16.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "SCF Tests (2012-11-25)(Rak, Patrik)[!].zip",
+    "member": "scftest2.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "e7af90c8e3f1e720.png",
+    "returncode": 0,
+    "output": "PC=10B4 SP=750C AF=7E5C BC=171A DE=5CB9 HL=10A8 IX=5EA3 IY=5C3A I=3F IM=1\nsaved e7af90c8e3f1e720.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "SCF Tests (2012-11-25)(Rak, Patrik)[!].zip",
+    "member": "scftest3.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "10c9c70bfb3713aa.png",
+    "returncode": 0,
+    "output": "PC=15E8 SP=750E AF=7E5C BC=171A DE=5CB9 HL=5C3B IX=5EA6 IY=5C3A I=3F IM=1\nsaved 10c9c70bfb3713aa.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "SCF Tests (2012-11-25)(Rak, Patrik)[!].zip",
+    "member": "scftest.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "816181527be28526.png",
+    "returncode": 0,
+    "output": "PC=10B4 SP=7520 AF=005C BC=1715 DE=5CB9 HL=10A8 IX=5F27 IY=5C3A I=3F IM=1\nsaved 816181527be28526.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Screen Time (2007)(Bobrowski, Jan)[!].tap",
+    "member": "Screen Time (2007)(Bobrowski, Jan)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "9df46ccd1ffe7560.png",
+    "returncode": 0,
+    "output": "PC=C392 SP=C334 AF=0054 BC=C365 DE=4000 HL=0015 IX=C535 IY=5C3A I=FE IM=2\nsaved 9df46ccd1ffe7560.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Screen Time (2011-08-20)(Bobrowski, Jan)[!].tap",
+    "member": "Screen Time (2011-08-20)(Bobrowski, Jan)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "cd5abdd2177d4186.png",
+    "returncode": 0,
+    "output": "PC=C048 SP=BFE4 AF=0054 BC=C01B DE=4000 HL=FFF2 IX=C104 IY=5C3A I=FD IM=2\nsaved cd5abdd2177d4186.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Scroll2017 (2016-02-11)(azesmbog)[!].tap",
+    "member": "Scroll2017 (2016-02-11)(azesmbog)[!].tap",
+    "group": "128k-plus2",
+    "machine": "128k",
+    "screenshot": "8330650a18c6fe29.png",
+    "returncode": 0,
+    "output": "PC=9E5F SP=BFF0 AF=5F4D BC=0000 DE=B5BE HL=B5BF IX=A5E6 IY=5C3A I=9D IM=2\nsaved 8330650a18c6fe29.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snap Test (2021-09-29)(Woodmass, Mark)[!].zip",
+    "member": "snaptest.v3.z80",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "9d7124c609734383.png",
+    "returncode": 0,
+    "output": "PC=162C SP=7FF0 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=8299 IY=5C3A I=3F IM=1\nsaved 9d7124c609734383.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snap Test (2021-09-29)(Woodmass, Mark)[!].zip",
+    "member": "snaptest.sna",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "1d0150546350ed46.png",
+    "returncode": 0,
+    "output": "PC=162C SP=7FF0 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=8299 IY=5C3A I=3F IM=1\nsaved 1d0150546350ed46.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snap Test (2021-09-29)(Woodmass, Mark)[!].zip",
+    "member": "snaptest.szx",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "8cde8bb59cd26aca.png",
+    "returncode": 0,
+    "output": "PC=162C SP=7FF0 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=8299 IY=5C3A I=3F IM=1\nsaved 8cde8bb59cd26aca.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snap Test (2021-09-29)(Woodmass, Mark)[!].zip",
+    "member": "snaptest.v1.z80",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "42e7bf141a3fc6e2.png",
+    "returncode": 0,
+    "output": "PC=162C SP=7FF0 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=8299 IY=5C3A I=3F IM=1\nsaved 42e7bf141a3fc6e2.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snap Test (2023-03-05)(Woodmass, Mark)[!].zip",
+    "member": "snaptest.v3.z80",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "878e8e8fbb400615.png",
+    "returncode": 0,
+    "output": "PC=162C SP=7FF0 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=8299 IY=5C3A I=3F IM=1\nsaved 878e8e8fbb400615.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snap Test (2023-03-05)(Woodmass, Mark)[!].zip",
+    "member": "snaptest.sna",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "e4b6b44c5f52d841.png",
+    "returncode": 0,
+    "output": "PC=162C SP=7FF0 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=8299 IY=5C3A I=3F IM=1\nsaved e4b6b44c5f52d841.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snap Test (2023-03-05)(Woodmass, Mark)[!].zip",
+    "member": "snaptest.szx",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "6e611e2e04f257d5.png",
+    "returncode": 0,
+    "output": "PC=162C SP=7FF0 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=8299 IY=5C3A I=3F IM=1\nsaved 6e611e2e04f257d5.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snap Test (2023-03-05)(Woodmass, Mark)[!].zip",
+    "member": "snaptest.v1.z80",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "eaf1a8671dc112bd.png",
+    "returncode": 0,
+    "output": "PC=162C SP=7FF0 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=8299 IY=5C3A I=3F IM=1\nsaved eaf1a8671dc112bd.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snap Test (2023-03-09)(Woodmass, Mark)[!].zip",
+    "member": "snaptest.v3.z80",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "b320e94e78abafc3.png",
+    "returncode": 0,
+    "output": "PC=162C SP=7FF0 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=8299 IY=5C3A I=3F IM=1\nsaved b320e94e78abafc3.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snap Test (2023-03-09)(Woodmass, Mark)[!].zip",
+    "member": "snaptest.sna",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "05cd44bb9cb2bad5.png",
+    "returncode": 0,
+    "output": "PC=162C SP=7FF0 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=8299 IY=5C3A I=3F IM=1\nsaved 05cd44bb9cb2bad5.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snap Test (2023-03-09)(Woodmass, Mark)[!].zip",
+    "member": "snaptest.szx",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "890c629908b3e298.png",
+    "returncode": 0,
+    "output": "PC=162C SP=7FF0 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=8299 IY=5C3A I=3F IM=1\nsaved 890c629908b3e298.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snap Test (2023-03-09)(Woodmass, Mark)[!].zip",
+    "member": "snaptest.v1.z80",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "19c93e3b19a6ff14.png",
+    "returncode": 0,
+    "output": "PC=162C SP=7FF0 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=8299 IY=5C3A I=3F IM=1\nsaved 19c93e3b19a6ff14.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snap Test (2023-03-15)(Woodmass, Mark)[!].zip",
+    "member": "snaptest.v3.z80",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "c8b0e9a33edffa29.png",
+    "returncode": 0,
+    "output": "PC=162C SP=7FF0 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=8299 IY=5C3A I=3F IM=1\nsaved c8b0e9a33edffa29.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snap Test (2023-03-15)(Woodmass, Mark)[!].zip",
+    "member": "snaptest.sna",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "63dedbe15a4664c7.png",
+    "returncode": 0,
+    "output": "PC=162C SP=7FF0 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=8299 IY=5C3A I=3F IM=1\nsaved 63dedbe15a4664c7.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snap Test (2023-03-15)(Woodmass, Mark)[!].zip",
+    "member": "snaptest.szx",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "859e2088bc601562.png",
+    "returncode": 0,
+    "output": "PC=162C SP=7FF0 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=8299 IY=5C3A I=3F IM=1\nsaved 859e2088bc601562.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snap Test (2023-03-15)(Woodmass, Mark)[!].zip",
+    "member": "snaptest.v1.z80",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "f243ce4f79c76477.png",
+    "returncode": 0,
+    "output": "PC=162C SP=7FF0 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=8299 IY=5C3A I=3F IM=1\nsaved f243ce4f79c76477.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snow (2014-01-16)(Hikaru)[!].sna",
+    "member": "Snow (2014-01-16)(Hikaru)[!].sna",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "74b10559c0daf36c.png",
+    "returncode": 0,
+    "output": "PC=807F SP=FF3F AF=1D1C BC=FD01 DE=7F01 HL=807F IX=FF00 IY=5C3A I=7E IM=2\nsaved 74b10559c0daf36c.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snow (2014-01-16)(Hikaru)[!].tap",
+    "member": "Snow (2014-01-16)(Hikaru)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "2da21fee1e959afc.png",
+    "returncode": 0,
+    "output": "PC=807F SP=FFE8 AF=1D1C BC=FD01 DE=7F01 HL=807F IX=8000 IY=5C3A I=7E IM=2\nsaved 2da21fee1e959afc.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snow Contention (2009-06-20)(Woodmass, Mark)[!].tap",
+    "member": "Snow Contention (2009-06-20)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "37f65017c369f04c.png",
+    "returncode": 0,
+    "output": "PC=15E8 SP=7FE3 AF=075C BC=171A DE=5CB9 HL=597F IX=82FD IY=5C3A I=3F IM=1\nsaved 37f65017c369f04c.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snow Hold (2025-05-27)(Woodmass, Mark)[!].zip",
+    "member": "snowhold.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "612a2c07ef45f169.png",
+    "returncode": 0,
+    "output": "PC=C4DA SP=F0F6 AF=0E88 BC=0001 DE=0020 HL=C85F IX=0000 IY=5C3A I=40 IM=2\nsaved 612a2c07ef45f169.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snow Hold (beta) (2025-05-26)(Woodmass, Mark)[!].tap",
+    "member": "Snow Hold (beta) (2025-05-26)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "4af6a6aab08a1beb.png",
+    "returncode": 0,
+    "output": "PC=C4C3 SP=F0F8 AF=0E88 BC=0002 DE=0020 HL=C85F IX=0000 IY=5C3A I=40 IM=2\nsaved 4af6a6aab08a1beb.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snow R (2022-10-20)(Neo Spectruman)[!].tap",
+    "member": "Snow R (2022-10-20)(Neo Spectruman)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "e8f54775bd9cbd91.png",
+    "returncode": 0,
+    "output": "PC=C061 SP=FFFF AF=0740 BC=0000 DE=50A0 HL=509F IX=5DF9 IY=5C3A I=40 IM=1\nsaved e8f54775bd9cbd91.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snow Spy (beta) (2021-09-21)(Woodmass, Mark)[!].tap",
+    "member": "Snow Spy (beta) (2021-09-21)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "d1b315b451a1748e.png",
+    "returncode": 0,
+    "output": "PC=15FF SP=C344 AF=005C BC=1717 DE=5CB9 HL=0000 IX=C53C IY=5C3A I=3F IM=1\nsaved d1b315b451a1748e.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snow Spy (beta.1) (2021-09-21)(Woodmass, Mark)[!].tap",
+    "member": "Snow Spy (beta.1) (2021-09-21)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "ea8d31642ca12f4d.png",
+    "returncode": 0,
+    "output": "PC=15E6 SP=C344 AF=005C BC=004B DE=0006 HL=107F IX=C577 IY=5C3A I=3F IM=1\nsaved ea8d31642ca12f4d.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snow Tests (2022-10-19)(Weiv)[!].zip",
+    "member": "SnowTests/snow.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "e1eadff85f36baa3.png",
+    "returncode": 0,
+    "output": "PC=807F SP=FFE8 AF=1D1C BC=FD01 DE=7F01 HL=807F IX=8000 IY=5C3A I=7E IM=2\nsaved e1eadff85f36baa3.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snow Tests (2022-10-19)(Weiv)[!].zip",
+    "member": "SnowTests/snow128+.tap",
+    "group": "128k-plus2",
+    "machine": "128k",
+    "screenshot": "83987662d464c6bf.png",
+    "returncode": 0,
+    "output": "PC=7F01 SP=8200 AF=1E1C BC=7E01 DE=7F01 HL=7F01 IX=0028 IY=5C3A I=7E IM=2\nsaved 83987662d464c6bf.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snow Tests (2022-10-19)(Weiv)[!].zip",
+    "member": "SnowTests/snow48+.tap",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "2eac1248ccdc8c57.png",
+    "returncode": 0,
+    "output": "PC=7F01 SP=8200 AF=1E1C BC=7E01 DE=7F01 HL=7F01 IX=0028 IY=5C3A I=7E IM=2\nsaved 2eac1248ccdc8c57.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snow Tests (2022-10-19)(Weiv)[!].zip",
+    "member": "SnowTests/ula128.tap",
+    "group": "128k-plus2",
+    "machine": "128k",
+    "screenshot": "c9e9703093fbf5ab.png",
+    "returncode": 0,
+    "output": "PC=9C49 SP=5DE8 AF=004A BC=02FE DE=0304 HL=0507 IX=C000 IY=5C3A I=FE IM=2\nsaved c9e9703093fbf5ab.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snow128N (2023-04-04)(Weiv)[!].zip",
+    "member": "snow128n.tap",
+    "group": "128k-plus2",
+    "machine": "128k",
+    "screenshot": "ff7b0ade35eb440f.png",
+    "returncode": 0,
+    "output": "PC=803C SP=7FE8 AF=00A9 BC=4AFD DE=C2ED HL=0005 IX=805A IY=5C3A I=FF IM=1\nsaved ff7b0ade35eb440f.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snow48 (2021-09-13)(azesmbog)[!].tap",
+    "member": "Snow48 (2021-09-13)(azesmbog)[!].tap",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "9ba30c7880cd2584.png",
+    "returncode": 0,
+    "output": "PC=807F SP=5DE8 AF=1D1C BC=FD01 DE=7F01 HL=807F IX=FF00 IY=5C3A I=7E IM=2\nsaved 9ba30c7880cd2584.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snow48 (var b) (2021-09-12)(azesmbog)[!].tap",
+    "member": "Snow48 (var b) (2021-09-12)(azesmbog)[!].tap",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "971763d63aab5775.png",
+    "returncode": 0,
+    "output": "PC=807F SP=5DE8 AF=1D1C BC=FD01 DE=7F01 HL=807F IX=FF00 IY=5C3A I=7E IM=2\nsaved 971763d63aab5775.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snow48 (var b2) (2021-09-12)(azesmbog)[!].tap",
+    "member": "Snow48 (var b2) (2021-09-12)(azesmbog)[!].tap",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "1a2f16424b879888.png",
+    "returncode": 0,
+    "output": "PC=807F SP=5DE8 AF=1D1C BC=FD01 DE=7F01 HL=807F IX=FF00 IY=5C3A I=7E IM=2\nsaved 1a2f16424b879888.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snow48 (var b3) (2021-09-12)(azesmbog)[!].tap",
+    "member": "Snow48 (var b3) (2021-09-12)(azesmbog)[!].tap",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "8634334f40359572.png",
+    "returncode": 0,
+    "output": "PC=807F SP=5DE8 AF=1D1C BC=FD01 DE=7F01 HL=807F IX=FF00 IY=5C3A I=7E IM=2\nsaved 8634334f40359572.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snow48 (var b5) (2021-09-13)(azesmbog)[!].tap",
+    "member": "Snow48 (var b5) (2021-09-13)(azesmbog)[!].tap",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "477d444635dc9fac.png",
+    "returncode": 0,
+    "output": "PC=807F SP=5DE8 AF=1D1C BC=FD01 DE=7F01 HL=807F IX=FF00 IY=5C3A I=7E IM=2\nsaved 477d444635dc9fac.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snow48 (var b51) (2021-09-14)(azesmbog)[!].tap",
+    "member": "Snow48 (var b51) (2021-09-14)(azesmbog)[!].tap",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "23f68d2428979a5e.png",
+    "returncode": 0,
+    "output": "PC=807F SP=5DE8 AF=1B1C BC=FB01 DE=7F01 HL=807F IX=9000 IY=5C3A I=7E IM=2\nsaved 23f68d2428979a5e.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snow48 (var b52) (2021-09-15)(azesmbog)[!].tap",
+    "member": "Snow48 (var b52) (2021-09-15)(azesmbog)[!].tap",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "33b36aa684f9ea28.png",
+    "returncode": 0,
+    "output": "PC=807F SP=5DE8 AF=FF6A BC=FC01 DE=7F01 HL=807F IX=9A00 IY=5C3A I=7E IM=2\nsaved 33b36aa684f9ea28.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snow48 (var b6) (2021-09-15)(azesmbog)[!].tap",
+    "member": "Snow48 (var b6) (2021-09-15)(azesmbog)[!].tap",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "7e9277ab0cf7d223.png",
+    "returncode": 0,
+    "output": "PC=807F SP=5DE8 AF=FF6A BC=FB01 DE=7F01 HL=807F IX=9A00 IY=5C3A I=7E IM=2\nsaved 7e9277ab0cf7d223.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snow48 (var b7) (2021-09-16)(azesmbog)[!].tap",
+    "member": "Snow48 (var b7) (2021-09-16)(azesmbog)[!].tap",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "a46c4467846a8937.png",
+    "returncode": 0,
+    "output": "PC=807F SP=5DE8 AF=FF6A BC=FB01 DE=7F01 HL=807F IX=9A00 IY=5C3A I=7E IM=2\nsaved a46c4467846a8937.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snow48 (var b9) (2021-09-17)(azesmbog)[!].tap",
+    "member": "Snow48 (var b9) (2021-09-17)(azesmbog)[!].tap",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "7f5ce0c2cb9b7e09.png",
+    "returncode": 0,
+    "output": "PC=807F SP=5DE8 AF=FF6A BC=FB01 DE=7F01 HL=807F IX=9A00 IY=5C3A I=7E IM=2\nsaved 7f5ce0c2cb9b7e09.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Snow48 (var c0) (2021-09-18)(azesmbog)[!].tap",
+    "member": "Snow48 (var c0) (2021-09-18)(azesmbog)[!].tap",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "6865bf63444e2969.png",
+    "returncode": 0,
+    "output": "PC=807F SP=5DE8 AF=FF6A BC=FB01 DE=7F01 HL=807F IX=9B00 IY=5C3A I=7E IM=2\nsaved 6865bf63444e2969.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Speaker 2 EAR Test (2023-03-28)(Woodmass, Mark)[!].tap",
+    "member": "Speaker 2 EAR Test (2023-03-28)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "cba1cea08fc02746.png",
+    "returncode": 0,
+    "output": "PC=15E8 SP=7FF2 AF=005C BC=1717 DE=5CB9 HL=0000 IX=0000 IY=5C3A I=3F IM=1\nsaved cba1cea08fc02746.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Speaker 2 EAR Test (2023-03-29)(Woodmass, Mark)[!].tap",
+    "member": "Speaker 2 EAR Test (2023-03-29)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "1086c483e94de392.png",
+    "returncode": 0,
+    "output": "PC=15E8 SP=7FF2 AF=005C BC=1717 DE=5CB9 HL=0000 IX=0000 IY=5C3A I=3F IM=1\nsaved 1086c483e94de392.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Speaker 2 EAR Test (2023-04-08)(Woodmass, Mark)[!].tap",
+    "member": "Speaker 2 EAR Test (2023-04-08)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "f6eb92702983b719.png",
+    "returncode": 0,
+    "output": "PC=8032 SP=7FE6 AF=0044 BC=1753 DE=8295 HL=5C91 IX=8295 IY=5C3A I=3F IM=1\nsaved f6eb92702983b719.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Speed Test (2022-06-12)(Barsky, Evgeny)[!].zip",
+    "member": "speedtest.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "2e731058e8b5cbed.png",
+    "returncode": 0,
+    "output": "PC=C000 SP=BFBD AF=C364 BC=F305 DE=0CFB HL=0CFB IX=C000 IY=5C3A I=BE IM=2\nsaved 2e731058e8b5cbed.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Super HALT Invaders Test (2021-10-07)(Woodmass, Mark)[!].tap",
+    "member": "Super HALT Invaders Test (2021-10-07)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "3e7c9f2728837c5e.png",
+    "returncode": 0,
+    "output": "PC=10B4 SP=7FF0 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=A4A9 IY=5C3A I=3F IM=1\nsaved 3e7c9f2728837c5e.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "TSTP3 (1998)(Gimeno Fortea, Pedro)[!].zip",
+    "member": "TSTP3.TAP",
+    "group": "plus2a-plus3",
+    "machine": "plus3",
+    "screenshot": "18eecce66e05a06e.png",
+    "returncode": 0,
+    "output": "PC=0695 SP=5BFF AF=9C54 BC=0053 DE=0012 HL=5C3B IX=FD98 IY=5C3A I=00 IM=1\nsaved 18eecce66e05a06e.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "TZX Test Files (2024-03-05)(Woodmass, Mark)[!].zip",
+    "member": "tzxloopendreturn.tzx",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "3a069f2ba2a88106.png",
+    "returncode": 0,
+    "output": "PC=05F8 SP=FF48 AF=0054 BC=4402 DE=0011 HL=0000 IX=5CE2 IY=5C3A I=3F IM=1\nsaved 3a069f2ba2a88106.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "TZX Test Files (2024-03-05)(Woodmass, Mark)[!].zip",
+    "member": "tzxloopstartcall.tzx",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "f5aa07182a312907.png",
+    "returncode": 0,
+    "output": "PC=05F5 SP=FF48 AF=5F09 BC=7E02 DE=0011 HL=053F IX=5CE2 IY=5C3A I=3F IM=1\nsaved f5aa07182a312907.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "TZX Test Files (2024-03-05)(Woodmass, Mark)[!].zip",
+    "member": "tzxtestlockcall.tzx",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "4e8fa2e773154f31.png",
+    "returncode": 0,
+    "output": "PC=05F8 SP=FF48 AF=0054 BC=4402 DE=0011 HL=0000 IX=5CE2 IY=5C3A I=3F IM=1\nsaved 4e8fa2e773154f31.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "TZX Test Files (2024-03-05)(Woodmass, Mark)[!].zip",
+    "member": "tzxtestlockjump1.tzx",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "d578482174f1580e.png",
+    "returncode": 0,
+    "output": "PC=05F8 SP=FF48 AF=0054 BC=4402 DE=0011 HL=0000 IX=5CE2 IY=5C3A I=3F IM=1\nsaved d578482174f1580e.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "TZX Test Files (2024-03-05)(Woodmass, Mark)[!].zip",
+    "member": "tzxtestlockjump2.tzx",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "1e5023f71bfafa4e.png",
+    "returncode": 0,
+    "output": "PC=05F8 SP=FF48 AF=0054 BC=4402 DE=0011 HL=0000 IX=5CE2 IY=5C3A I=3F IM=1\nsaved 1e5023f71bfafa4e.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Tape Edge (2021-10-20)(Woodmass, Mark)[!].tap",
+    "member": "Tape Edge (2021-10-20)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "6a32f137cb8568b9.png",
+    "returncode": 0,
+    "output": "PC=15FF SP=80F4 AF=005C BC=1717 DE=5CB9 HL=0000 IX=840A IY=5C3A I=3F IM=1\nsaved 6a32f137cb8568b9.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Tape Edge (2024-05-20)(Woodmass, Mark)[!].zip",
+    "member": "TapeEdgeTest/bytes34.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "abaae93ccfeb4a03.png",
+    "returncode": 1,
+    "output": "error: Truncated tape block [src/media/TapeFormats.cpp:108:void zxkit::{anonymous}::Reader::need(std::size_t) const]\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Tape Edge (2024-05-20)(Woodmass, Mark)[!].zip",
+    "member": "TapeEdgeTest/main.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "4de8cc9ca19a744b.png",
+    "returncode": 0,
+    "output": "PC=05F8 SP=80E4 AF=0054 BC=7F02 DE=0020 HL=2758 IX=83EA IY=5C3A I=FD IM=2\nsaved 4de8cc9ca19a744b.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Tape Edge (2024-05-20)(Woodmass, Mark)[!].zip",
+    "member": "TapeEdgeTest/tapeedge.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "20839764057a711e.png",
+    "returncode": 0,
+    "output": "PC=15FF SP=80F4 AF=005C BC=1717 DE=5CB9 HL=0000 IX=840A IY=5C3A I=3F IM=1\nsaved 20839764057a711e.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Tape Test (2009-08-08)(Woodmass, Mark)[!].tap",
+    "member": "Tape Test (2009-08-08)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "ad9f7525b25bb09c.png",
+    "returncode": 0,
+    "output": "PC=82ED SP=7FE6 AF=0044 BC=0093 DE=823D HL=806E IX=0040 IY=5C3A I=3F IM=1\nsaved ad9f7525b25bb09c.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Test CCF (2022-02-15)(Helcmanovsky, Peter)[!].sna",
+    "member": "Test CCF (2022-02-15)(Helcmanovsky, Peter)[!].sna",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "7c2150e2ed2750b3.png",
+    "returncode": 0,
+    "output": "PC=8029 SP=5D58 AF=3034 BC=0080 DE=5CDC HL=58A9 IX=FF3C IY=5C3A I=3F IM=1\nsaved 7c2150e2ed2750b3.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Test CCF (alpha) (2022-02-15)(Helcmanovsky, Peter)[!].sna",
+    "member": "Test CCF (alpha) (2022-02-15)(Helcmanovsky, Peter)[!].sna",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "bcb359e39586e76c.png",
+    "returncode": 0,
+    "output": "PC=8016 SP=5D58 AF=3034 BC=0080 DE=5CDC HL=5829 IX=FF3C IY=5C3A I=3F IM=1\nsaved bcb359e39586e76c.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Test SCF 9 (2024-09-30)(Titov, Andrey)[!].zip",
+    "member": "Test SCF 9.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "01abbb55849c4454.png",
+    "returncode": 0,
+    "output": "PC=911B SP=BFFE AF=0E18 BC=8FED DE=90FF HL=4FDE IX=A370 IY=A3B7 I=3F IM=1\nsaved 01abbb55849c4454.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Test ULAs (2021-09-25)(Nicolás-González, César)[!].zip",
+    "member": "TESTULAS.TZX",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "29ffe38f7f5776b6.png",
+    "returncode": 0,
+    "output": "PC=C000 SP=FF3E AF=00A0 BC=00FE DE=0703 HL=0000 IX=5E36 IY=5C3A I=3B IM=2\nsaved 29ffe38f7f5776b6.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Test ULAs (beta) (2021-09-25)(Nicolás-González, César)[!].tzx",
+    "member": "Test ULAs (beta) (2021-09-25)(Nicolás-González, César)[!].tzx",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "cedad934298bf5d8.png",
+    "returncode": 0,
+    "output": "PC=C000 SP=FF3E AF=00A0 BC=00FE DE=0702 HL=0000 IX=5E37 IY=5C3A I=3B IM=2\nsaved cedad934298bf5d8.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Test of Screen Switching Timings (2017-11-15)(Weiv)[!].zip",
+    "member": "ptime-128.tap",
+    "group": "128k-plus2",
+    "machine": "128k",
+    "screenshot": "784aead5f7355ea7.png",
+    "returncode": 0,
+    "output": "PC=C045 SP=BF4E AF=0054 BC=C015 DE=C0DF HL=FFF3 IX=C105 IY=5C3A I=BE IM=2\nsaved 784aead5f7355ea7.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Test of Screen Switching Timings (2017-11-17)(Weiv)[!].zip",
+    "member": "ptime-128m.tap",
+    "group": "128k-plus2",
+    "machine": "128k",
+    "screenshot": "1a97c0c99c38c1e1.png",
+    "returncode": 0,
+    "output": "PC=C045 SP=BF4E AF=0054 BC=C015 DE=C0DF HL=FFF3 IX=C105 IY=5C3A I=BE IM=2\nsaved 1a97c0c99c38c1e1.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Timing Test v0.2 (2007-09-25)(Rak, Patrik)[!].zip",
+    "member": "timingtest-0.2/timing.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "75a3fc85cf03124c.png",
+    "returncode": 0,
+    "output": "PC=15EB SP=9C26 AF=0D5C BC=1714 DE=5CB9 HL=5CB6 IX=9DC9 IY=5C3A I=BE IM=1\nsaved 75a3fc85cf03124c.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Timing Test v0.3 (2013-12-09)(Rak, Patrik)[!].zip",
+    "member": "timingtest-0.3/timing.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "d358bd1637acbfd1.png",
+    "returncode": 0,
+    "output": "PC=162C SP=9C24 AF=0D5C BC=1714 DE=5CB9 HL=10A8 IX=9DC9 IY=5C3A I=BE IM=1\nsaved d358bd1637acbfd1.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ULA 128 Timing Test (2012-10-06)(azesmbog)[!].tap",
+    "member": "ULA 128 Timing Test (2012-10-06)(azesmbog)[!].tap",
+    "group": "128k-plus2",
+    "machine": "128k",
+    "screenshot": "404d82036cc0152b.png",
+    "returncode": 0,
+    "output": "PC=9C49 SP=5DE8 AF=004A BC=02FE DE=0304 HL=0507 IX=C000 IY=5C3A I=FE IM=2\nsaved 404d82036cc0152b.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ULA 128E +3 Test (2012-10-07)(azesmbog)[!].tap",
+    "member": "ULA 128E +3 Test (2012-10-07)(azesmbog)[!].tap",
+    "group": "plus2a-plus3",
+    "machine": "plus3",
+    "screenshot": "83588c28039d2c3e.png",
+    "returncode": 0,
+    "output": "PC=9C49 SP=5DE8 AF=004A BC=02FE DE=0304 HL=0507 IX=C000 IY=5C3A I=FE IM=2\nsaved 83588c28039d2c3e.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ULA 128E +3 Test (2012-10-10)(azesmbog)[!].tap",
+    "member": "ULA 128E +3 Test (2012-10-10)(azesmbog)[!].tap",
+    "group": "plus2a-plus3",
+    "machine": "plus3",
+    "screenshot": "33051d888bee2053.png",
+    "returncode": 0,
+    "output": "PC=94A0 SP=5DE8 AF=004A BC=02FE DE=0304 HL=0507 IX=BBA4 IY=5C3A I=FE IM=2\nsaved 33051d888bee2053.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ULA 48 Simple Test (2012-10-06)(azesmbog)[!].tap",
+    "member": "ULA 48 Simple Test (2012-10-06)(azesmbog)[!].tap",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "505eeb8a947fe071.png",
+    "returncode": 0,
+    "output": "PC=9C49 SP=5DE8 AF=004A BC=02FE DE=0304 HL=0507 IX=FFFE IY=5C3A I=FE IM=2\nsaved 505eeb8a947fe071.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ULA Snow Crash (2018-02-06)(Panov, Astamur)[!].tap",
+    "member": "ULA Snow Crash (2018-02-06)(Panov, Astamur)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "4ccb5ee46ebd25c2.png",
+    "returncode": 0,
+    "output": "PC=15E2 SP=7526 AF=005C BC=004B DE=0006 HL=107F IX=757E IY=5C3A I=F8 IM=2\nsaved 4ccb5ee46ebd25c2.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ULA Test 2 (2007-0x)(Bobrowski, Jan)[!].tap",
+    "member": "ULA Test 2 (2007-0x)(Bobrowski, Jan)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "6eb66754327fbc2b.png",
+    "returncode": 0,
+    "output": "PC=199A SP=BFFA AF=301A BC=0000 DE=0100 HL=5E4C IX=C12B IY=5C3A I=FD IM=1\nsaved 6eb66754327fbc2b.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ULA Test 3 (2007-0x)(Bobrowski, Jan)[!].tap",
+    "member": "ULA Test 3 (2007-0x)(Bobrowski, Jan)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "38d2332a1cb16f5a.png",
+    "returncode": 0,
+    "output": "PC=C0B3 SP=BFE6 AF=60A1 BC=FF01 DE=C14E HL=FFF6 IX=C1A8 IY=5C3A I=FD IM=2\nsaved 38d2332a1cb16f5a.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ULA Test 3 (2011-08-24)(Bobrowski, Jan)[!].tap",
+    "member": "ULA Test 3 (2011-08-24)(Bobrowski, Jan)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "57960dbbe3913b19.png",
+    "returncode": 0,
+    "output": "PC=C0B3 SP=BFE6 AF=60A1 BC=FF01 DE=C14E HL=FFF6 IX=C1A8 IY=5C3A I=FD IM=2\nsaved 57960dbbe3913b19.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ULA Test 3 Modified (2007)(Smith, Christopher David)[!].zip",
+    "member": "ulatest3-modified.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "fb5a37392a63d621.png",
+    "returncode": 0,
+    "output": "PC=C156 SP=BFE4 AF=0100 BC=FFE9 DE=C147 HL=FFFC IX=C1A1 IY=5C3A I=FD IM=2\nsaved fb5a37392a63d621.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ULA vs SJS v1.0 (2023-04-20)(Helcmanovsky, Peter)[!].tap",
+    "member": "ULA vs SJS v1.0 (2023-04-20)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "c83d815f109fad7d.png",
+    "returncode": 0,
+    "output": "PC=80F0 SP=7FE6 AF=AF6D BC=04BF DE=BFBF HL=586A IX=81D9 IY=5C3A I=3F IM=1\nsaved c83d815f109fad7d.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ULA vs SJS v1.0-beta (2023-04-19)(Helcmanovsky, Peter)[!].sna",
+    "member": "ULA vs SJS v1.0-beta (2023-04-19)(Helcmanovsky, Peter)[!].sna",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "8abb8a9e786b5478.png",
+    "returncode": 0,
+    "output": "PC=802B SP=7FFC AF=BFA8 BC=00FE DE=BFBF HL=BFBF IX=FF3C IY=5C3A I=3F IM=1\nsaved 8abb8a9e786b5478.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ULA vs SJS v1.0-beta (2023-04-19)(Helcmanovsky, Peter)[!].tap",
+    "member": "ULA vs SJS v1.0-beta (2023-04-19)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "1820a19e1c91da38.png",
+    "returncode": 0,
+    "output": "PC=8076 SP=7FE4 AF=7F28 BC=02BF DE=BFBF HL=5889 IX=8119 IY=5C3A I=3F IM=1\nsaved 1820a19e1c91da38.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ULA vs SJS v1.1 (2023-04-22)(Helcmanovsky, Peter)[!].zip",
+    "member": "ULAvsSJS.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "6196d2fadc3c8414.png",
+    "returncode": 0,
+    "output": "PC=8017 SP=7FE8 AF=BF9B BC=DBFE DE=1F1E HL=85DB IX=81FF IY=5C3A I=3F IM=1\nsaved 6196d2fadc3c8414.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ULA vs SJS v1.1 (2023-04-22)(Helcmanovsky, Peter)[!].zip",
+    "member": "ULAvsSJS.sna",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "8701ee26fd1dbe4d.png",
+    "returncode": 0,
+    "output": "PC=8017 SP=7FFC AF=3F1F BC=5EFE DE=1F20 HL=855E IX=FF3C IY=5C3A I=3F IM=1\nsaved 8701ee26fd1dbe4d.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ULA vs SJS v1.1 (2023-04-22)(Helcmanovsky, Peter)[GitHub d8c779acd86f042f3a7e156ed3b2c15ebf6526b3][e].tar.xz",
+    "member": "ULAvsSJS/ULAvsSJS.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "5f18593bc021f0b2.png",
+    "returncode": 0,
+    "output": "PC=8017 SP=7FE8 AF=BF9B BC=DBFE DE=1F1E HL=85DB IX=81FF IY=5C3A I=3F IM=1\nsaved 5f18593bc021f0b2.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ULA vs SJS v1.1 (2026-06-03)(Helcmanovsky, Peter)[GitHub 6042ebdad1a4ece44fa0ff7feee5bbd1d122dd54][e].tar.xz",
+    "member": "ULAvsSJS/ULAvsSJS.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "527cbcc0cc326d75.png",
+    "returncode": 0,
+    "output": "PC=8017 SP=7FE8 AF=BF9B BC=DBFE DE=1F1E HL=85DB IX=81FF IY=5C3A I=3F IM=1\nsaved 527cbcc0cc326d75.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ULA vs SJS v1.1 (2026-06-03)(Helcmanovsky, Peter)[GitHub 6042ebdad1a4ece44fa0ff7feee5bbd1d122dd54][e].tar.xz",
+    "member": "ULAvsSJS/ULAvsSJS.sna",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "ef17e7f3d573067e.png",
+    "returncode": 0,
+    "output": "PC=8017 SP=7FFC AF=3F1F BC=5EFE DE=1F20 HL=855E IX=FF3C IY=5C3A I=3F IM=1\nsaved ef17e7f3d573067e.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Block Flags Test (alpha) (2021-12-27)(Helcmanovsky, Peter)[!].tap",
+    "member": "Z80 Block Flags Test (alpha) (2021-12-27)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "a1f9ef04bac3d265.png",
+    "returncode": 0,
+    "output": "PC=10AC SP=7FF0 AF=005C BC=1718 DE=5CB9 HL=10A8 IX=8298 IY=5C3A I=3F IM=1\nsaved a1f9ef04bac3d265.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Block Flags Test v1.0 (2021-12-27)(Helcmanovsky, Peter)[!].tap",
+    "member": "Z80 Block Flags Test v1.0 (2021-12-27)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "b651136d30ffbb5f.png",
+    "returncode": 0,
+    "output": "PC=162C SP=7FF0 AF=005C BC=1718 DE=5CB9 HL=10A8 IX=8197 IY=5C3A I=3F IM=1\nsaved b651136d30ffbb5f.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Block Flags Test v2.0 (2021-12-30)(Helcmanovsky, Peter)[!].tap",
+    "member": "Z80 Block Flags Test v2.0 (2021-12-30)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "4f61df866451b904.png",
+    "returncode": 0,
+    "output": "PC=162C SP=7FF0 AF=005C BC=1718 DE=5CB9 HL=10A8 IX=81D0 IY=5C3A I=3F IM=1\nsaved 4f61df866451b904.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Block Flags Test v2.0+ (2021-12-31)(Helcmanovsky, Peter)[!].tap",
+    "member": "Z80 Block Flags Test v2.0+ (2021-12-31)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "9aeb80499d3a4edb.png",
+    "returncode": 0,
+    "output": "PC=10B4 SP=7FF0 AF=005C BC=1718 DE=5CB9 HL=10A8 IX=8242 IY=5C3A I=3F IM=1\nsaved 9aeb80499d3a4edb.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Block Flags Test v2.0+1 (2021-12-31)(Helcmanovsky, Peter)[!].tap",
+    "member": "Z80 Block Flags Test v2.0+1 (2021-12-31)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "9b6f4f4ed60cd569.png",
+    "returncode": 0,
+    "output": "PC=162C SP=7FF0 AF=005C BC=1718 DE=5CB9 HL=10A8 IX=827D IY=5C3A I=3F IM=1\nsaved 9b6f4f4ed60cd569.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Block Flags Test v2.0+2 (2021-12-31)(Helcmanovsky, Peter)[!].tap",
+    "member": "Z80 Block Flags Test v2.0+2 (2021-12-31)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "d5cd999563c232fe.png",
+    "returncode": 0,
+    "output": "PC=15E8 SP=7FF2 AF=005C BC=1718 DE=5CB9 HL=0000 IX=82C7 IY=5C3A I=3F IM=1\nsaved d5cd999563c232fe.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Block Flags Test v2.0-beta (2021-12-30)(Helcmanovsky, Peter)[!].tap",
+    "member": "Z80 Block Flags Test v2.0-beta (2021-12-30)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "c2b4799299283da1.png",
+    "returncode": 0,
+    "output": "PC=15E8 SP=7FF2 AF=005C BC=1718 DE=5CB9 HL=0000 IX=8193 IY=5C3A I=3F IM=1\nsaved c2b4799299283da1.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Block Flags Test v2.0-beta.1 (2021-12-30)(Helcmanovsky, Peter)[!].tap",
+    "member": "Z80 Block Flags Test v2.0-beta.1 (2021-12-30)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "7ab93da33ca9a586.png",
+    "returncode": 0,
+    "output": "PC=162C SP=7FF0 AF=005C BC=1718 DE=5CB9 HL=10A8 IX=81C4 IY=5C3A I=3F IM=1\nsaved 7ab93da33ca9a586.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Block Flags Test v3.0 (2021-12-31)(Helcmanovsky, Peter)(128K)[!].sna",
+    "member": "Z80 Block Flags Test v3.0 (2021-12-31)(Helcmanovsky, Peter)(128K)[!].sna",
+    "group": "128k-plus2",
+    "machine": "128k",
+    "screenshot": "32a0e6760cb5529c.png",
+    "returncode": 0,
+    "output": "PC=10AC SP=7FF0 AF=005C BC=1718 DE=5CB9 HL=10A8 IX=82BF IY=5C3A I=3F IM=1\nsaved 32a0e6760cb5529c.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Block Flags Test v3.0 (2021-12-31)(Helcmanovsky, Peter)[!].tap",
+    "member": "Z80 Block Flags Test v3.0 (2021-12-31)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "a8eba6836d20a43d.png",
+    "returncode": 0,
+    "output": "PC=15E8 SP=7FF2 AF=005C BC=1718 DE=5CB9 HL=0000 IX=82BF IY=5C3A I=3F IM=1\nsaved a8eba6836d20a43d.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Block Flags Test v3.0+ (2022-01-01)(Helcmanovsky, Peter)[!].tap",
+    "member": "Z80 Block Flags Test v3.0+ (2022-01-01)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "042b8d28f2a020b4.png",
+    "returncode": 0,
+    "output": "PC=10B4 SP=7FF0 AF=005C BC=1718 DE=5CB9 HL=10A8 IX=839F IY=5C3A I=3F IM=1\nsaved 042b8d28f2a020b4.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Block Flags Test v4.0 (2022-01-01)(Helcmanovsky, Peter)[!].tap",
+    "member": "Z80 Block Flags Test v4.0 (2022-01-01)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "021d7e9778ae80ed.png",
+    "returncode": 0,
+    "output": "PC=10B4 SP=7FF0 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=83CD IY=5C3A I=3F IM=1\nsaved 021d7e9778ae80ed.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Block Flags Test v4.1 (2022-01-03)(Helcmanovsky, Peter)[GitHub b94ae875ace4055679b2ef721f68447078e5025f][e].tar.xz",
+    "member": "Z80BlockInstructionFlags/z80bltst.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "a698a22e8883c053.png",
+    "returncode": 0,
+    "output": "PC=10B4 SP=7FF0 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=83ED IY=5C3A I=3F IM=1\nsaved a698a22e8883c053.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Block Flags Test v4.1+ (2022-01-06)(Helcmanovsky, Peter)[GitHub c300540a16f00c4dcfa089cf883ec84c975d9a5b][e].tar.xz",
+    "member": "Z80BlockInstructionFlags/z80bltst.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "b0aa2aef69e9f751.png",
+    "returncode": 0,
+    "output": "PC=15E8 SP=7FF2 AF=005C BC=1717 DE=5CB9 HL=0000 IX=8470 IY=5C3A I=3F IM=1\nsaved b0aa2aef69e9f751.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Block Flags Test v4.1+1 (2022-01-06)(Helcmanovsky, Peter)[GitHub a05e49995bb198d00f1f251dba57b852efe03ec3][e].tar.xz",
+    "member": "Z80BlockInstructionFlags/z80bltst.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "79d5e87b6d5eaded.png",
+    "returncode": 0,
+    "output": "PC=15E8 SP=7FF2 AF=005C BC=1717 DE=5CB9 HL=0000 IX=8470 IY=5C3A I=3F IM=1\nsaved 79d5e87b6d5eaded.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Block Flags Test v4.1+2 (2022-01-09)(Helcmanovsky, Peter)[!].tap",
+    "member": "Z80 Block Flags Test v4.1+2 (2022-01-09)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "47e9586e7ccf17ad.png",
+    "returncode": 0,
+    "output": "PC=15E8 SP=7FF2 AF=005C BC=1717 DE=5CB9 HL=0000 IX=83F6 IY=5C3A I=3F IM=1\nsaved 47e9586e7ccf17ad.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Block Flags Test v5.0 (2022-01-11)(Helcmanovsky, Peter)[GitHub a1c4a8a44e273cd4e426bbbeff6b58685e64dfba][e].tar.xz",
+    "member": "Z80BlockInstructionFlags/z80bltst.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "c54c2f864e779a6b.png",
+    "returncode": 0,
+    "output": "PC=10B4 SP=7FF0 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=8561 IY=5C3A I=3F IM=1\nsaved c54c2f864e779a6b.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Block Flags Test v5.0 (2022-02-17)(Helcmanovsky, Peter)[GitHub 340f6d35f9b577f4f2c5798e1aac0c1d5b2ff1bc][e].tar.xz",
+    "member": "Z80BlockInstructionFlags/z80bltst.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "9063c3cf879ca2be.png",
+    "returncode": 0,
+    "output": "PC=10B4 SP=7FF0 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=8561 IY=5C3A I=3F IM=1\nsaved 9063c3cf879ca2be.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Block Flags Test v5.0 (2026-06-03)(Helcmanovsky, Peter)[GitHub 6042ebdad1a4ece44fa0ff7feee5bbd1d122dd54][e].tar.xz",
+    "member": "Z80BlockInstructionFlags/z80bltst.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "f06fac23e9584514.png",
+    "returncode": 0,
+    "output": "PC=10B4 SP=7FF0 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=8561 IY=5C3A I=3F IM=1\nsaved f06fac23e9584514.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Block Flags Test v5.0 (2026-06-03)(Helcmanovsky, Peter)[GitHub 6042ebdad1a4ece44fa0ff7feee5bbd1d122dd54][e].tar.xz",
+    "member": "Z80BlockInstructionFlags/z80bltst.sna",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "6b991c01bee571b0.png",
+    "returncode": 0,
+    "output": "PC=15E8 SP=7FF2 AF=005C BC=1718 DE=5CB9 HL=2758 IX=8561 IY=5C3A I=3F IM=1\nsaved 6b991c01bee571b0.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Block Flags Test v5.0-beta (2022-01-11)(Helcmanovsky, Peter)[!].tap",
+    "member": "Z80 Block Flags Test v5.0-beta (2022-01-11)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "327fb05b417af0fe.png",
+    "returncode": 0,
+    "output": "PC=15E8 SP=7FF2 AF=005C BC=1717 DE=5CB9 HL=0000 IX=8557 IY=5C3A I=3F IM=1\nsaved 327fb05b417af0fe.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 CCF-SCF Outcome Stability (alpha) (2022-01-31)(Helcmanovsky, Peter)[!].tap",
+    "member": "Z80 CCF-SCF Outcome Stability (alpha) (2022-01-31)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "7b4a07f191d73625.png",
+    "returncode": 0,
+    "output": "PC=807F SP=7901 AF=8080 BC=1168 DE=7EE9 HL=5AE0 IX=80E3 IY=5C3A I=92 IM=2\nsaved 7b4a07f191d73625.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 CCF-SCF Outcome Stability v1.0 (2022-02-01)(Helcmanovsky, Peter)[!].tap",
+    "member": "Z80 CCF-SCF Outcome Stability v1.0 (2022-02-01)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "01b9a453c8037df2.png",
+    "returncode": 0,
+    "output": "PC=807F SP=9000 AF=8080 BC=1668 DE=7EE2 HL=5AE0 IX=4820 IY=5C3A I=92 IM=2\nsaved 01b9a453c8037df2.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 CCF-SCF Outcome Stability v1.0 (2022-02-01)(Helcmanovsky, Peter)[GitHub 2ef90b7fab6f9466ae616bbf7c14d022d501830e][e].tar.xz",
+    "member": "Z80CcfScfOutcomeStability/ccffrm.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "10a14c93076e01ec.png",
+    "returncode": 0,
+    "output": "PC=807F SP=9000 AF=8080 BC=1668 DE=7EE2 HL=5AE0 IX=4820 IY=5C3A I=92 IM=2\nsaved 10a14c93076e01ec.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 CCF-SCF Outcome Stability v1.0 (hack) (2022-02-01)(Helcmanovsky, Peter)[!].tap",
+    "member": "Z80 CCF-SCF Outcome Stability v1.0 (hack) (2022-02-01)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "36170e04d451c6b4.png",
+    "returncode": 0,
+    "output": "PC=807F SP=C000 AF=8080 BC=1668 DE=7EE2 HL=5AE0 IX=4820 IY=5C3A I=92 IM=2\nsaved 36170e04d451c6b4.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 CCF-SCF Outcome Stability v1.1 (2022-02-02)(Helcmanovsky, Peter)[GitHub 0b913321283a7e28c8e65621be6f5e19d77ded86][e].tar.xz",
+    "member": "Z80CcfScfOutcomeStability/ccffrm.tap",
+    "group": "128k-plus2",
+    "machine": "128k",
+    "screenshot": "876823b6151bd888.png",
+    "returncode": 0,
+    "output": "PC=807F SP=9000 AF=8080 BC=1B68 DE=8259 HL=5AE0 IX=8220 IY=5C3A I=92 IM=2\nsaved 876823b6151bd888.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 CCF-SCF Outcome Stability v1.1 (2022-02-17)(Helcmanovsky, Peter)[GitHub 340f6d35f9b577f4f2c5798e1aac0c1d5b2ff1bc][e].tar.xz",
+    "member": "Z80CcfScfOutcomeStability/ccffrm.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "323a7b59ee00738c.png",
+    "returncode": 0,
+    "output": "PC=807F SP=9000 AF=8080 BC=1768 DE=8259 HL=5AE0 IX=8220 IY=5C3A I=92 IM=2\nsaved 323a7b59ee00738c.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 CCF-SCF Outcome Stability v1.1 (2026-06-03)(Helcmanovsky, Peter)[GitHub 6042ebdad1a4ece44fa0ff7feee5bbd1d122dd54][e].tar.xz",
+    "member": "Z80CcfScfOutcomeStability/ccffrm.sna",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "adc762e7a192d44f.png",
+    "returncode": 0,
+    "output": "PC=807F SP=9000 AF=8080 BC=1A68 DE=8259 HL=5AE0 IX=8220 IY=5C3A I=92 IM=2\nsaved adc762e7a192d44f.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 CCF-SCF Outcome Stability v1.1 (2026-06-03)(Helcmanovsky, Peter)[GitHub 6042ebdad1a4ece44fa0ff7feee5bbd1d122dd54][e].tar.xz",
+    "member": "Z80CcfScfOutcomeStability/ccffrm.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "a80a13e33614363a.png",
+    "returncode": 0,
+    "output": "PC=807F SP=9000 AF=8080 BC=1768 DE=8259 HL=5AE0 IX=8220 IY=5C3A I=92 IM=2\nsaved a80a13e33614363a.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 DDFD3 (2022-06-10)(Helcmanovsky, Peter)[!].zip",
+    "member": "z80_ddfd3.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "73b38bab1206f5e4.png",
+    "returncode": 0,
+    "output": "PC=10AC SP=EA50 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=0400 IY=5C3A I=3F IM=1\nsaved 73b38bab1206f5e4.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Documented Instruction Set Exerciser for Spectrum (2003-12-29)(Harston, Jonathan Graham)[!].tap",
+    "member": "Z80 Documented Instruction Set Exerciser for Spectrum (2003-12-29)(Harston, Jonathan Graham)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "2a07f0c5eb28f614.png",
+    "returncode": 0,
+    "output": "PC=9B28 SP=7FE8 AF=0429 BC=00E5 DE=0014 HL=9B1B IX=F22B IY=5C3A I=3F IM=1\nsaved 2a07f0c5eb28f614.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Documented Instruction Set Exerciser for Spectrum (2018)(Harston, Jonathan Graham)[!].tap",
+    "member": "Z80 Documented Instruction Set Exerciser for Spectrum (2018)(Harston, Jonathan Graham)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "2aa6cee3d0ebc40b.png",
+    "returncode": 0,
+    "output": "PC=9D72 SP=7FEA AF=1502 BC=0563 DE=9C95 HL=9DAC IX=F22B IY=5C3A I=3F IM=1\nsaved 2aa6cee3d0ebc40b.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Full Instruction Set Exerciser for Spectrum (2003-05-05)(Harston, Jonathan Graham)[!].sna",
+    "member": "Z80 Full Instruction Set Exerciser for Spectrum (2003-05-05)(Harston, Jonathan Graham)[!].sna",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "6e28f6becb2098d9.png",
+    "returncode": 0,
+    "output": "PC=9AEB SP=7FE8 AF=0142 BC=0080 DE=0014 HL=9BC6 IX=F22B IY=5C3A I=3F IM=1\nsaved 6e28f6becb2098d9.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Full Instruction Set Exerciser for Spectrum (2003-05-05)(Harston, Jonathan Graham)[!].tap",
+    "member": "Z80 Full Instruction Set Exerciser for Spectrum (2003-05-05)(Harston, Jonathan Graham)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "2c9f84b5cc5ee04e.png",
+    "returncode": 0,
+    "output": "PC=9ABD SP=7FE8 AF=0101 BC=1D01 DE=0014 HL=9AAF IX=F22B IY=5C3A I=3F IM=1\nsaved 2c9f84b5cc5ee04e.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Full Instruction Set Exerciser for Spectrum (2003-05-05)(Harston, Jonathan Graham)[!].z80",
+    "member": "Z80 Full Instruction Set Exerciser for Spectrum (2003-05-05)(Harston, Jonathan Graham)[!].z80",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "936d6a15c7c9fbb3.png",
+    "returncode": 0,
+    "output": "PC=9AEB SP=7FE8 AF=0142 BC=0080 DE=0014 HL=9BC6 IX=F22B IY=5C3A I=3F IM=1\nsaved 936d6a15c7c9fbb3.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Full Instruction Set Exerciser for Spectrum (2003-12-29)(Harston, Jonathan Graham)[!].tap",
+    "member": "Z80 Full Instruction Set Exerciser for Spectrum (2003-12-29)(Harston, Jonathan Graham)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "0b0bd0d17c1efe30.png",
+    "returncode": 0,
+    "output": "PC=9AAA SP=7FF0 AF=FF29 BC=0564 DE=0014 HL=8104 IX=F22B IY=5C3A I=3F IM=1\nsaved 0b0bd0d17c1efe30.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Full Instruction Set Exerciser for Spectrum (2009)(Bobrowski, Jan)[!].tap",
+    "member": "Z80 Full Instruction Set Exerciser for Spectrum (2009)(Bobrowski, Jan)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "004c232d8f616856.png",
+    "returncode": 0,
+    "output": "PC=9AAA SP=7FF0 AF=FF29 BC=0564 DE=0014 HL=8104 IX=F22B IY=5C3A I=3F IM=1\nsaved 004c232d8f616856.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Full Instruction Set Exerciser for Spectrum (2011)(Bobrowski, Jan)(Narrowed to BIT Instructions)[!].tap",
+    "member": "Z80 Full Instruction Set Exerciser for Spectrum (2011)(Bobrowski, Jan)(Narrowed to BIT Instructions)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "e7d2d5bd206ea4ce.png",
+    "returncode": 0,
+    "output": "PC=9ADD SP=7FEA AF=0029 BC=03F5 DE=0014 HL=8455 IX=7ACC IY=5C3A I=3F IM=1\nsaved e7d2d5bd206ea4ce.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Full Instruction Set Exerciser for Spectrum (2017-0x)(Harston, Jonathan Graham)[!].tap",
+    "member": "Z80 Full Instruction Set Exerciser for Spectrum (2017-0x)(Harston, Jonathan Graham)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "3137a1f6361947c5.png",
+    "returncode": 0,
+    "output": "PC=9A85 SP=7FFA AF=0154 BC=80DD DE=8013 HL=80C9 IX=F22B IY=5C3A I=3F IM=1\nsaved 3137a1f6361947c5.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Full Instruction Set Exerciser for Spectrum (2018)(Harston, Jonathan Graham)[!].tap",
+    "member": "Z80 Full Instruction Set Exerciser for Spectrum (2018)(Harston, Jonathan Graham)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "d7a5f0c03870e2b3.png",
+    "returncode": 0,
+    "output": "PC=9D72 SP=7FEA AF=1502 BC=0563 DE=9C95 HL=9DAC IX=F22B IY=5C3A I=3F IM=1\nsaved d7a5f0c03870e2b3.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 IM1 vs JR (2022-02-11)(Helcmanovsky, Peter)[!].tap",
+    "member": "Z80 IM1 vs JR (2022-02-11)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "50e2a83f0f825cc7.png",
+    "returncode": 0,
+    "output": "PC=162C SP=7FF0 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=8021 IY=5C3A I=3F IM=1\nsaved 50e2a83f0f825cc7.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 INT Skip v1.0 (2022-02-17)(Helcmanovsky, Peter)[GitHub 7e97f08090a57d9bc0cccd26bbed32f2ba4b3296][e].tar.xz",
+    "member": "Z80IntSkip/int_skip.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "eb6974d32be109c6.png",
+    "returncode": 0,
+    "output": "PC=803F SP=FF00 AF=0054 BC=0000 DE=8031 HL=8300 IX=8191 IY=5C3A I=82 IM=2\nsaved eb6974d32be109c6.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 INT Skip v1.0-beta (2022-02-17)(Helcmanovsky, Peter)[!].tap",
+    "member": "Z80 INT Skip v1.0-beta (2022-02-17)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "7ad5fbe6f1a12c81.png",
+    "returncode": 0,
+    "output": "PC=803F SP=FF00 AF=0054 BC=0000 DE=8031 HL=8300 IX=8191 IY=5C3A I=82 IM=2\nsaved 7ad5fbe6f1a12c81.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 INT Skip v2.0 (2022-02-19)(Helcmanovsky, Peter)[GitHub 753274d440f0bcdf0fe08c96d2c77b4e4bd7c6ad][e].tar.xz",
+    "member": "Z80IntSkip/int_skip.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "e77436b61b79bfeb.png",
+    "returncode": 0,
+    "output": "PC=10AC SP=8FF0 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=91FF IY=5C3A I=3F IM=1\nsaved e77436b61b79bfeb.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 INT Skip v2.1 (2022-02-19)(Helcmanovsky, Peter)[GitHub b88e2cbf919cfddbaf8bbb7713cf1b86500304e0][e].tar.xz",
+    "member": "Z80IntSkip/int_skip.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "dff0380d4d6381c2.png",
+    "returncode": 0,
+    "output": "PC=15F7 SP=8FF2 AF=005C BC=1717 DE=5CB9 HL=5CB8 IX=9217 IY=5C3A I=3F IM=1\nsaved dff0380d4d6381c2.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 INT Skip v3.0 (2022-05-16)(Helcmanovsky, Peter)[GitHub d2b3b1582165adf5c7d03ca85b6120365cbbc8a8][e].tar.xz",
+    "member": "Z80IntSkip/int_skip.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "ba532e283cc98b85.png",
+    "returncode": 0,
+    "output": "PC=15FF SP=8FF4 AF=005C BC=1717 DE=5CB9 HL=0000 IX=9271 IY=5C3A I=3F IM=1\nsaved ba532e283cc98b85.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 INT Skip v3.0 (2022-11-18)(Helcmanovsky, Peter)[GitHub d7d6a274f91b1c2fd00c458807d65464bf5a9921][e].tar.xz",
+    "member": "Z80IntSkip/int_skip.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "e58a32cf69d78957.png",
+    "returncode": 0,
+    "output": "PC=15FF SP=8FF4 AF=005C BC=1717 DE=5CB9 HL=0000 IX=9271 IY=5C3A I=3F IM=1\nsaved e58a32cf69d78957.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 INT Skip v4.0 (2023-05-21)(Helcmanovsky, Peter)[GitHub c12ee4af8c169cdaa212944ff3b77ef4e707753b][e].tar.xz",
+    "member": "Z80IntSkip/int_skip.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "dcac3e9c06d94e52.png",
+    "returncode": 0,
+    "output": "PC=10B4 SP=8FF0 AF=005C BC=1717 DE=5CB9 HL=10A8 IX=9330 IY=5C3A I=3F IM=1\nsaved dcac3e9c06d94e52.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 INT Skip v4.1 (2023-05-21)(Helcmanovsky, Peter)[GitHub a388a6111f5a286b5e1c2173c681c5636b607193][e].tar.xz",
+    "member": "Z80IntSkip/int_skip.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "fc82efdb24a0108a.png",
+    "returncode": 0,
+    "output": "PC=907A SP=8FE8 AF=0200 BC=0000 DE=0740 HL=0740 IX=92E4 IY=5C3A I=94 IM=2\nsaved fc82efdb24a0108a.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 INT Skip v4.1 (2026-06-03)(Helcmanovsky, Peter)[GitHub 6042ebdad1a4ece44fa0ff7feee5bbd1d122dd54][e].tar.xz",
+    "member": "Z80IntSkip/int_skip.sna",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "2d256cbc5cd07f65.png",
+    "returncode": 0,
+    "output": "PC=907A SP=8FFC AF=FAAC BC=0000 DE=0746 HL=0746 IX=92E4 IY=5C3A I=94 IM=2\nsaved 2d256cbc5cd07f65.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 INT Skip v4.1 (2026-06-03)(Helcmanovsky, Peter)[GitHub 6042ebdad1a4ece44fa0ff7feee5bbd1d122dd54][e].tar.xz",
+    "member": "Z80IntSkip/int_skip.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "9d1714e08d03b95a.png",
+    "returncode": 0,
+    "output": "PC=907A SP=8FE8 AF=0200 BC=0000 DE=0740 HL=0740 IX=92E4 IY=5C3A I=94 IM=2\nsaved 9d1714e08d03b95a.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 INT Skip v5.0 (2026-10-05)(Helcmanovsky, Peter)[GitHub 8adcbc8384b2311fb6d36d424478aef583d5c307][e].tar.xz",
+    "member": "Z80IntSkip/int_skip.sna",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "81b5fb84fd2ec117.png",
+    "returncode": 0,
+    "output": "PC=907A SP=8FFC AF=0200 BC=0000 DE=0756 HL=0756 IX=9305 IY=5C3A I=94 IM=2\nsaved 81b5fb84fd2ec117.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 INT Skip v5.0 (2026-10-05)(Helcmanovsky, Peter)[GitHub 8adcbc8384b2311fb6d36d424478aef583d5c307][e].tar.xz",
+    "member": "Z80IntSkip/int_skip.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "df26ce052e964c4c.png",
+    "returncode": 0,
+    "output": "PC=907A SP=8FE8 AF=FAAC BC=0000 DE=0750 HL=0750 IX=9305 IY=5C3A I=94 IM=2\nsaved df26ce052e964c4c.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 INT Skip vX.27K (2022-05-17)(Helcmanovsky, Peter)[!].sna",
+    "member": "Z80 INT Skip vX.27K (2022-05-17)(Helcmanovsky, Peter)[!].sna",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "6f30f90b0d5c0164.png",
+    "returncode": 0,
+    "output": "PC=AFD8 SP=8FE6 AF=6F00 BC=000C DE=F3F3 HL=FF01 IX=9263 IY=5C3A I=93 IM=2\nsaved 6f30f90b0d5c0164.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 INT Skip vX.27K (2022-05-17)(Helcmanovsky, Peter)[!].tap",
+    "member": "Z80 INT Skip vX.27K (2022-05-17)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "ea20765472c009aa.png",
+    "returncode": 0,
+    "output": "PC=A891 SP=8FD6 AF=6F00 BC=000C DE=F3F3 HL=FF01 IX=9263 IY=5C3A I=93 IM=2\nsaved ea20765472c009aa.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Illegal Instruction Test v1.0-alpha (2024-03-29)(Sainz de Baranda y Goñi, Manuel)[!].zip",
+    "member": "Z80 Illegal Instruction Test.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "695547b91872077b.png",
+    "returncode": 0,
+    "output": "PC=80CC SP=7FD4 AF=B1A0 BC=6DAD DE=B1FF HL=821D IX=8221 IY=5C3A I=3F IM=1\nsaved 695547b91872077b.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Illegal Instruction Test v1.0-alpha (2024-03-29)(Sainz de Baranda y Goñi, Manuel)[!].zip",
+    "member": "__MACOSX/._Z80 Illegal Instruction Test.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "5e9ede6782a45394.png",
+    "returncode": 1,
+    "output": "error: Truncated tape block [src/media/TapeFormats.cpp:108:void zxkit::{anonymous}::Reader::need(std::size_t) const]\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Illegal Instruction Test v1.0-alpha.1 (2024-03-29)(Sainz de Baranda y Goñi, Manuel)[!].zip",
+    "member": "Z80 Illegal Instruction Test.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "4ef5982099515ed3.png",
+    "returncode": 0,
+    "output": "PC=80CC SP=7FD4 AF=9380 BC=5A8F DE=93FF HL=826A IX=826E IY=5C3A I=3F IM=1\nsaved 4ef5982099515ed3.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Illegal Instruction Test v1.0-alpha.1 (2024-03-29)(Sainz de Baranda y Goñi, Manuel)[!].zip",
+    "member": "__MACOSX/._Z80 Illegal Instruction Test.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "44aadab844a708d7.png",
+    "returncode": 1,
+    "output": "error: Truncated tape block [src/media/TapeFormats.cpp:108:void zxkit::{anonymous}::Reader::need(std::size_t) const]\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Instruction Set Exerciser for Spectrum 2 v0.1 (2012-11-27)(Rak, Patrik)[!].zip",
+    "member": "zexall2-0.1/zexall2.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "cbbdbe8eb54111ba.png",
+    "returncode": 0,
+    "output": "PC=9ECA SP=7FEE AF=818D BC=9079 DE=8D5B HL=A559 IX=1D60 IY=09FA I=FF IM=1\nsaved cbbdbe8eb54111ba.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Instruction Set Exerciser for Spectrum 2 v0.1 (2012-11-27)(Rak, Patrik)[!].zip",
+    "member": "zexall2-0.1/zexall2.szx",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "3575eb62bb24e509.png",
+    "returncode": 0,
+    "output": "PC=9FCF SP=7FE8 AF=419C BC=1079 DE=9EF1 HL=A008 IX=1D60 IY=5C3A I=FF IM=1\nsaved 3575eb62bb24e509.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Processor Type Detection (2024-10-04)(Bobrowski, Jan)[!].tap",
+    "member": "Z80 Processor Type Detection (2024-10-04)(Bobrowski, Jan)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "bb82a03eb8ba11e8.png",
+    "returncode": 0,
+    "output": "PC=162C SP=5FF0 AF=005C BC=1718 DE=5CB9 HL=10A8 IX=648A IY=5C3A I=3F IM=1\nsaved bb82a03eb8ba11e8.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Speed Test v0.1 (2026-07-05)(Titov, Andrey)(Pentagon)[!].zip",
+    "member": "Speed Test v0.1 (Pentagon).tap",
+    "group": "pentagon",
+    "machine": "pentagon",
+    "screenshot": "6a7684ad89542537.png",
+    "returncode": 0,
+    "output": "PC=15F7 SP=63E2 AF=7E5C BC=171A DE=5CB9 HL=5CB8 IX=8020 IY=5C3A I=FE IM=1\nsaved 6a7684ad89542537.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Speed Test v0.1 (2026-07-05)(Titov, Andrey)(Pentagon)[!].zip",
+    "member": "Speed Test v0.1 (Pentagon).z80",
+    "group": "pentagon",
+    "machine": "pentagon",
+    "screenshot": "ad2036d4f06d86d8.png",
+    "returncode": 0,
+    "output": "PC=3685 SP=5BFB AF=1D74 BC=0100 DE=2F6F HL=5C3B IX=FD6C IY=5C3A I=15 IM=1\nsaved ad2036d4f06d86d8.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Speed Test v0.1 (2026-07-06)(Titov, Andrey)(ZX Spectrum 48K, Uncalibrated)[!].zip",
+    "member": "Speed Test v0.1 (Spectrum 48, uncalibrated).tap",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "15d3955098992ed8.png",
+    "returncode": 0,
+    "output": "PC=15E8 SP=63E2 AF=7E5C BC=171A DE=5CB9 HL=5C3B IX=8020 IY=5C3A I=FE IM=1\nsaved 15d3955098992ed8.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Speed Test v0.2 (2026-07-08)(Titov, Andrey)(Pentagon)[!].zip",
+    "member": "Speed Test v0.2 (Pentagon).tap",
+    "group": "pentagon",
+    "machine": "pentagon",
+    "screenshot": "1ea2ddecfa893009.png",
+    "returncode": 0,
+    "output": "PC=10B4 SP=63E0 AF=7E5C BC=171A DE=5CB9 HL=10A8 IX=8020 IY=5C3A I=FE IM=1\nsaved 1ea2ddecfa893009.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Speed Test v0.2 (2026-07-08)(Titov, Andrey)(Pentagon)[!].zip",
+    "member": "Speed Test v0.2 (Pentagon).z80",
+    "group": "pentagon",
+    "machine": "pentagon",
+    "screenshot": "c29bf45486b79209.png",
+    "returncode": 0,
+    "output": "PC=3685 SP=5BFB AF=1D74 BC=0100 DE=2F6F HL=5C3B IX=FD6C IY=5C3A I=15 IM=1\nsaved c29bf45486b79209.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Speed Test v0.2 (2026-07-08)(Titov, Andrey)(ZX Spectrum 48K)[!].zip",
+    "member": "Speed Test v0.2 (Spectrum 48K).tap",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "fe802b23ac94e222.png",
+    "returncode": 0,
+    "output": "PC=15E8 SP=63E2 AF=7E5C BC=171A DE=5CB9 HL=5C3B IX=8020 IY=5C3A I=FE IM=1\nsaved fe802b23ac94e222.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Test Program (2005-01-16)(Woigk, Günter)[!].tap",
+    "member": "Z80 Test Program (2005-01-16)(Woigk, Günter)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "cd0eb64d5f947ec6.png",
+    "returncode": 0,
+    "output": "PC=8939 SP=BFF6 AF=1909 BC=FFD8 DE=FFB8 HL=8919 IX=992F IY=5C3A I=98 IM=2\nsaved cd0eb64d5f947ec6.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 Test Suite (2008)(Woodmass, Mark)[!].tap",
+    "member": "Z80 Test Suite (2008)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "e29d5b170fb46a71.png",
+    "returncode": 0,
+    "output": "PC=80E9 SP=7FE6 AF=0044 BC=1753 DE=81AB HL=5C91 IX=954C IY=5C3A I=3F IM=1\nsaved e29d5b170fb46a71.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 XCF Flavor (beta) (2022-02-17)(Sainz de Baranda y Goñi, Manuel)[!].zip",
+    "member": "Z80 XCF Flavor.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "2a063ea76f13cc1b.png",
+    "returncode": 0,
+    "output": "PC=10B4 SP=7FEF AF=005C BC=1718 DE=5CB9 HL=10A8 IX=82F8 IY=5C3A I=3F IM=1\nsaved 2a063ea76f13cc1b.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 XCF Flavor v1.0 (2024-01-16)(Sainz de Baranda y Goñi, Manuel)[!].tar.xz",
+    "member": "Z80 XCF Flavor/Z80 XCF Flavor.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "edd20130d8f8a878.png",
+    "returncode": 0,
+    "output": "PC=162C SP=7FF0 AF=005C BC=1718 DE=5CB9 HL=10A8 IX=830D IY=5C3A I=3F IM=1\nsaved edd20130d8f8a878.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 XCF Flavor v1.1 (2024-01-27)(Sainz de Baranda y Goñi, Manuel)[!].tar.xz",
+    "member": "Z80 XCF Flavor/Z80 XCF Flavor.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "20c846fef4cb0eda.png",
+    "returncode": 0,
+    "output": "PC=15F7 SP=7FF2 AF=005C BC=1718 DE=5CB9 HL=5CB8 IX=83B6 IY=5C3A I=3F IM=1\nsaved 20c846fef4cb0eda.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 XCF Flavor v1.2 (2024-01-30)(Sainz de Baranda y Goñi, Manuel)[!].tar.xz",
+    "member": "Z80 XCF Flavor/Z80 XCF Flavor.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "f35177c296d96750.png",
+    "returncode": 0,
+    "output": "PC=15F7 SP=7FF2 AF=005C BC=1718 DE=5CB9 HL=5CB8 IX=83AC IY=5C3A I=3F IM=1\nsaved f35177c296d96750.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 XCF Flavor v1.3 (2024-02-04)(Sainz de Baranda y Goñi, Manuel)[!].tar.xz",
+    "member": "Z80 XCF Flavor/Z80 XCF Flavor.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "bd368f52f9eaaf5e.png",
+    "returncode": 0,
+    "output": "PC=15F7 SP=7FF2 AF=005C BC=1718 DE=5CB9 HL=5CB8 IX=83B2 IY=5C3A I=3F IM=1\nsaved bd368f52f9eaaf5e.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 XCF Flavor v1.3 (2024-02-04)(Sainz de Baranda y Goñi, Manuel)[!].tar.xz",
+    "member": "Z80 XCF Flavor/Z80 XCF Flavor.sna",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "90f978867614c30e.png",
+    "returncode": 0,
+    "output": "PC=162C SP=7FF0 AF=005C BC=1718 DE=5CB9 HL=10A8 IX=FF3C IY=5C3A I=3F IM=1\nsaved 90f978867614c30e.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 XCF Flavor v1.4 (2024-02-05)(Sainz de Baranda y Goñi, Manuel)[!].tar.xz",
+    "member": "Z80 XCF Flavor/Z80 XCF Flavor.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "c7d0f8b063d38ee2.png",
+    "returncode": 0,
+    "output": "PC=15E2 SP=7FF6 AF=005C BC=004B DE=0006 HL=107F IX=8123 IY=5C3A I=3F IM=1\nsaved c7d0f8b063d38ee2.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 XCF Flavor v1.4 (2024-02-05)(Sainz de Baranda y Goñi, Manuel)[!].tar.xz",
+    "member": "Z80 XCF Flavor/Z80 XCF Flavor.sna",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "2a8df11a5a01cdcd.png",
+    "returncode": 0,
+    "output": "PC=15E8 SP=7FF2 AF=005C BC=1718 DE=5CB9 HL=2758 IX=8123 IY=5C3A I=3F IM=1\nsaved 2a8df11a5a01cdcd.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 XCF Flavor v1.5 (2024-02-06)(Sainz de Baranda y Goñi, Manuel)[!].tar.xz",
+    "member": "Z80 XCF Flavor/Z80 XCF Flavor.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "abe278b63c6f3263.png",
+    "returncode": 0,
+    "output": "PC=15E2 SP=7FF6 AF=005C BC=004B DE=0006 HL=107F IX=812F IY=5C3A I=3F IM=1\nsaved abe278b63c6f3263.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Z80 XCF Flavor v1.5 (2024-02-06)(Sainz de Baranda y Goñi, Manuel)[!].tar.xz",
+    "member": "Z80 XCF Flavor/Z80 XCF Flavor.sna",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "2955dcea15149041.png",
+    "returncode": 0,
+    "output": "PC=15E8 SP=7FF2 AF=005C BC=1718 DE=5CB9 HL=2758 IX=812F IY=5C3A I=3F IM=1\nsaved 2955dcea15149041.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX FPS Counter (2021-02-10)(Erdikmen, Arda)[GitHub 3eb5363b5b91abb64cb3df86f3b67c0311a21378].zip",
+    "member": "zx_fps_counter-3eb5363b5b91abb64cb3df86f3b67c0311a21378/fpscounter2out.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "a614fdd0325cb849.png",
+    "returncode": 0,
+    "output": "PC=8CB3 SP=0000 AF=0242 BC=0000 DE=5555 HL=AAAA IX=C100 IY=5C3A I=FE IM=2\nsaved a614fdd0325cb849.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX FPS Counter (2021-02-10)(Erdikmen, Arda)[GitHub 3eb5363b5b91abb64cb3df86f3b67c0311a21378].zip",
+    "member": "zx_fps_counter-3eb5363b5b91abb64cb3df86f3b67c0311a21378/fpscounterout.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "4ea82ca2e4d9d8ac.png",
+    "returncode": 0,
+    "output": "PC=8087 SP=7FE8 AF=0044 BC=0000 DE=0800 HL=0800 IX=C100 IY=5C3A I=FE IM=2\nsaved 4ea82ca2e4d9d8ac.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.21 (2015-04-21)(Alford, Brendan)(Sources)[GitHub dafc961c44bcd1cac889c353fce169e363c1d774].tar.gz",
+    "member": "zx-diagnostics-0.21/FlashUtils/bin/flashutil.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "bd2edfbfcb2bf730.png",
+    "returncode": 0,
+    "output": "PC=0574 SP=FF4A AF=B7A4 BC=4202 DE=0011 HL=03B5 IX=5CE2 IY=5C3A I=3F IM=1\nsaved bd2edfbfcb2bf730.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.21 (2015-04-21)(Alford, Brendan)(Sources)[GitHub dafc961c44bcd1cac889c353fce169e363c1d774].tar.gz",
+    "member": "zx-diagnostics-0.21/FlashUtils/bin/flashutilrom.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "13e399641a866b55.png",
+    "returncode": 0,
+    "output": "PC=0574 SP=FF4A AF=B3A0 BC=2FDD DE=0011 HL=03B3 IX=5CE2 IY=5C3A I=3F IM=1\nsaved 13e399641a866b55.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.21 (2015-04-21)(Alford, Brendan)(Sources)[GitHub dafc961c44bcd1cac889c353fce169e363c1d774].tar.gz",
+    "member": "zx-diagnostics-0.21/TestTape/bin/testram.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "cff3334fc31e2e68.png",
+    "returncode": 0,
+    "output": "PC=6C65 SP=F05E AF=8342 BC=83E9 DE=83E9 HL=83E9 IX=0000 IY=5C3A I=3F IM=1\nsaved cff3334fc31e2e68.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.21 (2015-04-21)(Alford, Brendan)(Sources)[GitHub dafc961c44bcd1cac889c353fce169e363c1d774].tar.gz",
+    "member": "zx-diagnostics-0.21/bin/testrom.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "9fe77f4c9f2a4b49.png",
+    "returncode": 0,
+    "output": "PC=0574 SP=FF4A AF=B7A4 BC=7002 DE=0011 HL=03B6 IX=5CE2 IY=5C3A I=3F IM=1\nsaved 9fe77f4c9f2a4b49.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.30 (2015-05-03)(Alford, Brendan)(Sources)[GitHub 4220792d062a9365c976c52c078cfaacfaab560f].tar.gz",
+    "member": "zx-diagnostics-0.30/FlashUtils/bin/flashutil.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "eba9e6dbfa1746f9.png",
+    "returncode": 0,
+    "output": "PC=0574 SP=FF4A AF=B7A4 BC=4202 DE=0011 HL=03B5 IX=5CE2 IY=5C3A I=3F IM=1\nsaved eba9e6dbfa1746f9.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.30 (2015-05-03)(Alford, Brendan)(Sources)[GitHub 4220792d062a9365c976c52c078cfaacfaab560f].tar.gz",
+    "member": "zx-diagnostics-0.30/FlashUtils/bin/flashutilrom.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "c530195820885068.png",
+    "returncode": 0,
+    "output": "PC=0574 SP=FF4A AF=B3A0 BC=2FDD DE=0011 HL=03B3 IX=5CE2 IY=5C3A I=3F IM=1\nsaved c530195820885068.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.30 (2015-05-03)(Alford, Brendan)(Sources)[GitHub 4220792d062a9365c976c52c078cfaacfaab560f].tar.gz",
+    "member": "zx-diagnostics-0.30/TestTape/bin/testram.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "01e3f46da43a8d34.png",
+    "returncode": 0,
+    "output": "PC=6C65 SP=F05E AF=8342 BC=83E9 DE=83E9 HL=83E9 IX=0000 IY=5C3A I=3F IM=1\nsaved 01e3f46da43a8d34.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.30 (2015-05-03)(Alford, Brendan)(Sources)[GitHub 4220792d062a9365c976c52c078cfaacfaab560f].tar.gz",
+    "member": "zx-diagnostics-0.30/bin/testrom.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "25a71a4d7312f97b.png",
+    "returncode": 0,
+    "output": "PC=0574 SP=FF4A AF=B7A4 BC=7C02 DE=0011 HL=03B6 IX=5CE2 IY=5C3A I=3F IM=1\nsaved 25a71a4d7312f97b.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.31 (2015-06-02)(Alford, Brendan)(Sources)[GitHub 7b61d7889353b8ae2d590b7a32a5ca0111aab48a].tar.gz",
+    "member": "zx-diagnostics-0.31/FlashUtils/bin/flashutil.tap",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "d0302498daf21471.png",
+    "returncode": 0,
+    "output": "PC=0574 SP=FF4A AF=B7A4 BC=3FDD DE=0011 HL=03B4 IX=5CE2 IY=5C3A I=3F IM=1\nsaved d0302498daf21471.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.31 (2015-06-02)(Alford, Brendan)(Sources)[GitHub 7b61d7889353b8ae2d590b7a32a5ca0111aab48a].tar.gz",
+    "member": "zx-diagnostics-0.31/FlashUtils/bin/flashutilrom.tap",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "c1fb4f12710e147f.png",
+    "returncode": 0,
+    "output": "PC=0574 SP=FF4A AF=B3A0 BC=6BDD DE=0011 HL=03B3 IX=5CE2 IY=5C3A I=3F IM=1\nsaved c1fb4f12710e147f.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.31 (2015-06-02)(Alford, Brendan)(Sources)[GitHub 7b61d7889353b8ae2d590b7a32a5ca0111aab48a].tar.gz",
+    "member": "zx-diagnostics-0.31/TestTape/bin/testram.tap",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "237648e3ce973b85.png",
+    "returncode": 0,
+    "output": "PC=732E SP=7BF3 AF=1711 BC=02FE DE=5820 HL=7301 IX=0000 IY=0000 I=3F IM=1\nsaved 237648e3ce973b85.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.31 (2015-06-02)(Alford, Brendan)(Sources)[GitHub 7b61d7889353b8ae2d590b7a32a5ca0111aab48a].tar.gz",
+    "member": "zx-diagnostics-0.31/bin/testrom.tap",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "25ab6393d69c776a.png",
+    "returncode": 0,
+    "output": "PC=0574 SP=FF4A AF=B3A0 BC=F1DD DE=0011 HL=03B2 IX=5CE2 IY=5C3A I=3F IM=1\nsaved 25ab6393d69c776a.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.32 (2015-10-02)(Alford, Brendan)(Sources)[GitHub 59db6166c4ddc74b749b6c9144f0121982f1c362].tar.gz",
+    "member": "zx-diagnostics-0.32/FlashUtils/bin/flashutil.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "bff98e117e0f5437.png",
+    "returncode": 0,
+    "output": "PC=0574 SP=FF4A AF=B7A4 BC=3FDD DE=0011 HL=03B4 IX=5CE2 IY=5C3A I=3F IM=1\nsaved bff98e117e0f5437.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.32 (2015-10-02)(Alford, Brendan)(Sources)[GitHub 59db6166c4ddc74b749b6c9144f0121982f1c362].tar.gz",
+    "member": "zx-diagnostics-0.32/FlashUtils/bin/flashutilrom.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "e233a9cffb66fe7f.png",
+    "returncode": 0,
+    "output": "PC=0574 SP=FF4A AF=B3A0 BC=6BDD DE=0011 HL=03B3 IX=5CE2 IY=5C3A I=3F IM=1\nsaved e233a9cffb66fe7f.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.32 (2015-10-02)(Alford, Brendan)(Sources)[GitHub 59db6166c4ddc74b749b6c9144f0121982f1c362].tar.gz",
+    "member": "zx-diagnostics-0.32/TestTape/bin/testram.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "98bf18d34ad86f89.png",
+    "returncode": 0,
+    "output": "PC=7391 SP=7BF3 AF=1711 BC=02FE DE=5820 HL=735F IX=0000 IY=0000 I=3F IM=1\nsaved 98bf18d34ad86f89.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.32 (2015-10-02)(Alford, Brendan)(Sources)[GitHub 59db6166c4ddc74b749b6c9144f0121982f1c362].tar.gz",
+    "member": "zx-diagnostics-0.32/bin/testrom.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "e149df64212f3e05.png",
+    "returncode": 0,
+    "output": "PC=0574 SP=FF4A AF=B3A0 BC=F1DD DE=0011 HL=03B2 IX=5CE2 IY=5C3A I=3F IM=1\nsaved e149df64212f3e05.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.32 (2015-10-02)(Alford, Brendan)[!].zip",
+    "member": "FlashUtils/flashutil.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "aef4bc645ea18f1f.png",
+    "returncode": 0,
+    "output": "PC=0574 SP=FF4A AF=B7A4 BC=8B02 DE=0011 HL=03B4 IX=5CE2 IY=5C3A I=3F IM=1\nsaved aef4bc645ea18f1f.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.32 (2015-10-02)(Alford, Brendan)[!].zip",
+    "member": "FlashUtils/flashutilrom.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "9023a1524516c55b.png",
+    "returncode": 0,
+    "output": "PC=0574 SP=FF4A AF=B3A0 BC=3502 DE=0011 HL=03B3 IX=5CE2 IY=5C3A I=3F IM=1\nsaved 9023a1524516c55b.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.32 (2015-10-02)(Alford, Brendan)[!].zip",
+    "member": "Spectranet/installer.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "ea5c333416d7686d.png",
+    "returncode": 0,
+    "output": "PC=15E8 SP=7FF2 AF=005C BC=1717 DE=5CB9 HL=0000 IX=A700 IY=5C3A I=3F IM=1\nsaved ea5c333416d7686d.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.32 (2015-10-02)(Alford, Brendan)[!].zip",
+    "member": "testrom.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "62c538dd4e856b57.png",
+    "returncode": 0,
+    "output": "PC=0574 SP=FF4A AF=B7A4 BC=52DD DE=0011 HL=03B5 IX=5CE2 IY=5C3A I=3F IM=1\nsaved 62c538dd4e856b57.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.32 (2015-10-02)(Alford, Brendan)[!].zip",
+    "member": "TestTape/testram.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "21177822a10280c8.png",
+    "returncode": 0,
+    "output": "PC=734D SP=7BF3 AF=FF01 BC=0205 DE=5820 HL=7266 IX=7FBF IY=0000 I=3F IM=1\nsaved 21177822a10280c8.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.33 (2016-04-23)(Alford, Brendan)[!].zip",
+    "member": "FlashUtils/flashutil.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "b35d0e9a6bd3b0df.png",
+    "returncode": 0,
+    "output": "PC=0574 SP=FF4A AF=B7A4 BC=D202 DE=0011 HL=03B5 IX=5CE2 IY=5C3A I=3F IM=1\nsaved b35d0e9a6bd3b0df.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.33 (2016-04-23)(Alford, Brendan)[!].zip",
+    "member": "FlashUtils/flashutilrom.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "726f188c1d23e51f.png",
+    "returncode": 0,
+    "output": "PC=0574 SP=FF4A AF=B7A4 BC=B202 DE=0011 HL=03B4 IX=5CE2 IY=5C3A I=3F IM=1\nsaved 726f188c1d23e51f.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.33 (2016-04-23)(Alford, Brendan)[!].zip",
+    "member": "Spectranet/installer.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "d31227b50a41b0a8.png",
+    "returncode": 0,
+    "output": "PC=15E8 SP=7FF2 AF=005C BC=1717 DE=5CB9 HL=0000 IX=A700 IY=5C3A I=3F IM=1\nsaved d31227b50a41b0a8.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.33 (2016-04-23)(Alford, Brendan)[!].zip",
+    "member": "testrom.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "2cc1761f7acbd7ce.png",
+    "returncode": 0,
+    "output": "PC=0574 SP=FF4A AF=B7A4 BC=3C02 DE=0011 HL=03B7 IX=5CE2 IY=5C3A I=3F IM=1\nsaved 2cc1761f7acbd7ce.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.33 (2016-04-23)(Alford, Brendan)[!].zip",
+    "member": "TestTape/testram.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "c1ae864a311ad58b.png",
+    "returncode": 0,
+    "output": "PC=6F66 SP=7BF3 AF=FF01 BC=0202 DE=5820 HL=6E8E IX=7FC2 IY=0000 I=3F IM=1\nsaved c1ae864a311ad58b.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.35 (2017-05-20)(Alford, Brendan)(Sources)[GitHub 6242936fdb0ad3c8bc8f96b2b4f84c3951b3ee45].tar.gz",
+    "member": "zx-diagnostics-0.35/TestTape/testram_loader.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "439db2e1cb5648a8.png",
+    "returncode": 0,
+    "output": "PC=05ED SP=5FA4 AF=0054 BC=6802 DE=0011 HL=053F IX=5DF1 IY=5C3A I=3F IM=1\nsaved 439db2e1cb5648a8.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.35 (2017-05-20)(Alford, Brendan)[!].zip",
+    "member": "FlashUtils/flashutil.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "9875d602f97c65c8.png",
+    "returncode": 0,
+    "output": "PC=0574 SP=FF4A AF=B3A0 BC=7002 DE=0011 HL=03B3 IX=5CE2 IY=5C3A I=3F IM=1\nsaved 9875d602f97c65c8.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.35 (2017-05-20)(Alford, Brendan)[!].zip",
+    "member": "FlashUtils/flashutilrom.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "3e716a0437468402.png",
+    "returncode": 0,
+    "output": "PC=0574 SP=FF4A AF=B7A4 BC=7D02 DE=0011 HL=03B4 IX=5CE2 IY=5C3A I=3F IM=1\nsaved 3e716a0437468402.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.35 (2017-05-20)(Alford, Brendan)[!].zip",
+    "member": "testrom.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "a7f8ea6885b24bdc.png",
+    "returncode": 0,
+    "output": "PC=0574 SP=FF4A AF=B7A4 BC=3402 DE=0011 HL=03B4 IX=5CE2 IY=5C3A I=3F IM=1\nsaved a7f8ea6885b24bdc.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.35 (2017-05-20)(Alford, Brendan)[!].zip",
+    "member": "TestTape/testram.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "ab7b53448b768c7d.png",
+    "returncode": 0,
+    "output": "PC=6FB4 SP=7BF3 AF=FF0D BC=0401 DE=5820 HL=6EF4 IX=7FC3 IY=0000 I=3F IM=1\nsaved ab7b53448b768c7d.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.36 (2017-12-29)(Alford, Brendan)(Sources)[GitHub 9b5ceefe2c3a5b91d062e082a81ce18a58b884f6].tar.gz",
+    "member": "zx-diagnostics-0.36/ROMCheck/romcheck_loader.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "8c89f57eb1630232.png",
+    "returncode": 0,
+    "output": "PC=05F1 SP=6198 AF=7FA8 BC=BA02 DE=0011 HL=053F IX=5DEE IY=5C3A I=3F IM=1\nsaved 8c89f57eb1630232.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.36 (2017-12-29)(Alford, Brendan)(Sources)[GitHub 9b5ceefe2c3a5b91d062e082a81ce18a58b884f6].tar.gz",
+    "member": "zx-diagnostics-0.36/TestTape/testram_loader.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "aa092ed79bf528af.png",
+    "returncode": 0,
+    "output": "PC=05ED SP=5FA4 AF=0054 BC=6802 DE=0011 HL=053F IX=5DF1 IY=5C3A I=3F IM=1\nsaved aa092ed79bf528af.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.36 (2017-12-29)(Alford, Brendan)[!].zip",
+    "member": "FlashUtils/flashutil.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "3466e3de8bc928d6.png",
+    "returncode": 0,
+    "output": "PC=0574 SP=FF4A AF=B7A4 BC=6602 DE=0011 HL=03B5 IX=5CE2 IY=5C3A I=3F IM=1\nsaved 3466e3de8bc928d6.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.36 (2017-12-29)(Alford, Brendan)[!].zip",
+    "member": "FlashUtils/flashutilrom.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "7096db6b8f07e817.png",
+    "returncode": 0,
+    "output": "PC=0574 SP=FF4A AF=B7A4 BC=03DD DE=0011 HL=03B5 IX=5CE2 IY=5C3A I=3F IM=1\nsaved 7096db6b8f07e817.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.36 (2017-12-29)(Alford, Brendan)[!].zip",
+    "member": "ROMCheck/romcheck.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "3511e06834311446.png",
+    "returncode": 0,
+    "output": "PC=15E8 SP=619A AF=005C BC=1717 DE=5CB9 HL=0000 IX=6C14 IY=5C3A I=3F IM=1\nsaved 3511e06834311446.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.36 (2017-12-29)(Alford, Brendan)[!].zip",
+    "member": "testrom.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "5715203429e398ff.png",
+    "returncode": 0,
+    "output": "PC=0574 SP=FF4A AF=B3A0 BC=DD02 DE=0011 HL=03B2 IX=5CE2 IY=5C3A I=3F IM=1\nsaved 5715203429e398ff.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.36 (2017-12-29)(Alford, Brendan)[!].zip",
+    "member": "TestTape/testram.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "c073e71bca56b0a7.png",
+    "returncode": 0,
+    "output": "PC=7080 SP=7973 AF=FF0D BC=0507 DE=5820 HL=6F8C IX=7FBD IY=0000 I=3F IM=1\nsaved c073e71bca56b0a7.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.37 (2018-10-22)(Alford, Brendan)(Sources)[GitHub 7f431d17b0629dedf7f5417ab517c12ccb361b8f].tar.gz",
+    "member": "zx-diagnostics-0.37/ROMCheck/romcheck_loader.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "fe3363d31be2f3d5.png",
+    "returncode": 0,
+    "output": "PC=05F1 SP=6198 AF=7FA8 BC=BA02 DE=0011 HL=053F IX=5DEE IY=5C3A I=3F IM=1\nsaved fe3363d31be2f3d5.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.37 (2018-10-22)(Alford, Brendan)(Sources)[GitHub 7f431d17b0629dedf7f5417ab517c12ccb361b8f].tar.gz",
+    "member": "zx-diagnostics-0.37/TestTape/testram_loader.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "b7e8fe8342d9adda.png",
+    "returncode": 0,
+    "output": "PC=05ED SP=5FA4 AF=0054 BC=6802 DE=0011 HL=053F IX=5DF1 IY=5C3A I=3F IM=1\nsaved b7e8fe8342d9adda.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.37 (2018-10-22)(Alford, Brendan)[!].zip",
+    "member": "FlashUtils/flashutil.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "ecb0cacb812d3d9d.png",
+    "returncode": 0,
+    "output": "PC=0574 SP=FF4A AF=B3A0 BC=F602 DE=0011 HL=03B3 IX=5CE2 IY=5C3A I=3F IM=1\nsaved ecb0cacb812d3d9d.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.37 (2018-10-22)(Alford, Brendan)[!].zip",
+    "member": "FlashUtils/flashutilrom.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "e459820a3b1a446f.png",
+    "returncode": 0,
+    "output": "PC=0574 SP=FF4A AF=B7A4 BC=B602 DE=0011 HL=03B5 IX=5CE2 IY=5C3A I=3F IM=1\nsaved e459820a3b1a446f.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.37 (2018-10-22)(Alford, Brendan)[!].zip",
+    "member": "ROMCheck/romcheck.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "1d9377156801f460.png",
+    "returncode": 0,
+    "output": "PC=15E8 SP=619A AF=005C BC=1717 DE=5CB9 HL=0000 IX=6C30 IY=5C3A I=3F IM=1\nsaved 1d9377156801f460.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.37 (2018-10-22)(Alford, Brendan)[!].zip",
+    "member": "testrom.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "0f9c653a5b181a9d.png",
+    "returncode": 0,
+    "output": "PC=0574 SP=FF4A AF=B3A0 BC=35DD DE=0011 HL=03B3 IX=5CE2 IY=5C3A I=3F IM=1\nsaved 0f9c653a5b181a9d.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.37 (2018-10-22)(Alford, Brendan)[!].zip",
+    "member": "TestTape/testram.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "cd04ffbab7fbeb10.png",
+    "returncode": 0,
+    "output": "PC=706C SP=7973 AF=FF45 BC=0107 DE=5820 HL=6F7C IX=7FBD IY=0000 I=3F IM=1\nsaved cd04ffbab7fbeb10.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Keyboard Tester v1.0 (2020)(Tsiombikas, John)[!].tap",
+    "member": "ZX Spectrum Keyboard Tester v1.0 (2020)(Tsiombikas, John)[!].tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "e10ce5f2efc94622.png",
+    "returncode": 0,
+    "output": "PC=6E34 SP=6D40 AF=0808 BC=0811 DE=40F1 HL=6F9C IX=5820 IY=5C3A I=3F IM=1\nsaved e10ce5f2efc94622.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Timing Tests - 128K v1.0 (2015-03-30)(Butler, Richard; Butler, Tim)[!].szx",
+    "member": "ZX Spectrum Timing Tests - 128K v1.0 (2015-03-30)(Butler, Richard; Butler, Tim)[!].szx",
+    "group": "128k-plus2",
+    "machine": "128k",
+    "screenshot": "40dd07d2beb8327a.png",
+    "returncode": 0,
+    "output": "PC=15E8 SP=FF3E AF=105C BC=1611 DE=5CB9 HL=1392 IX=03D4 IY=5C3A I=3F IM=1\nsaved 40dd07d2beb8327a.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Timing Tests - 48K v1.0 (2010-04-06)(Butler, Richard; Butler, Tim)[!].sna",
+    "member": "ZX Spectrum Timing Tests - 48K v1.0 (2010-04-06)(Butler, Richard; Butler, Tim)[!].sna",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "e20ba95e4389f961.png",
+    "returncode": 0,
+    "output": "PC=15FF SP=FF40 AF=105C BC=1611 DE=5CB9 HL=161F IX=03D4 IY=5C3A I=3F IM=1\nsaved e20ba95e4389f961.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Timing Tests - 48K v1.0 (2010-04-14)(Butler, Richard; Butler, Tim)[!].tap",
+    "member": "ZX Spectrum Timing Tests - 48K v1.0 (2010-04-14)(Butler, Richard; Butler, Tim)[!].tap",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "6c1a13fa06b85f96.png",
+    "returncode": 0,
+    "output": "PC=BFCC SP=BFF4 AF=0202 BC=8041 DE=0C91 HL=5D12 IX=F2ED IY=FFFF I=3F IM=1\nsaved 6c1a13fa06b85f96.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Timing Tests - 48K v1.0 (2010-04-14)(Butler, Richard; Butler, Tim)[!].tzx",
+    "member": "ZX Spectrum Timing Tests - 48K v1.0 (2010-04-14)(Butler, Richard; Butler, Tim)[!].tzx",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "0cccdf6356cb643e.png",
+    "returncode": 0,
+    "output": "PC=BFCD SP=BFF4 AF=0202 BC=8000 DE=0BD4 HL=2005 IX=F230 IY=FFFF I=3F IM=1\nsaved 0cccdf6356cb643e.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZX Spectrum Timing Tests - 48K v1.0 (2025-05-05)(Woodmass, Mark)(Sane Loader)[!].tap",
+    "member": "ZX Spectrum Timing Tests - 48K v1.0 (2025-05-05)(Woodmass, Mark)(Sane Loader)[!].tap",
+    "group": "48k",
+    "machine": "48k",
+    "screenshot": "98c269c27634a4d7.png",
+    "returncode": 0,
+    "output": "PC=10AC SP=FF3B AF=105C BC=1611 DE=5CB9 HL=10A8 IX=FF14 IY=5C3A I=3F IM=1\nsaved 98c269c27634a4d7.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZXTests v3p (2014-03-20)(Rak, Patrik)[!].zip",
+    "member": "btime.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "c5a70ab10c2811b6.png",
+    "returncode": 0,
+    "output": "PC=C053 SP=BFE6 AF=0054 BC=C023 DE=C007 HL=FFF2 IX=C10F IY=5C3A I=FD IM=2\nsaved c5a70ab10c2811b6.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZXTests v3p (2014-03-20)(Rak, Patrik)[!].zip",
+    "member": "stime.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "e4aae2f86f9ff4a1.png",
+    "returncode": 0,
+    "output": "PC=C05F SP=BFE4 AF=0054 BC=C032 DE=4000 HL=FFF2 IX=C11B IY=5C3A I=FD IM=2\nsaved e4aae2f86f9ff4a1.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZXTests v3p (2014-03-20)(Rak, Patrik)[!].zip",
+    "member": "atime.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "4855c74aaa031f29.png",
+    "returncode": 0,
+    "output": "PC=C062 SP=BFE2 AF=0054 BC=C034 DE=5800 HL=FFF2 IX=C11E IY=5C3A I=FD IM=2\nsaved 4855c74aaa031f29.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZXTests v3p (2014-03-20)(Rak, Patrik)[!].zip",
+    "member": "ptime.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "964a185a6035eea6.png",
+    "returncode": 0,
+    "output": "PC=336B SP=BFF4 AF=0044 BC=1521 DE=3506 HL=2DE6 IX=C123 IY=5C3A I=FD IM=1\nsaved 964a185a6035eea6.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZXTests v3p (2014-03-20)(Rak, Patrik)[!].zip",
+    "member": "minfo.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "26c6ca7ba610a27a.png",
+    "returncode": 0,
+    "output": "PC=C201 SP=BFDC AF=0054 BC=1100 DE=C203 HL=C0AE IX=C217 IY=5C3A I=FD IM=2\nsaved 26c6ca7ba610a27a.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "ZXTests v3p (2014-03-20)(Rak, Patrik)[!].zip",
+    "member": "ulatest3.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "f27d4f79b4224272.png",
+    "returncode": 0,
+    "output": "PC=C0B3 SP=BFE6 AF=60A1 BC=FF01 DE=C14E HL=FFF6 IX=C1A8 IY=5C3A I=FD IM=2\nsaved f27d4f79b4224272.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.0 (2012-12-08)(Rak, Patrik)[!].zip",
+    "member": "z80test-1.0/z80ccf.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "ea68cd4f0cb188f0.png",
+    "returncode": 0,
+    "output": "PC=820E SP=8800 AF=BBAC BC=881C DE=885C HL=8831 IX=DD88 IY=FD77 I=A9 IM=1\nsaved ea68cd4f0cb188f0.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.0 (2012-12-08)(Rak, Patrik)[!].zip",
+    "member": "z80test-1.0/z80doc.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "8b68c47677f96efa.png",
+    "returncode": 0,
+    "output": "PC=82BA SP=8800 AF=F5A4 BC=73C8 DE=F51E HL=852F IX=DD88 IY=FD77 I=A9 IM=1\nsaved 8b68c47677f96efa.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.0 (2012-12-08)(Rak, Patrik)[!].zip",
+    "member": "z80test-1.0/z80docflags.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "e4deac6172eb7071.png",
+    "returncode": 0,
+    "output": "PC=827C SP=8800 AF=0044 BC=8826 DE=8863 HL=883A IX=DD88 IY=FD77 I=A9 IM=1\nsaved e4deac6172eb7071.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.0 (2012-12-08)(Rak, Patrik)[!].zip",
+    "member": "z80test-1.0/z80flags.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "2d6259f2b6de5326.png",
+    "returncode": 0,
+    "output": "PC=829E SP=8808 AF=A1F7 BC=BBCC DE=DDEE HL=4411 IX=DD88 IY=FD77 I=A9 IM=1\nsaved 2d6259f2b6de5326.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.0 (2012-12-08)(Rak, Patrik)[!].zip",
+    "member": "z80test-1.0/z80full.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "abc3cffc172a4c44.png",
+    "returncode": 0,
+    "output": "PC=82BB SP=8800 AF=F380 BC=09CC DE=DDEE HL=8808 IX=DD88 IY=FD77 I=A9 IM=1\nsaved abc3cffc172a4c44.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.0 (2012-12-08)(Rak, Patrik)[!].zip",
+    "member": "z80test-1.0/z80memptr.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "ca6528b6abe1da12.png",
+    "returncode": 0,
+    "output": "PC=8271 SP=8800 AF=1220 BC=8826 DE=8862 HL=8839 IX=DD88 IY=FD77 I=A9 IM=1\nsaved ca6528b6abe1da12.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.1 (2022-01-16)(Rak, Patrik)[!].zip",
+    "member": "z80test-1.1/z80ccf.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "85727a189882e6d1.png",
+    "returncode": 0,
+    "output": "PC=828F SP=8800 AF=4420 BC=8821 DE=8836 HL=8861 IX=DD88 IY=FD77 I=A9 IM=1\nsaved 85727a189882e6d1.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.1 (2022-01-16)(Rak, Patrik)[!].zip",
+    "member": "z80test-1.1/z80doc.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "8d881a850349b0ba.png",
+    "returncode": 0,
+    "output": "PC=82FF SP=8800 AF=CC80 BC=0ECC DE=DDEE HL=8802 IX=DD88 IY=FD77 I=A9 IM=1\nsaved 8d881a850349b0ba.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.1 (2022-01-16)(Rak, Patrik)[!].zip",
+    "member": "z80test-1.1/z80docflags.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "b5d2b29494242313.png",
+    "returncode": 0,
+    "output": "PC=825D SP=8800 AF=CC08 BC=881B DE=882F HL=8858 IX=DD88 IY=FD77 I=A9 IM=1\nsaved b5d2b29494242313.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.1 (2022-01-16)(Rak, Patrik)[!].zip",
+    "member": "z80test-1.1/z80flags.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "22de44336b129d90.png",
+    "returncode": 0,
+    "output": "PC=8248 SP=8800 AF=2B2C BC=8819 DE=8856 HL=882D IX=DD88 IY=FD77 I=A9 IM=1\nsaved 22de44336b129d90.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.1 (2022-01-16)(Rak, Patrik)[!].zip",
+    "member": "z80test-1.1/z80full.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "4589930ad2bf43f1.png",
+    "returncode": 0,
+    "output": "PC=82EC SP=880A AF=EAF8 BC=BBCC DE=DDEE HL=4411 IX=DD88 IY=FD77 I=A9 IM=1\nsaved 4589930ad2bf43f1.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.1 (2022-01-16)(Rak, Patrik)[!].zip",
+    "member": "z80test-1.1/z80memptr.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "369401b40c89db9d.png",
+    "returncode": 0,
+    "output": "PC=8261 SP=8800 AF=EE30 BC=881C DE=8859 HL=8830 IX=DD88 IY=FD77 I=A9 IM=1\nsaved 369401b40c89db9d.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.1a (2022-01-17)(Rak, Patrik)[!].zip",
+    "member": "z80test-1.1a/z80ccf.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "3dcf07cd1a7364c4.png",
+    "returncode": 0,
+    "output": "PC=82DC SP=8800 AF=4420 BC=8821 DE=8836 HL=8861 IX=DD88 IY=FD77 I=A9 IM=1\nsaved 3dcf07cd1a7364c4.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.1a (2022-01-17)(Rak, Patrik)[!].zip",
+    "member": "z80test-1.1a/z80doc.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "75013cf46a969a43.png",
+    "returncode": 0,
+    "output": "PC=834C SP=8800 AF=CC80 BC=0ECC DE=DDEE HL=8802 IX=DD88 IY=FD77 I=A9 IM=1\nsaved 75013cf46a969a43.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.1a (2022-01-17)(Rak, Patrik)[!].zip",
+    "member": "z80test-1.1a/z80docflags.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "397cb47657a8df53.png",
+    "returncode": 0,
+    "output": "PC=82A4 SP=8800 AF=CC08 BC=881B DE=882F HL=8858 IX=DD88 IY=FD77 I=A9 IM=1\nsaved 397cb47657a8df53.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.1a (2022-01-17)(Rak, Patrik)[!].zip",
+    "member": "z80test-1.1a/z80flags.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "898d993be6b94093.png",
+    "returncode": 0,
+    "output": "PC=8293 SP=8800 AF=2B2C BC=8819 DE=8856 HL=882D IX=DD88 IY=FD77 I=A9 IM=1\nsaved 898d993be6b94093.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.1a (2022-01-17)(Rak, Patrik)[!].zip",
+    "member": "z80test-1.1a/z80full.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "fda1a300e7e2b54a.png",
+    "returncode": 0,
+    "output": "PC=8338 SP=880A AF=EAF8 BC=BBCC DE=DDEE HL=4411 IX=DD88 IY=FD77 I=A9 IM=1\nsaved fda1a300e7e2b54a.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.1a (2022-01-17)(Rak, Patrik)[!].zip",
+    "member": "z80test-1.1a/z80memptr.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "b8ab9413679e375f.png",
+    "returncode": 0,
+    "output": "PC=82AB SP=8800 AF=EE30 BC=881C DE=8859 HL=8830 IX=DD88 IY=FD77 I=A9 IM=1\nsaved b8ab9413679e375f.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.1rc1 (2022-01-13)(Rak, Patrik)[!].zip",
+    "member": "z80ccf.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "8fd7aea1e0953c81.png",
+    "returncode": 0,
+    "output": "PC=8290 SP=8800 AF=4420 BC=8821 DE=8836 HL=8861 IX=DD88 IY=FD77 I=A9 IM=1\nsaved 8fd7aea1e0953c81.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.1rc1 (2022-01-13)(Rak, Patrik)[!].zip",
+    "member": "z80doc.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "b28b21a2ef5b6585.png",
+    "returncode": 0,
+    "output": "PC=8300 SP=8800 AF=CC80 BC=0ECC DE=DDEE HL=8802 IX=DD88 IY=FD77 I=A9 IM=1\nsaved b28b21a2ef5b6585.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.1rc1 (2022-01-13)(Rak, Patrik)[!].zip",
+    "member": "z80docflags.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "9127313b1c612a1f.png",
+    "returncode": 0,
+    "output": "PC=825E SP=8800 AF=CC08 BC=881B DE=882F HL=8858 IX=DD88 IY=FD77 I=A9 IM=1\nsaved 9127313b1c612a1f.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.1rc1 (2022-01-13)(Rak, Patrik)[!].zip",
+    "member": "z80flags.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "8d54fc1714495978.png",
+    "returncode": 0,
+    "output": "PC=8249 SP=8800 AF=2B2C BC=8819 DE=8856 HL=882D IX=DD88 IY=FD77 I=A9 IM=1\nsaved 8d54fc1714495978.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.1rc1 (2022-01-13)(Rak, Patrik)[!].zip",
+    "member": "z80full.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "9472ac669b8dcbef.png",
+    "returncode": 0,
+    "output": "PC=82ED SP=880A AF=EAF8 BC=BBCC DE=DDEE HL=4411 IX=DD88 IY=FD77 I=A9 IM=1\nsaved 9472ac669b8dcbef.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.1rc1 (2022-01-13)(Rak, Patrik)[!].zip",
+    "member": "z80memptr.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "55f938645105f81f.png",
+    "returncode": 0,
+    "output": "PC=8262 SP=8800 AF=EE30 BC=881C DE=8859 HL=8830 IX=DD88 IY=FD77 I=A9 IM=1\nsaved 55f938645105f81f.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.2 (2022-01-26)(Rak, Patrik)[!].zip",
+    "member": "z80test-1.2/z80ccf.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "4355209d4bbd3fa2.png",
+    "returncode": 0,
+    "output": "PC=82DC SP=8800 AF=4420 BC=8821 DE=8836 HL=8861 IX=DD88 IY=FD77 I=A9 IM=1\nsaved 4355209d4bbd3fa2.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.2 (2022-01-26)(Rak, Patrik)[!].zip",
+    "member": "z80test-1.2/z80ccfscr.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "f324b0b79322a3ed.png",
+    "returncode": 0,
+    "output": "PC=801D SP=C000 AF=1104 BC=4BE9 DE=EFFB HL=4BF9 IX=8023 IY=5C3A I=3F IM=1\nsaved f324b0b79322a3ed.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.2 (2022-01-26)(Rak, Patrik)[!].zip",
+    "member": "z80test-1.2/z80doc.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "9b83e6f61e7f8599.png",
+    "returncode": 0,
+    "output": "PC=834C SP=8800 AF=CC80 BC=0ECC DE=DDEE HL=8802 IX=DD88 IY=FD77 I=A9 IM=1\nsaved 9b83e6f61e7f8599.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.2 (2022-01-26)(Rak, Patrik)[!].zip",
+    "member": "z80test-1.2/z80docflags.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "325a8ec5abfbf99e.png",
+    "returncode": 0,
+    "output": "PC=82A4 SP=8800 AF=CC08 BC=881B DE=882F HL=8858 IX=DD88 IY=FD77 I=A9 IM=1\nsaved 325a8ec5abfbf99e.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.2 (2022-01-26)(Rak, Patrik)[!].zip",
+    "member": "z80test-1.2/z80flags.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "651a081241f941fc.png",
+    "returncode": 0,
+    "output": "PC=8293 SP=8800 AF=2B2C BC=8819 DE=8856 HL=882D IX=DD88 IY=FD77 I=A9 IM=1\nsaved 651a081241f941fc.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.2 (2022-01-26)(Rak, Patrik)[!].zip",
+    "member": "z80test-1.2/z80full.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "ef2175629c9d7df3.png",
+    "returncode": 0,
+    "output": "PC=8338 SP=880A AF=EAF8 BC=BBCC DE=DDEE HL=4411 IX=DD88 IY=FD77 I=A9 IM=1\nsaved ef2175629c9d7df3.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.2 (2022-01-26)(Rak, Patrik)[!].zip",
+    "member": "z80test-1.2/z80memptr.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "c46476e083fd1c6d.png",
+    "returncode": 0,
+    "output": "PC=82AB SP=8800 AF=EE30 BC=881C DE=8859 HL=8830 IX=DD88 IY=FD77 I=A9 IM=1\nsaved c46476e083fd1c6d.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.2a (2023-12-02)(Rak, Patrik)[!].zip",
+    "member": "z80test-1.2a/z80ccf.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "f36105a8c4fb9785.png",
+    "returncode": 0,
+    "output": "PC=82DC SP=8800 AF=4420 BC=8821 DE=8836 HL=8861 IX=DD88 IY=FD77 I=A9 IM=1\nsaved f36105a8c4fb9785.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.2a (2023-12-02)(Rak, Patrik)[!].zip",
+    "member": "z80test-1.2a/z80ccfscr.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "ea2e852083ce662e.png",
+    "returncode": 0,
+    "output": "PC=801D SP=C000 AF=1104 BC=4BE9 DE=EFFB HL=4BF9 IX=8023 IY=5C3A I=3F IM=1\nsaved ea2e852083ce662e.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.2a (2023-12-02)(Rak, Patrik)[!].zip",
+    "member": "z80test-1.2a/z80doc.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "4fdb63929ab34d31.png",
+    "returncode": 0,
+    "output": "PC=834C SP=8800 AF=CC80 BC=0ECC DE=DDEE HL=8802 IX=DD88 IY=FD77 I=A9 IM=1\nsaved 4fdb63929ab34d31.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.2a (2023-12-02)(Rak, Patrik)[!].zip",
+    "member": "z80test-1.2a/z80docflags.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "90193908b0cc3688.png",
+    "returncode": 0,
+    "output": "PC=82A4 SP=8800 AF=CC08 BC=881B DE=882F HL=8858 IX=DD88 IY=FD77 I=A9 IM=1\nsaved 90193908b0cc3688.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.2a (2023-12-02)(Rak, Patrik)[!].zip",
+    "member": "z80test-1.2a/z80flags.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "d2911f06c0f33d0b.png",
+    "returncode": 0,
+    "output": "PC=8293 SP=8800 AF=2B2C BC=8819 DE=8856 HL=882D IX=DD88 IY=FD77 I=A9 IM=1\nsaved d2911f06c0f33d0b.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.2a (2023-12-02)(Rak, Patrik)[!].zip",
+    "member": "z80test-1.2a/z80full.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "3d999e7405e4e300.png",
+    "returncode": 0,
+    "output": "PC=8338 SP=880A AF=EAF8 BC=BBCC DE=DDEE HL=4411 IX=DD88 IY=FD77 I=A9 IM=1\nsaved 3d999e7405e4e300.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.2a (2023-12-02)(Rak, Patrik)[!].zip",
+    "member": "z80test-1.2a/z80memptr.tap",
+    "group": "common",
+    "machine": "48k",
+    "screenshot": "cd5b08a2d7da0730.png",
+    "returncode": 0,
+    "output": "PC=82AB SP=8800 AF=EE30 BC=881C DE=8859 HL=8830 IX=DD88 IY=FD77 I=A9 IM=1\nsaved cd5b08a2d7da0730.png\n",
+    "verdict": "smoke only; hardware verdict requires review"
+  }
+]

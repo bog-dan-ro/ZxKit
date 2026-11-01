@@ -203,7 +203,10 @@ std::string_view SpectrumPlus3Machine::name() const noexcept
 
 FrameTimings SpectrumPlus3Machine::timings() const noexcept
 {
-    return kTimings128k;
+    auto timings = kTimings128k;
+    timings.interruptLength = 32;
+    timings.screenStartOffset = 1;
+    return timings;
 }
 
 ContentionPattern SpectrumPlus3Machine::contentionPattern() const noexcept

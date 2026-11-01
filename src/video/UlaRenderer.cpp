@@ -29,6 +29,7 @@ UlaRenderer::UlaRenderer()
 
 void UlaRenderer::reset() noexcept
 {
+    m_rasterActive = false;
     m_borderColor = 7;
     m_scldReg = 0;
     m_mode = VideoDisplayMode::StandardUla;
@@ -155,6 +156,77 @@ void UlaRenderer::renderFullFrame(const Mmu &mmu, VideoFrame &frame)
     advanceFlashCounter();
 }
 
+void UlaRenderer::beginRasterFrame(const FrameTimings &timings)
+{
+    m_rasterTimings = timings;
+    m_rasterCursor = timings.firstScreenTstate() - kBorderTopLines * timings.tstatesPerLine
+                     - kBorderLeftPx / 2;
+    m_bitmapLatch.fill(0);
+    m_rasterActive = true;
+}
+
+void UlaRenderer::renderUntil(uint32_t frameTstate, const Mmu &mmu)
+{
+    if (!m_rasterActive || frameTstate <= m_rasterCursor)
+        return;
+    const auto &t = m_rasterTimings;
+    const uint32_t first = t.firstScreenTstate() - kBorderTopLines * t.tstatesPerLine
+                           - kBorderLeftPx / 2;
+    const uint32_t end = std::min(frameTstate, first + kTotalHeightLines * t.tstatesPerLine);
+    const auto vram = m_vramBankId ? mmu.bank(m_vramBankId).span16k(m_vramPage16k)
+                                  : std::span<const uint8_t>{};
+    while (m_rasterCursor < end) {
+        const uint32_t relative = m_rasterCursor - first;
+        const uint32_t y = relative / t.tstatesPerLine;
+        const uint32_t tick = relative % t.tstatesPerLine;
+        if (tick >= kTotalWidthPx / 2) {
+            m_rasterCursor += std::min(end - m_rasterCursor, t.tstatesPerLine - tick);
+            continue;
+        }
+        auto row = m_rasterFrame.scanline(y);
+        const int32_t screenY = int32_t(y) - kBorderTopLines;
+        const int32_t screenTick = int32_t(tick) - kBorderLeftPx / 2;
+        const bool screenLine = screenY >= 0 && screenY < int32_t(kScreenLines) && !vram.empty();
+        if (!screenLine || screenTick < 0 || screenTick >= 128) {
+            row[tick * 2] = row[tick * 2 + 1] = m_palette[m_borderColor];
+        }
+        // A pair of characters is fetched on four consecutive clocks followed
+        // by four idle clocks. Attribute fetch completes each character latch;
+        // later writes cannot change the eight pixels already in that latch.
+        if (screenLine && screenTick >= -1 && screenTick < 123) {
+            const uint32_t fetchTick = screenTick + 1;
+            const uint32_t phase = fetchTick & 7;
+            if (phase < 4) {
+                const uint32_t col = (fetchTick / 8) * 2 + phase / 2;
+                const uint16_t bitmapOffset = ((screenY & 0xc0) << 5) | ((screenY & 7) << 8)
+                                              | ((screenY & 0x38) << 2) | col;
+                if (!(phase & 1)) {
+                    m_bitmapLatch[phase / 2] = vram[(m_vramOffsetBytes + bitmapOffset) & 0x3fff];
+                } else {
+                    const uint16_t attrOffset = 0x1800 + (screenY / 8) * 32 + col;
+                    m_attributeLatch = vram[(m_vramOffsetBytes + attrOffset) & 0x3fff];
+                    const uint8_t bright = (m_attributeLatch & 0x40) ? 8 : 0;
+                    uint8_t ink = (m_attributeLatch & 7) + bright;
+                    uint8_t paper = ((m_attributeLatch >> 3) & 7) + bright;
+                    if ((m_attributeLatch & 0x80) && m_flashInvert)
+                        std::swap(ink, paper);
+                    const uint8_t bits = m_bitmapLatch[phase / 2];
+                    for (uint32_t x = 0; x < 8; ++x)
+                        row[kBorderLeftPx + col * 8 + x] = m_palette[(bits & (0x80 >> x)) ? ink : paper];
+                }
+            }
+        }
+        ++m_rasterCursor;
+    }
+}
+
+void UlaRenderer::copyRasterScanline(uint32_t y, VideoFrame &frame) const
+{
+    if (frame.width() != kTotalWidthPx || frame.height() != kTotalHeightLines)
+        frame.resize(kTotalWidthPx, kTotalHeightLines);
+    std::ranges::copy(m_rasterFrame.scanline(y), frame.scanline(y).begin());
+}
+
 void UlaRenderer::advanceFlashCounter() noexcept
 {
     if (++m_flashFrameCounter >= 16) {
@@ -168,21 +240,20 @@ uint8_t UlaRenderer::readFloatingBus(const Clock &clock, const Mmu &mmu) const n
     if (m_vramBankId == 0)
         return 0xFF;
 
-    const auto pos = clock.rasterPos();
     const auto &t = clock.timings();
-    if (pos.line < t.topBorderLines || pos.line >= t.topBorderLines + t.screenLines)
+    const uint32_t now = clock.frameBaseTstates();
+    const uint32_t firstFetch = t.firstScreenTstate() + 2;
+    if (now < firstFetch)
         return 0xFF;
-    if (pos.lineTstate < t.leftBorderTstates || pos.lineTstate >= t.leftBorderTstates + t.screenTstates)
+    const uint32_t elapsed = now - firstFetch;
+    const uint32_t screenY = elapsed / t.tstatesPerLine;
+    const uint32_t relTs = elapsed % t.tstatesPerLine;
+    if (screenY >= t.screenLines || relTs >= t.screenTstates)
         return 0xFF;
-
-    const uint16_t relTs = pos.lineTstate - t.leftBorderTstates;
-    const uint8_t phase = relTs & 0x07;
-    // ULA fetches bitmap/attr during phases 0..3, idle during 4..7
+    const uint8_t phase = relTs & 7;
     if (phase >= 4)
         return 0xFF;
-
-    const uint16_t screenY = pos.line - t.topBorderLines;
-    const uint16_t col = static_cast<uint16_t>((relTs >> 2) + (phase >= 2 ? 1 : 0));
+    const uint16_t col = static_cast<uint16_t>((relTs / 8) * 2 + phase / 2);
     const auto vram16k = mmu.bank(m_vramBankId).span16k(m_vramPage16k);
     if ((phase & 1) == 0) {
         const uint16_t pixelOffset = static_cast<uint16_t>(
@@ -208,6 +279,7 @@ void UlaRenderer::saveState(StateWriter &w) const
 
 void UlaRenderer::loadState(StateReader &r)
 {
+    m_rasterActive = false;
     m_borderColor       = r.read<uint8_t>();
     m_scldReg           = r.read<uint8_t>();
     m_mode              = static_cast<VideoDisplayMode>(r.read<uint8_t>());

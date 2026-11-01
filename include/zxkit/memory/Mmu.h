@@ -54,8 +54,9 @@ public:
         static constexpr uint8_t WatchWrite  = 0x08;
         static constexpr uint8_t CustomRead  = 0x10;
         static constexpr uint8_t CustomWrite = 0x20;
+        static constexpr uint8_t VideoWrite   = 0x40;
         static constexpr uint8_t SlowRead    = WatchRead | CustomRead;
-        static constexpr uint8_t SlowWrite   = WatchWrite | CustomWrite;
+        static constexpr uint8_t SlowWrite   = WatchWrite | CustomWrite | VideoWrite;
     };
 
     struct SlotMapping {
@@ -161,6 +162,9 @@ public:
         return m_overlayActive[slot] ? m_overlayMap[slot] : m_baseMap[slot];
     }
 
+    /// Called before writes to the first 7KB of each 16KB page of a video RAM bank.
+    void setVideoWriteCallback(BankId bank, std::function<void()> callback);
+
     void setWatchpointCallback(WatchpointCallback cb);
     void setSlotWatchFlags(std::size_t slot, bool watchRead, bool watchWrite) noexcept;
     void setCustomSlotHandlers(std::size_t slot, CustomReadHandler rd, CustomWriteHandler wr);
@@ -202,6 +206,8 @@ private:
     std::array<CustomReadHandler, kSlotCount> m_customReads{};
     std::array<CustomWriteHandler, kSlotCount> m_customWrites{};
     WatchpointCallback m_watchpointCb;
+    BankId m_videoBank = 0;
+    std::function<void()> m_videoWriteCallback;
 
 };
 

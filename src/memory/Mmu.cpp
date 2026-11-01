@@ -60,6 +60,8 @@ BankId Mmu::findBank(std::string_view name) const noexcept
 
 void Mmu::clear() noexcept
 {
+    m_videoBank = 0;
+    m_videoWriteCallback = nullptr;
     m_banks.clear();
     m_nameToId.clear();
     for (std::size_t i = 0; i < kSlotCount; ++i) {
@@ -211,6 +213,8 @@ void Mmu::poke(uint16_t addr, uint8_t val, bool allowRomWrite) noexcept
 {
     const std::size_t slot = addr >> kPageShift;
     if ((m_flags[slot] & SlotFlags::Writable) != 0) {
+        if (m_flags[slot] & SlotFlags::VideoWrite)
+            m_videoWriteCallback();
         m_writePages[slot][addr & kPageMask] = val;
     } else if (allowRomWrite) {
         const auto &active = m_overlayActive[slot] ? m_overlayMap[slot] : m_baseMap[slot];
@@ -218,6 +222,14 @@ void Mmu::poke(uint16_t addr, uint8_t val, bool allowRomWrite) noexcept
             m_banks[active.bankId - 1].page1k(active.readPage1k)[addr & kPageMask] = val;
         }
     }
+}
+
+void Mmu::setVideoWriteCallback(BankId bank, std::function<void()> callback)
+{
+    m_videoBank = bank;
+    m_videoWriteCallback = std::move(callback);
+    for (std::size_t slot = 0; slot < kSlotCount; ++slot)
+        refreshSlot(slot);
 }
 
 void Mmu::setWatchpointCallback(WatchpointCallback cb)
@@ -324,6 +336,9 @@ void Mmu::refreshSlot(std::size_t slot) noexcept
         f |= SlotFlags::CustomRead;
     if (m_customWrites[slot])
         f |= SlotFlags::CustomWrite;
+    if (m_videoWriteCallback && active.writable && active.writeBankId == m_videoBank
+        && active.writePage1k % 16 < 7)
+        f |= SlotFlags::VideoWrite;
     m_flags[slot] = f;
 }
 
@@ -338,6 +353,8 @@ uint8_t Mmu::handleSlowRead(std::size_t slot, uint16_t addr, uint8_t val) const
 
 void Mmu::handleSlowWrite(std::size_t slot, uint16_t addr, uint8_t val)
 {
+    if (m_flags[slot] & SlotFlags::VideoWrite)
+        m_videoWriteCallback();
     if (m_customWrites[slot]) {
         m_customWrites[slot](addr, val);
     } else {

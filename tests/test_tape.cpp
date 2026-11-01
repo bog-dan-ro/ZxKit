@@ -657,11 +657,9 @@ int main(int argc, char **argv)
     testRomTrap();
     testMediaActivity();
 
-    const std::filesystem::path romDir = argc > 1 ? argv[1] : "";
-    if (!romDir.empty() && std::filesystem::exists(romDir / "48.rom"))
-        testRomLoading(romDir);
-    else
-        std::println("  no ROMs: skipped the ROM loading tests");
+    const std::filesystem::path romDir = argc > 1 ? argv[1] : ZXKIT_TEST_ROM_DIR;
+    assert(std::filesystem::file_size(romDir / "48.rom") == 16384);
+    testRomLoading(romDir);
 
     std::println("test_tape: all tests passed");
     return EXIT_SUCCESS;

@@ -48,12 +48,10 @@ void ContentionModel::rebuildTable() noexcept
     static constexpr std::array<uint8_t, 8> kPatP2A = {1, 0, 7, 6, 5, 4, 3, 2};
     const auto &pat = (m_pattern == ContentionPattern::SinclairPlus2A_3) ? kPatP2A : kPat48;
 
-    const uint32_t firstLine = m_timings.topBorderLines;
-    const uint32_t lastLine  = firstLine + m_timings.screenLines;
-    const uint32_t firstTsInLine = m_timings.leftBorderTstates - 1; // Contention starts 1 T-state before first pixel
-
-    for (uint32_t line = firstLine; line < lastLine; ++line) {
-        const uint32_t lineBase = line * m_timings.tstatesPerLine + firstTsInLine;
+    const uint32_t lead = (m_pattern == ContentionPattern::SinclairPlus2A_3) ? 4 : 1;
+    const uint32_t start = m_timings.firstScreenTstate() - lead;
+    for (uint32_t line = 0; line < m_timings.screenLines; ++line) {
+        const uint32_t lineBase = start + line * m_timings.tstatesPerLine;
         for (uint32_t x = 0; x < m_timings.screenTstates; ++x) {
             const uint32_t ts = lineBase + x;
             if (ts < m_tableSize)

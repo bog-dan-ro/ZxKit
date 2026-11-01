@@ -1,0 +1,4283 @@
+[
+  {
+    "file": "+2A-+3 Floating Bus Test v1.2 (2017-09-13)(Hikaru)[!].tap",
+    "group": "plus2a-plus3",
+    "size": 1121,
+    "sha256": "f4bbed4328e124548448d0362a7e22d1b67a982468e6c6b518864455f055bf6b",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "+2A-+3 Floating Bus Test v1.2 (2017-09-15)(Hikaru)[!].tap",
+    "group": "plus2a-plus3",
+    "size": 1148,
+    "sha256": "48dd8eb1eb7b92e2fc7ee99b0065d7dd7da7fe87d188447795df0072e111a6b9",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "+2A-+3 Paging Tests (2021-12-17)(Woodmass, Mark)[!].tap",
+    "group": "plus2a-plus3",
+    "size": 1466,
+    "sha256": "d45528c4d79fa339d06e76566886b4f004a41ed81903036949500e04e99f9563",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "+2A-+3 Paging Tests (2026-02-23)(Woodmass, Mark)[!].zip",
+    "group": "plus2a-plus3",
+    "size": 3968,
+    "sha256": "5ef8dbffe422bbfb63a20e164dff3608460c794d204289a5f74fe9cf0622d617",
+    "members": [
+      "paging.tap",
+      "paging.asm"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "+2A-+3 Screen Switching Test (2024-11-30)(Weiv)(BASIC)[!].tap",
+    "group": "plus2a-plus3",
+    "size": 302,
+    "sha256": "3d6150975e3a9b77cf09191cb8ab12a3dc133a4d6351b623086c1f18148e71cf",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "+2A-+3 Screen Switching Test (2024-11-30)(Weiv)[!].szx",
+    "group": "plus2a-plus3",
+    "size": 1779,
+    "sha256": "9639a94ce5d7353c476a1e627db757ec8a18710f694bd3efab513f4330eef578",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "+2A-+3 Screen Switching Test (2024-11-30)(Weiv)[!].tap",
+    "group": "plus2a-plus3",
+    "size": 127,
+    "sha256": "1defe7c098a53a5fe7d8b9eb2872f0fd1516cda8326885be37fe0067e13a33c1",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "+2A-+3 Screen Switching Test (2024-11-30)(Weiv)[!].z80",
+    "group": "plus2a-plus3",
+    "size": 3633,
+    "sha256": "bcb07ade1222e94da4be0e9534b95ff6cada270577426815790bad309c97527e",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "48K NEC Contention Test Suite (2008-09-14)(Woodmass, Mark)[!].tap",
+    "group": "48k",
+    "size": 1275,
+    "sha256": "46c52d8133579c577c33d404b3f93c730b474bf9ba503e340f5ebfabc3a9b8ab",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "AY Detection (2020-02-15)(Veleba, Jiří)[!].zip",
+    "group": "common",
+    "size": 373,
+    "sha256": "030cbafcb01fa64cc5eedf7d3bf5ad3f0b1d5207b284792a726106d3973d13b1",
+    "members": [
+      "aydete.TAP"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "AY Undocumented Test (2023-02-22)(Weiv)[!].zip",
+    "group": "common",
+    "size": 1695,
+    "sha256": "4f4566951c08db8d934379aad020e974acdf4491f1c5a57a49027989ef87aed9",
+    "members": [
+      "AYundocTestByWeiv1.tap",
+      "AYundocTestByWeiv1.trd"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "AY and CPU Detection (2023-02-19)(azesmbog)[!].tap",
+    "group": "common",
+    "size": 506,
+    "sha256": "581fe1ab2600d4ebdfc8646bbeb3a9f2681e2c514977b88da210fb5a5d34b344",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "AY-YM Test (2023-02-21)(Weiv)[!].tap",
+    "group": "common",
+    "size": 189,
+    "sha256": "6aa2ab9b662006c210f868769daf0c5e44f0d9bbe57ccba60e349a504f356bfa",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "AY-YM Test (var 2) (2023-02-21)(Weiv)[!].tap",
+    "group": "common",
+    "size": 174,
+    "sha256": "f28bfe9736dd257b49ae5c1da1a193b8921c61e7a66403f5cc139d3a40cb762d",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "BASIC Border (2001-09-30)(Wynne, Michael D.).z80",
+    "group": "48k",
+    "size": 2621,
+    "sha256": "c4c5594a347388ab7cea69a5d30d9b4e483c68e49705aaa7872173d002396b04",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "BBG (2005-11)(Putnik, Pera)[!].zip",
+    "group": "common",
+    "size": 1112,
+    "sha256": "24b6c070569a016763f675b494ee5cee93bdd5553c2f7d7d93363868b07a3ae5",
+    "members": [
+      "BBG128.Z80",
+      "BBG48.TAP"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Border Time (2007)(Bobrowski, Jan)[!].tap",
+    "group": "common",
+    "size": 873,
+    "sha256": "f3433b26a1a340a0506c24a25183b5f572f095fd6bfe7f6eeeb4df8577b1ad68",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Border Time (2011-08-20)(Bobrowski, Jan)[!].tap",
+    "group": "common",
+    "size": 695,
+    "sha256": "235f3ed166f819b4b743daf968dd06719aeb1b5cfbaea4635ed75790ddf959cd",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Bright Miner (2008-11-14)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "size": 857,
+    "sha256": "34028d66614d5c2a3c4c0f8459b854fb8195d2c85d8e55b30745e1758ed029fb",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "CPD-Test v0.66b (2025-04-05)(Sapach, Michael)[!].zip",
+    "group": "common",
+    "size": 3877,
+    "sha256": "3e48351e6992c22e140907aa12ee68795b8b107d0f2b029e53092ab371f6ba24",
+    "members": [
+      "cpd-test.tap"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "CPD-Test v0.777b (2025-05-07)(Sapach, Michael)[!].zip",
+    "group": "common",
+    "size": 6169,
+    "sha256": "d933d8900df9fd5ccf9c00040f7b1960c0a4e111f86792974dc558fcd54bc419",
+    "members": [
+      "cpd-test.tzx"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "CPD-Test v0.7b (2025-04-29)(Sapach, Michael)(TAP)[!].zip",
+    "group": "common",
+    "size": 5458,
+    "sha256": "af81bbddd8fbb334454baac298542734840bfb5e96f3501577d08c7df9d0a8be",
+    "members": [
+      "cpd-test1250429.tap"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "CPD-Test v0.7b (2025-04-29)(Sapach, Michael)(TZX)[!].zip",
+    "group": "common",
+    "size": 6035,
+    "sha256": "aabfd3c1d2516d4e2ea6b8662040d2fdea7c679363b35fa45d889cc29233ae44",
+    "members": [
+      "cpd-test1250429.tzx"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Colour Panels (2022-12-24)(Bobrowski, Jan)[!].tap",
+    "group": "common",
+    "size": 1232,
+    "sha256": "28d8c3f48499845f83cca03fad7360f2f37fbfff994f68debe6a6608f9702a96",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Contention (2005-03-03)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "size": 2103,
+    "sha256": "b90ea09172ebaf0e367a4ee97ff787114fa306de4bc9873ac16cf6d21aeeb48d",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Crap1 (200x)(Woodmass, Mark)[!].tap",
+    "group": "48k",
+    "size": 441,
+    "sha256": "80e279491bbfcbb51ae86712bf68cc0e54b76d21b482c4060821b5097eb6edaf",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Currah uSpeech Tests v1.0 (2017-10-23)(maziac)[GitHub cbe9d52a42d09d31b7194af4205c73f7533ce9b3].tar.gz",
+    "group": "common",
+    "size": 65377,
+    "sha256": "3016578adf0b2d3f20ec9cd562f1f41c51fedf491105647a379e6893abaf7836",
+    "members": [
+      "currah_uspeech_tests-1.0",
+      "currah_uspeech_tests-1.0/Makefile",
+      "currah_uspeech_tests-1.0/common.asm",
+      "currah_uspeech_tests-1.0/constants.inc",
+      "currah_uspeech_tests-1.0/currah_uspeech_tests.asm",
+      "currah_uspeech_tests-1.0/currah_uspeech_tests.tap",
+      "currah_uspeech_tests-1.0/dbg_script.dbg",
+      "currah_uspeech_tests-1.0/debug.scpt",
+      "currah_uspeech_tests-1.0/license.txt",
+      "currah_uspeech_tests-1.0/readme.md",
+      "currah_uspeech_tests-1.0/results",
+      "currah_uspeech_tests-1.0/results/Alternating_3000_3001.wav",
+      "currah_uspeech_tests-1.0/tests1.asm",
+      "currah_uspeech_tests-1.0/tests2.asm",
+      "currah_uspeech_tests-1.0/ui.asm"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "Currah uSpeech Tests v1.1 (2017-10-24)(maziac)[GitHub 5930b9e5817fecd3b2d7782eeb80089ccaf60ad2].tar.gz",
+    "group": "common",
+    "size": 464979,
+    "sha256": "43c3a5e5f7c610725819d589a47ccee106abde58443dec870c212a96a66134c3",
+    "members": [
+      "currah_uspeech_tests-1.1",
+      "currah_uspeech_tests-1.1/Makefile",
+      "currah_uspeech_tests-1.1/common.asm",
+      "currah_uspeech_tests-1.1/constants.inc",
+      "currah_uspeech_tests-1.1/currah_uspeech_tests.asm",
+      "currah_uspeech_tests-1.1/currah_uspeech_tests.tap",
+      "currah_uspeech_tests-1.1/dbg_script.dbg",
+      "currah_uspeech_tests-1.1/debug.scpt",
+      "currah_uspeech_tests-1.1/license.txt",
+      "currah_uspeech_tests-1.1/readme.md",
+      "currah_uspeech_tests-1.1/results",
+      "currah_uspeech_tests-1.1/results/Alternating_3000_3001.wav",
+      "currah_uspeech_tests-1.1/tests1.asm",
+      "currah_uspeech_tests-1.1/tests2.asm",
+      "currah_uspeech_tests-1.1/ui.asm"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "Currah uSpeech Tests v1.2 (2017-10-31)(maziac)[GitHub eb6d84ad7086d5ae2993277ce049a3c56f28b2e9].tar.gz",
+    "group": "common",
+    "size": 1865753,
+    "sha256": "ec553390502530cd7a9c2e4b50b908b0bcb4a2ebe8442300532b2eaf703df641",
+    "members": [
+      "currah_uspeech_tests-1.2",
+      "currah_uspeech_tests-1.2/Makefile",
+      "currah_uspeech_tests-1.2/common.asm",
+      "currah_uspeech_tests-1.2/constants.inc",
+      "currah_uspeech_tests-1.2/currah_uspeech_tests.asm",
+      "currah_uspeech_tests-1.2/currah_uspeech_tests.sna",
+      "currah_uspeech_tests-1.2/currah_uspeech_tests.tap",
+      "currah_uspeech_tests-1.2/debug.scpt",
+      "currah_uspeech_tests-1.2/license.txt",
+      "currah_uspeech_tests-1.2/readme.md",
+      "currah_uspeech_tests-1.2/results",
+      "currah_uspeech_tests-1.2/results/All_Allophones.wav",
+      "currah_uspeech_tests-1.2/results/Alternating_3000_3001.wav",
+      "currah_uspeech_tests-1.2/sp0256_allophones.inc",
+      "currah_uspeech_tests-1.2/tests1.asm",
+      "currah_uspeech_tests-1.2/tests2.asm",
+      "currah_uspeech_tests-1.2/tests3.asm",
+      "currah_uspeech_tests-1.2/ui.asm"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "Currah uSpeech Tests v1.3 (2017-11-12)(maziac)[GitHub 999607f4c35a67759f0b2a443338d9ac2a9d886c].tar.gz",
+    "group": "common",
+    "size": 1866579,
+    "sha256": "3c3bfd92c4f0639205ca53ad7b18a953df84f39e71b6b9e05c08978dc83dca7f",
+    "members": [
+      "currah_uspeech_tests-1.3",
+      "currah_uspeech_tests-1.3/Makefile",
+      "currah_uspeech_tests-1.3/common.asm",
+      "currah_uspeech_tests-1.3/constants.inc",
+      "currah_uspeech_tests-1.3/currah_uspeech_tests.asm",
+      "currah_uspeech_tests-1.3/currah_uspeech_tests.sna",
+      "currah_uspeech_tests-1.3/currah_uspeech_tests.tap",
+      "currah_uspeech_tests-1.3/debug.scpt",
+      "currah_uspeech_tests-1.3/license.txt",
+      "currah_uspeech_tests-1.3/readme.md",
+      "currah_uspeech_tests-1.3/results",
+      "currah_uspeech_tests-1.3/results/All_Allophones.wav",
+      "currah_uspeech_tests-1.3/results/Alternating_3000_3001.wav",
+      "currah_uspeech_tests-1.3/sp0256_allophones.inc",
+      "currah_uspeech_tests-1.3/tests1.asm",
+      "currah_uspeech_tests-1.3/tests2.asm",
+      "currah_uspeech_tests-1.3/tests3.asm",
+      "currah_uspeech_tests-1.3/ui.asm"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "DRAMfade (2021-09-17)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "size": 386,
+    "sha256": "11090473149cc314ed3d3ab5fbf3d33d1d9361a9cab3f2d57611a994165bb690",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "DRAMfade (2021-10-13)(Woodmass, Mark)[!].zip",
+    "group": "common",
+    "size": 1298,
+    "sha256": "e567578c97f876b60270df4f79d5a642333f18c8fe847dc03af48813ea7114f5",
+    "members": [
+      "DRAMfade.tap",
+      "DRAMfade.asm"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "ED777F (2017-01-25)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "size": 305,
+    "sha256": "df465b87b4b9633a3b4087a8c1058d2a29ba1b8fa7df499765a23523686fa396",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "EI48K (2021-09-27)(Woodmass, Mark)[!].tap",
+    "group": "48k",
+    "size": 517,
+    "sha256": "e1400788ef356712896970df97ba671f2a3906109e8e00bceccbb01c355bbd80",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "EIHALT (2021-09-28)(Woodmass, Mark)[!].zip",
+    "group": "common",
+    "size": 1941339,
+    "sha256": "b14e13ee6d983c9141d4fd21bc91bfc985c4f1461d0f9ac2db4e7983d1b38fe5",
+    "members": [
+      "eihalt.tap",
+      "print.asm",
+      "delay.asm",
+      "eihalt.asm",
+      "execcycle.asm",
+      "Real 48k.png",
+      "Real 128k.png",
+      "Real +2A.png"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "EIHALT (2021-10-23)(Woodmass, Mark)[!].zip",
+    "group": "common",
+    "size": 2576168,
+    "sha256": "dc978f9740b137d4c8e93ef3fcb19a7860b8fff93080ea19095a87c8b9c8b6e5",
+    "members": [
+      "eihalt.tap",
+      "print.asm",
+      "delay.asm",
+      "eihalt.asm",
+      "execcycle.asm",
+      "Real 48k.png",
+      "Real 128k.png",
+      "Real +2A.png",
+      "Real +3.png"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "EX (2009-05-23)(Woodmass, Mark)[!].tap",
+    "group": "48k",
+    "size": 229,
+    "sha256": "b2af853477f4f10b8361ab40b1218be50fd986a3538b74c8fc42b875713de356",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Errors (1998)(Gimeno Fortea, Pedro)[!].zip",
+    "group": "common",
+    "size": 1985,
+    "sha256": "e5eeb1cb0c09b3502bb8dd4ae2739fd36575401257e729814835bb58f7e71ed2",
+    "members": [
+      "ERRORS.TAP",
+      "README.TXT"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "FDDD (2008-03-08)(Woodmass, Mark)[!].asm",
+    "group": "common",
+    "size": 872,
+    "sha256": "5331696b71e00b48e5bb7e20b7653eba82a3ec5ce8bd9a5908ae5ef08369ae15",
+    "members": [],
+    "inspection": "manual"
+  },
+  {
+    "file": "FDDD (2008-03-08)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "size": 184,
+    "sha256": "f18b7f99327969d8353bb8ff4b8c0ea604dc9414aa028cf2a01854315768dea5",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "FDDD2 (2022-05-30)(Helcmanovsky, Peter)[!].zip",
+    "group": "common",
+    "size": 1153,
+    "sha256": "fa6b0fca29eb273dd4465e8c50cd4c6318ceb446f8f40bd1599c92fd1a9e4393",
+    "members": [
+      "FDDD2.tap",
+      "fddd2.asm"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "FE Delay (2023-04-10)(Weiv)[!].zip",
+    "group": "common",
+    "size": 538,
+    "sha256": "42bee1e18ea39d7a52cb447f7242f36aa19c6da6ab0c5065ad0f1f51724a82d6",
+    "members": [
+      "FEdelay.tap"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "FPGA 48K (2026-10-09)(azesmbog)[!].tap",
+    "group": "48k",
+    "size": 15182,
+    "sha256": "f3736da95d3de3109a83ab452342c56660bddf8bc6836a615960cdde96c99b29",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Float+3 (2017-09-08)(Woodmass, Mark)[!].tap",
+    "group": "plus2a-plus3",
+    "size": 721,
+    "sha256": "57e265051c9f644194b5f2226efbd5fb9cfb6b20d67ff3272ceccb4cb4b2909b",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Float128K (2008-04-02)(Woodmass, Mark)[!].szx",
+    "group": "128k-plus2",
+    "size": 3896,
+    "sha256": "40a61c2e70f005db29384c60fac5322ffef88756656241fc9299756268652e36",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Float128K (2008-04-02)(Woodmass, Mark)[!].tap",
+    "group": "128k-plus2",
+    "size": 723,
+    "sha256": "bb33aadc2cb354e2020768a0e8ce57a2b3383f64fee92dd7188c6d6c3214816f",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Float48K (2008-03-24)(Woodmass, Mark)[!].tap",
+    "group": "48k",
+    "size": 656,
+    "sha256": "80ed598dca627c1798819a19e02631c48d054e2b4779ce861fc3334866ab4cc6",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "FloatFFD (2018-02-24)(Woodmass, Mark)[!].tap",
+    "group": "128k-plus2",
+    "size": 640,
+    "sha256": "596d758c2fa84caae6856e12509bd20b2eca040eabf01dba5fbcc06d8dcbf9dc",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "FloatFFD (2023-02-28)(Woodmass, Mark)[!].zip",
+    "group": "128k-plus2",
+    "size": 106774,
+    "sha256": "aeb91d783572513c6741286fcaed3c4820f7fdc7a11e4aeae27d8ff3dc0dca5a",
+    "members": [
+      "Float7ffd/",
+      "Float7ffd/COPYING",
+      "Float7ffd/delay.asm",
+      "Float7ffd/floatffd.asm",
+      "Float7ffd/floatffd.symbol",
+      "Float7ffd/floatffd.tap",
+      "Float7ffd/floatffd.z80",
+      "Float7ffd/Real 128k.jpg"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Floating Spy v0.33 (2002-04)(Ramsoft)[!].zip",
+    "group": "common",
+    "size": 2632,
+    "sha256": "3663cfc76b0733491c69faf088dfacda9294aa76e828600070380086138747ed",
+    "members": [
+      "floatspy.txt",
+      "floatspy.tap"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Frame (200x)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "size": 1510,
+    "sha256": "aace1295609de3ca63d2613b99832f4b478e92c3b44e36d440b7c7a7389dc5b3",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Frame Test (2005-03-06)(Woodmass, Mark)[!].tzx",
+    "group": "common",
+    "size": 927,
+    "sha256": "b3a7e02130a2d457de69208fd9910cd8a340ebe47a6a05a630844016fa17d2b0",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Fuse Test (2008-03-28)(Kendall, Philip)[!].zip",
+    "group": "common",
+    "size": 20325,
+    "sha256": "2044f70b77411a9656f58a85047ed18548f0b18dfb93efa8a79a338483efd5f0",
+    "members": [
+      "fusetest/",
+      "fusetest/atiming.asm",
+      "fusetest/README",
+      "fusetest/Makefile",
+      "fusetest/sync.asm",
+      "fusetest/fusetest.tap",
+      "fusetest/guessmachine.asm",
+      "fusetest/COPYING",
+      "fusetest/print.asm",
+      "fusetest/contention.asm",
+      "fusetest/framelength.asm",
+      "fusetest/first.asm",
+      "fusetest/fusetest.asm",
+      "fusetest/delay.asm",
+      "fusetest/contention.tap",
+      "fusetest/tests.asm"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Fuse Test (2010-02-14)(Kendall, Philip)(Sources)[SourceForge SVN r4115].zip",
+    "group": "common",
+    "size": 23276,
+    "sha256": "a8f7fe3b37eadb5ea446837ebfd89d150343edde7664339c3038bccf6c575668",
+    "members": [
+      "fuse-emulator-code-r4115-trunk-fusetest/",
+      "fuse-emulator-code-r4115-trunk-fusetest/fusetest.asm",
+      "fuse-emulator-code-r4115-trunk-fusetest/print.asm",
+      "fuse-emulator-code-r4115-trunk-fusetest/sync.asm",
+      "fuse-emulator-code-r4115-trunk-fusetest/framelength.asm",
+      "fuse-emulator-code-r4115-trunk-fusetest/iocontention.asm",
+      "fuse-emulator-code-r4115-trunk-fusetest/guessmachine.asm",
+      "fuse-emulator-code-r4115-trunk-fusetest/README",
+      "fuse-emulator-code-r4115-trunk-fusetest/testcontention.asm",
+      "fuse-emulator-code-r4115-trunk-fusetest/tests.asm",
+      "fuse-emulator-code-r4115-trunk-fusetest/first.asm",
+      "fuse-emulator-code-r4115-trunk-fusetest/contention.asm",
+      "fuse-emulator-code-r4115-trunk-fusetest/COPYING",
+      "fuse-emulator-code-r4115-trunk-fusetest/findcontention.dot",
+      "fuse-emulator-code-r4115-trunk-fusetest/atiming.asm",
+      "fuse-emulator-code-r4115-trunk-fusetest/delay.asm",
+      "fuse-emulator-code-r4115-trunk-fusetest/Makefile",
+      "fuse-emulator-code-r4115-trunk-fusetest/findcontention.asm"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "HALT Contention Test (2021-09-14)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "size": 361,
+    "sha256": "857707b2e5ab428e3f1b67d59366b7a38ce2d36ecdbcc6b8085bd83fb5c0adda",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "HALT2INT (alpha) (2021-09-19)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "size": 660,
+    "sha256": "f28bacea1e68f92f77d33c0dda50507feb015fd9c9a9d68acc29b7ad980c0fde",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "HALT2INT (beta) (2021-09-19)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "size": 573,
+    "sha256": "03aa025515e1d7101c896f6e4274fb124b2cdd22521827cc97213c102269d38a",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "HALT2INT (beta.1) (2021-09-20)(Woodmass, Mark)[!].zip",
+    "group": "common",
+    "size": 9944,
+    "sha256": "97b76c7877cfe5819a9227274a6d81c15da6a8aa7740aa70495235e78f6c5578",
+    "members": [
+      "halt2int.tap",
+      "COPYING",
+      "delay.asm",
+      "halt2int.asm"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "HALT2INT (beta.2) (2021-09-20)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "size": 848,
+    "sha256": "edd1978a55014e1a33eee9dcbe6eb5c8aa036546d4d6a685df34873b430819e5",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "HALT2INT v1 (2021-09-21)(Woodmass, Mark)[!].zip",
+    "group": "common",
+    "size": 2099795,
+    "sha256": "bd5febb9d43ec65c0f912ac98ac6a4ffa07f00799a299463d2a5fb0045085b33",
+    "members": [
+      "COPYING",
+      "Real 48k (early).png",
+      "print.asm",
+      "delay.asm",
+      "execcycle.asm",
+      "halt2int.asm",
+      "halt2int.tap",
+      "Real 48k (late).png"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "HALT2INT v1-pre (2021-09-21)(Woodmass, Mark)[!].zip",
+    "group": "common",
+    "size": 486590,
+    "sha256": "55dc36c66c2fdbcdc4ab42b89a032ebba9c7c35819b64671a9b9ebce61ed8af4",
+    "members": [
+      "COPYING",
+      "delay.asm",
+      "Real 48k (early).png",
+      "print.asm",
+      "halt2int.tap",
+      "execcycle48k.asm",
+      "halt2int.asm"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "HALT2INT v2 (2021-09-26)(Woodmass, Mark)[!].zip",
+    "group": "common",
+    "size": 2099801,
+    "sha256": "8ce604958e86eebfbcac6f7977b331a56a5bf5c91f0fb0815cf63b0566c02188",
+    "members": [
+      "COPYING",
+      "Real 48k (early).png",
+      "print.asm",
+      "delay.asm",
+      "execcycle.asm",
+      "Real 48k (late).png",
+      "halt2int.asm",
+      "halt2int.tap"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "HALT2INT v2 (2021-10-23)(Woodmass, Mark)[!].zip",
+    "group": "common",
+    "size": 2099797,
+    "sha256": "a703f386ae3b00e14d1839dc00f78cc9f97a72ac69ef1e396617fa99a6a895ae",
+    "members": [
+      "COPYING",
+      "Real 48k (early).png",
+      "print.asm",
+      "delay.asm",
+      "execcycle.asm",
+      "Real 48k (late).png",
+      "halt2int.asm",
+      "halt2int.tap"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "HALT2INT v3 (2022-01-04)(Woodmass, Mark)[!].zip",
+    "group": "common",
+    "size": 2102150,
+    "sha256": "c76c1fef02315017b8ae9d64c6c339f49b20daec7931412416c5556c681ecedf",
+    "members": [
+      "COPYING",
+      "Real 48k (early).png",
+      "print.asm",
+      "delay.asm",
+      "execcycle.asm",
+      "Real 48k (late).png",
+      "halt2int.asm",
+      "halt2int.tap",
+      "halt2int128.asm",
+      "halt2int128.tap"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "IFF2 Bug (2012-08-16)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "size": 314,
+    "sha256": "a3918cecaf387f7beddc097cc06dcc6acd694aa210ed34ada11c60528e9f979b",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "IFF2 Bug (2021-09-19)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "size": 664,
+    "sha256": "2b2ca1afcc4004de86532cdd7fd35c43d441051276b5213539395327442ac123",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "IFF2 Bug (2021-11-26)(Woodmass, Mark)[!].szx",
+    "group": "common",
+    "size": 1638,
+    "sha256": "bae3af9fb6383665fa7fbebc421edda564c778e455849660b0d0f81669e7e76a",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "IFF2 Bug (2023-04-30)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "size": 692,
+    "sha256": "b7ad26a273f70d7afcceb1519f2dfd1c9749144c2aa7c76b9d9263871ff216d7",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "IFF2 Bug (2023-04-30)(Woodmass, Mark)[!].z80",
+    "group": "common",
+    "size": 2564,
+    "sha256": "4a33c94fb79556cbfb8d4213d8c854614f8d8da3e0ce14c7c262b763b50e9c34",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "IFF2 Bug 128K (2023-12-11)(Woodmass, Mark)[!].tap",
+    "group": "128k-plus2",
+    "size": 693,
+    "sha256": "88b855e02c2bf4886ca21b1ec01cb3836fd4baca535c419bf9da9833ef289b70",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "IM0-2 (2019-11-24)(Woodmass, Mark)[!].tap",
+    "group": "48k",
+    "size": 571,
+    "sha256": "5c52c9082a72f4d565ba5a4932a8e5e464262fe5c7701c6121566a27f427e5a7",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "IN-MEMPTR v0.1 (2021-12-20)(Helcmanovsky, Peter; Sainz de Baranda y Goñi, Manuel)[!].tar.xz",
+    "group": "common",
+    "size": 309996,
+    "sha256": "3c38ef385b7e4a7e1c88f8d1c9bcdb655ccf55eb406e55694f988be4fe0ad7aa",
+    "members": [
+      "._IN-MEMPTR",
+      "IN-MEMPTR",
+      "IN-MEMPTR/IN-MEMPTR.tap",
+      "IN-MEMPTR/Real 48K.jpg",
+      "IN-MEMPTR/IN-MEMPTR.asm"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "INI H and C Flags Clearing Test (2024-12-20)(Ala-Könni, Jussi)[!].tap",
+    "group": "common",
+    "size": 462,
+    "sha256": "ad2aad1fd407ad65957576d009aa2d9be2c626ffc904342aeb9a47fc2bac4276",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "INI H and C Flags Clearing Test (beta) (2024-12-20)(Ala-Könni, Jussi)[!].tap",
+    "group": "common",
+    "size": 393,
+    "sha256": "94536467d53e3cc59928e9e9d2a1d7612d85e508c00219cb6d40a19305c80b9e",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "INT Tester (2005-03-05)(Woodmass, Mark)[!].tzx",
+    "group": "common",
+    "size": 1155,
+    "sha256": "57ab4e022ceb6a6df20fd8fa282258fdb778ada3fa9a222e2d6415cbadd73b37",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "IO Contend (2021-03-02)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "size": 356,
+    "sha256": "56a712d59482bd50f9f9106259b8f1467cfe1228ab5dbc7f5fbccb7605634e0c",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "IR Contention (2006-07-17)(Woodmass, Mark)[!].tap",
+    "group": "48k",
+    "size": 688,
+    "sha256": "65225217a71883ab3e9d5ab67b6f0f4d40035f8b2c9a14cf71050dfc939dc9c2",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "IR Contention (2023-01-08)(Woodmass, Mark)[!].tap",
+    "group": "48k",
+    "size": 529,
+    "sha256": "c9d9fb0a182d353e4f8c7d3e189a6136d6445f92d521de5b58b3a4f595832e8b",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "IR Contention 128 (2023-07-02)(Woodmass, Mark)[!].tap",
+    "group": "128k-plus2",
+    "size": 646,
+    "sha256": "c52f750ed36bf5426e227a38faebde5987f3ab03e33fb0e0e3740a7fe5d2ffa7",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "InFF (2009-01-20)(Stains, Robert)[!].asm",
+    "group": "common",
+    "size": 3474,
+    "sha256": "59cd182359a2428d1c3fa6c79bfe69d11814982163642e88cdbaf87b5ca23282",
+    "members": [],
+    "inspection": "manual"
+  },
+  {
+    "file": "InFF (2009-01-20)(Stains, Robert)[!].tap",
+    "group": "common",
+    "size": 361,
+    "sha256": "73c418f10506c9d6f21699df66ea055a90c4fbdc3514fc409eb0c69e3c74a481",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Interrupt Retriggering Test (2021-12-17)(Woodmass, Mark)[!].asm",
+    "group": "common",
+    "size": 2108,
+    "sha256": "13af9a00f2876af0587e5a083f656cfacc0551554e643ef77dee9dceda4d980f",
+    "members": [],
+    "inspection": "manual"
+  },
+  {
+    "file": "Interrupt Retriggering Test (2021-12-17)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "size": 632,
+    "sha256": "58820951de8bde0f670c3681feabc422a5bdce0024282c832d3f5fc2e7b7911d",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Issue 2 Test (2023-06-09)(Weiv)[!].tap",
+    "group": "common",
+    "size": 361,
+    "sha256": "6611a3e59945f79fbf7dcfd8d3e417946a2d612e5b04cd8fd263e8eecda3a32f",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Issue 2-3 (2010-03-12)(Woodmass, Mark)[!].asm",
+    "group": "common",
+    "size": 1658,
+    "sha256": "686b7e2c29f89f6ecb3d6db98bc722162ccded628aa39ca103815eeef55f7d3f",
+    "members": [],
+    "inspection": "manual"
+  },
+  {
+    "file": "Issue 2-3 (2010-03-12)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "size": 246,
+    "sha256": "6ad27132d1a2831ebfdf4789b64248eca9ea0febdaceb62b08c253667d8f9538",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Issue 2-3 (2023-03-30)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "size": 289,
+    "sha256": "6dad2f87c1175a36fcb9796855eaf74d00cb6601dea09703dc0476e06ec0eb1c",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Issue 2-3 (BASIC) (2021-09-18)(Woodmass, Mark)[!].z80",
+    "group": "common",
+    "size": 4597,
+    "sha256": "ffe3cff4d72c72482fcdfa3ab13ca51fd57fb5c1d12c4a9871624d660a725946",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "KeyJoyTest v002.094 (2019-12-24)(Luzie)[!].zip",
+    "group": "common",
+    "size": 5507,
+    "sha256": "120cccaea4b441b9c2e235c8a620f102f7b9b7b9711a1a4b1193d5ea4db663b6",
+    "members": [
+      "KeyJoyTest-v.002.094.z80"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "KeyJoyTest v002.095 (2019-12-25)(Luzie)[!].zip",
+    "group": "common",
+    "size": 5511,
+    "sha256": "3e13b37ea98db71062630e2f99a0f3551a860c3f7392cba9bbeda1aee78fbed6",
+    "members": [
+      "KeyJoyTest-v.002.095.z80"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "KeyJoyTest v003.025 (2019-12-27)(Luzie)[!].zip",
+    "group": "common",
+    "size": 5657,
+    "sha256": "d67063eb661541ee37b43a688847b425c2ed5b4a1711a2e34f3d9b17261924fc",
+    "members": [
+      "KeyJoyTest-v.003.025.z80"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "KeyJoyTest v003.025 (2019-12-29)(Luzie)(Sources)[!].zip",
+    "group": "common",
+    "size": 5972,
+    "sha256": "0638959f34dd6ea4f4251a506dfaac95907606bf851e8793db4abf602a9b052d",
+    "members": [
+      "KeyJoyTest.asm",
+      "README.TXT"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Keyboard (2013)(Bobrowski, Jan)[!].tap",
+    "group": "common",
+    "size": 773,
+    "sha256": "df799fb4a9c2e9df312098fc15913d407c0274d79c47e83960fdf987f6ca526b",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Keyboard (2022-12-05)(Bobrowski, Jan)[!].tap",
+    "group": "common",
+    "size": 859,
+    "sha256": "50e99e4907385fea2630c2ed6e5ef5abed34a8aa0f56c441f5e54187a2327454",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Keyview (2025-05-05)(O'Neill, Melissa)[!].zip",
+    "group": "common",
+    "size": 5949,
+    "sha256": "425c8a832454941e4f7ec7358fd1e70e840f103f2bacb5d2a57cd37dd6c05e64",
+    "members": [
+      "keyview/",
+      "keyview/keyview.sna",
+      "keyview/keyview-comp.tap",
+      "keyview/README.md",
+      "keyview/keyview-uncomp.tap",
+      "keyview/keyview.bas"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "LDIR-LDDR (2021-12-17)(Woodmass, Mark)[!].tap",
+    "group": "48k",
+    "size": 254,
+    "sha256": "8d3ee2e4ab55acbe3c9485e7d31e73baf80a045bbd03baf7a6b46d6d789b0e2b",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Latency (2020-12-13)(Gimeno Fortea, Pedro)[!].tap",
+    "group": "common",
+    "size": 458,
+    "sha256": "949b4fec61ea5b6c7daff6f0e4b208d8bb173c73d79720ddcd26b30cfcf01d5b",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "MCTest2 (2011-10-07)(Makeev, Alexander)[!].zip",
+    "group": "common",
+    "size": 1559,
+    "sha256": "71316c8f704c332c96beb82f40306e3c996d817068494ff7a5426f585b1d7f6a",
+    "members": [
+      "mctest2.asm",
+      "mctest2.tap"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "MemTest+3 (2023-04-23)(Woodmass, Mark)[!].zip",
+    "group": "plus2a-plus3",
+    "size": 8724,
+    "sha256": "3bc3771d23b237d889a82153e35753f78203904f53686b2236427a2eeedfb89d",
+    "members": [
+      "memtest+3.tap",
+      "memtest+3.asm",
+      "COPYING"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Micromira Electrónica (1987)(Rojo Bustos, Juan Ángel).tap",
+    "group": "48k",
+    "size": 3035,
+    "sha256": "5a74308e3ce39d6abfddc3c5e57a03ae79d69f4c63f13c358fb501a532855aa4",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Minfo (2011-08-20)(Bobrowski, Jan)[!].tap",
+    "group": "common",
+    "size": 781,
+    "sha256": "7caff77f607d58e4f3df8b5e69d4cd6803b67d79f19a8298ee2fcc37630c3375",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Multicolor (2011-03-30)(Rak, Patrik)[!].z80",
+    "group": "common",
+    "size": 20307,
+    "sha256": "33fa2770d3b839316ba9792a8b3fd89806d2be7d565d172fa6159624126ac4a3",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Non-Standard Tape Test (2023-03-26)(azesmbog)[!].tap",
+    "group": "common",
+    "size": 7688,
+    "sha256": "3e8e4b33ce7228b863712b6354faca437aef2345e2d1d031d53e1b35dfce200e",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Non-Standard Tape Test (var 1) (2023-03-26)(azesmbog)[!].tap",
+    "group": "common",
+    "size": 7689,
+    "sha256": "2d52a410849cbcd9cf08ab155920bfda1689af429e6aa8ac36d7993249f4585a",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Non-Standard Tape Test (var 3) (2023-03-26)(azesmbog)[!].tap",
+    "group": "common",
+    "size": 7690,
+    "sha256": "fa480d68f49f1dfe18435db8cd504c10a929240b91326b137e1f6bfb0fabc1a9",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Non-Standard Tape Test (var 4) (2023-03-26)(azesmbog)[!].tap",
+    "group": "common",
+    "size": 7689,
+    "sha256": "7d8b255d4b963e40131004dafb597866c192cdfd1eb253404f07146091116d90",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Non-Standard Tape Test (var 5) (2023-04-01)(azesmbog)[!].tap",
+    "group": "common",
+    "size": 10906,
+    "sha256": "db823dda4411656ef585ffd45e342b39f2ff601f777ae4905e482ce591edff3e",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "OTIR-OTDR (2009-05-23)(Woodmass, Mark)[!].tap",
+    "group": "48k",
+    "size": 230,
+    "sha256": "f35f26b2a95eb0a63b6896ca74f72342824f9f2f9670b01b4ddef4c4f2cadc97",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "OUTI Time (2021-12-07)(Woodmass, Mark)[!].tap",
+    "group": "128k-plus2",
+    "size": 1964,
+    "sha256": "5b9411f4797b22158c849fcce64d3f46d4f5d5f83c82d9d0cfc7b5f18f90b4b0",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "OUTI Time (2021-12-08)(Woodmass, Mark)[!].tap",
+    "group": "128k-plus2",
+    "size": 2133,
+    "sha256": "aca318eec9765dfd50f29024182872ab6fecfa761e92678e8c2e77035f13f8a7",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Out48K (2016-08-27)(Woodmass, Mark)[!].sna",
+    "group": "48k",
+    "size": 49179,
+    "sha256": "9eb824e741754b42f8efbff97e197df10f28c7a63cf0f9814bcfa8481b1b373b",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Out7FFC (2023-03-18)(Woodmass, Mark)[!].zip",
+    "group": "128k-plus2",
+    "size": 8074,
+    "sha256": "a22aab2023f7b3b2edc33865a9fe0b3b2417c5837cca100f9a4a7a46169af591",
+    "members": [
+      "out7ffc.tap",
+      "out7ffc.asm",
+      "COPYING"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Pattern (2021-09-25)(Woodmass, Mark)[!].tap",
+    "group": "128k-plus2",
+    "size": 706,
+    "sha256": "9a5f99c9be67bdbbbea01c5d55ee841d0fe96b54ef3af9b88140bb61631ea315",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Pattern (2021-09-26)(Woodmass, Mark)[!].tap",
+    "group": "128k-plus2",
+    "size": 706,
+    "sha256": "5525f254abf02044fe495cf836d792043d6537061abd3f419dff2e96b7c13c3d",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Pattern (2023-04-29)(Woodmass, Mark)[!].zip",
+    "group": "128k-plus2",
+    "size": 4374,
+    "sha256": "eeb6551564768869941ebb43ecacd6bbb2a0b8c155e34ee406351515144e1585",
+    "members": [
+      "pattern/",
+      "pattern/delay.asm",
+      "pattern/execcycle.asm",
+      "pattern/pattern.asm",
+      "pattern/pattern.tap",
+      "pattern/print.asm"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Prefixes (2022-06-12)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "size": 306,
+    "sha256": "81d6f2ee0f13ae0f9a692f1fa27d314d5374ba5916526fb42aa4f2f8e4d42e65",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Quick & Dirty Benchmark (2002-02-23)(Woigk, Günter)[!].z80",
+    "group": "common",
+    "size": 2883,
+    "sha256": "d94232cd50a8ab80e250fd1c6010c919233d8052a3ae9c95522791bc1a32c494",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Quick & Dirty Benchmark (2007-08-13)(Woigk, Günter)[!].tap",
+    "group": "common",
+    "size": 1681,
+    "sha256": "7ee480cda16808bda5a7e9181459ea3cdff545f31b5d05b1e7e83727e121fec7",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "ROM Boundary Test (2025-07-18)(Ala-Könni, Jussi)[!].zip",
+    "group": "common",
+    "size": 865,
+    "sha256": "bb87df139ba13269c1f2ebabde9d5b83e309fa3132b9eaab254765ed8e695c61",
+    "members": [
+      "Rom_Boundary_Test.asm",
+      "Rom_Boundary_Test.TAP"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "RST 38h (2022-06-13)(azesmbog)[!].tap",
+    "group": "common",
+    "size": 301,
+    "sha256": "bb32063311219f7331686a05866e59d7cb29a21f003e0fa74fead7aa9b72c5f6",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "SCF (2008-05-06)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "size": 477,
+    "sha256": "a15895f3ca109aa41b610ba618853a067898224fb423434b4c0d0d80bda2b20b",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "SCF Tests (2012-11-25)(Rak, Patrik)[!].zip",
+    "group": "common",
+    "size": 1474,
+    "sha256": "ebb03f0c63193b543ea58c4b40dd58a09eb01f8650442ae885ffa8c182c9242b",
+    "members": [
+      "scftest2.tap",
+      "scftest3.tap",
+      "scftest.tap"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Screen Time (2007)(Bobrowski, Jan)[!].tap",
+    "group": "common",
+    "size": 837,
+    "sha256": "9d7d069370989290aeb6c9474e327d0b4bccf6f6e2b46c7deaacf0d63536b43e",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Screen Time (2011-08-20)(Bobrowski, Jan)[!].tap",
+    "group": "common",
+    "size": 662,
+    "sha256": "5c136a2adee5064aad3397223bb1fc51bea5aaa9e4b7a5c099b06647f03864c2",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Scroll2017 (2016-02-11)(azesmbog)[!].tap",
+    "group": "128k-plus2",
+    "size": 9168,
+    "sha256": "82b02dcb7d5adbe4acaa6d7b7cd2fec0aa38c56c808c059ff7a1423367c4c869",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Snap Test (2021-09-29)(Woodmass, Mark)[!].zip",
+    "group": "common",
+    "size": 7304,
+    "sha256": "af890700614719b76f96076784aabbaa81eaa5d4a3e246048e0adf86874611f4",
+    "members": [
+      "snaptest.v3.z80",
+      "snaptest.sna",
+      "snaptest.szx",
+      "snaptest.v1.z80"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Snap Test (2023-03-05)(Woodmass, Mark)[!].zip",
+    "group": "common",
+    "size": 10582,
+    "sha256": "d4dbb7f5369aeadedbc410b336861d7b63b935a5f839514d5c818891febab9ac",
+    "members": [
+      "snaptest.v3.z80",
+      "snaptest.sna",
+      "snaptest.szx",
+      "snaptest.v1.z80",
+      "snaptest.sem",
+      "snaptest.sp"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Snap Test (2023-03-09)(Woodmass, Mark)[!].zip",
+    "group": "common",
+    "size": 12224,
+    "sha256": "af6b56578d2f74c2cc8209491a63e601fa8149a2d33c556c5568437e7f488973",
+    "members": [
+      "snaptest.v3.z80",
+      "snaptest.sna",
+      "snaptest.szx",
+      "snaptest.v1.z80",
+      "snaptest.sem",
+      "snaptest.sp",
+      "snaptest.old.sp"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Snap Test (2023-03-15)(Woodmass, Mark)[!].zip",
+    "group": "common",
+    "size": 21395,
+    "sha256": "2e00ca6d432877a6d8adde399bb9b9f8f8ede58063809729855c68e921343208",
+    "members": [
+      "snaptest.v3.z80",
+      "snaptest.sna",
+      "snaptest.szx",
+      "snaptest.v1.z80",
+      "snaptest.sem",
+      "snaptest.sp",
+      "snaptest.old.sp",
+      "snaptest.asm",
+      "COPYING"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Snow (2014-01-16)(Hikaru)[!].sna",
+    "group": "common",
+    "size": 49179,
+    "sha256": "b0fcab765d11eb40b5383448418ed3dbd16e8bd9fd05c9f8af5f81798856c4cd",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Snow (2014-01-16)(Hikaru)[!].tap",
+    "group": "common",
+    "size": 7157,
+    "sha256": "d930335f0455604c0e0082f20105f82cc0d85f1e2a4daa30f124132cd041e74a",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Snow Contention (2009-06-20)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "size": 1704,
+    "sha256": "0076451a2f30ae79ae0df175274e19f06d43142d1243a8e5624f578b1a69bac4",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Snow Hold (2025-05-27)(Woodmass, Mark)[!].zip",
+    "group": "common",
+    "size": 10315,
+    "sha256": "692f17898e3f16a82e5ed3f3ce607c6dc06b776ab231637bf251df1317b4309c",
+    "members": [
+      "snowhold.tap",
+      "COPYING",
+      "delay.asm",
+      "execcycle.asm",
+      "snowhold.asm"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Snow Hold (beta) (2025-05-26)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "size": 580,
+    "sha256": "d3cde0ab7b94abe605b8ec17f1c80e698bca0703238a6a0cb2c249fd34bc8315",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Snow R (2022-10-20)(Neo Spectruman)[!].tap",
+    "group": "common",
+    "size": 327,
+    "sha256": "7c5223ff135d081df9259172bac9c31b5a963c9f77858392c00f4f673a3e0f7d",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Snow Spy (beta) (2021-09-21)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "size": 1198,
+    "sha256": "78d3de3865fd79670db735a64c768dd5971299286220149653f979bd36d5b459",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Snow Spy (beta.1) (2021-09-21)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "size": 1257,
+    "sha256": "d09d7c2fb79b9ae4b900688e468bba3750ea5e40783f06478563ddd25a918b2e",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Snow Tests (2022-10-19)(Weiv)[!].zip",
+    "group": "common",
+    "size": 8963,
+    "sha256": "907ee0c8d40203de7e058c70a4100a9d414cf5a7e0936ffb31861131c6233be7",
+    "members": [
+      "SnowTests/",
+      "SnowTests/snow.tap",
+      "SnowTests/snow128+.tap",
+      "SnowTests/snow48+.tap",
+      "SnowTests/ula128.tap"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Snow128N (2023-04-04)(Weiv)[!].zip",
+    "group": "128k-plus2",
+    "size": 483,
+    "sha256": "c0692851cf372c5f9d1eb0577a7700c2913953e5160e59a0a14b6835e918b0db",
+    "members": [
+      "snow128n.tap"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Snow48 (2021-09-13)(azesmbog)[!].tap",
+    "group": "48k",
+    "size": 39717,
+    "sha256": "cce12c57a9c2dbb0f21a68033a4f5f9f7965dcc3e586ce920bbb23c3ea931797",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Snow48 (var b) (2021-09-12)(azesmbog)[!].tap",
+    "group": "48k",
+    "size": 39717,
+    "sha256": "ef2315762489aa9c9d2f8fa93d0188cb2386e8ae99c5081b08439c499def165a",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Snow48 (var b2) (2021-09-12)(azesmbog)[!].tap",
+    "group": "48k",
+    "size": 39717,
+    "sha256": "d35b99262c431383c80a1c0af5c2e728a30ce9664958aa7dace5054bccd2c71c",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Snow48 (var b3) (2021-09-12)(azesmbog)[!].tap",
+    "group": "48k",
+    "size": 39717,
+    "sha256": "8a897ab17b1a057d1ba9d399cffde2034e7f8e713f32c6b7a4025d7a3f5141d4",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Snow48 (var b5) (2021-09-13)(azesmbog)[!].tap",
+    "group": "48k",
+    "size": 39717,
+    "sha256": "4382fd6e8bf4bbc758299feb3811b160eeb49af893b00c8c6a38acfebcd9c016",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Snow48 (var b51) (2021-09-14)(azesmbog)[!].tap",
+    "group": "48k",
+    "size": 4144,
+    "sha256": "3121a9e94e22c34c1282587ca3ff415d2c5d0c09c55ce7943b7c5037983e1d98",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Snow48 (var b52) (2021-09-15)(azesmbog)[!].tap",
+    "group": "48k",
+    "size": 6749,
+    "sha256": "a4c0916175869c983bf14ea409f3cbfc32185d501a5c9df998f60d5ea89a6e5a",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Snow48 (var b6) (2021-09-15)(azesmbog)[!].tap",
+    "group": "48k",
+    "size": 6781,
+    "sha256": "c6ea852157f54cbd63585b7d13bc0871803bd585757bcaf190b43b23162a65b9",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Snow48 (var b7) (2021-09-16)(azesmbog)[!].tap",
+    "group": "48k",
+    "size": 6825,
+    "sha256": "27afaf6389e43fbdc5a5a1786b204293ad99d8091448931792199a4ae6f41af0",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Snow48 (var b9) (2021-09-17)(azesmbog)[!].tap",
+    "group": "48k",
+    "size": 6929,
+    "sha256": "93049b6f592e3c5200d4ca538279b131d9266956f5f6ec79288f4f3efc7a9d39",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Snow48 (var c0) (2021-09-18)(azesmbog)[!].tap",
+    "group": "48k",
+    "size": 7058,
+    "sha256": "fa7890a6b81c49c7276eca6902acd5027961f01363b49950d42badd238d9862a",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Speaker 2 EAR Test (2023-03-28)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "size": 412,
+    "sha256": "9d21657d52a5c653b8cd73d422092812419b7782849daef2f90aae02b7d0353d",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Speaker 2 EAR Test (2023-03-29)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "size": 455,
+    "sha256": "b86aaa21549fd759bae5d4cb047ea62be4ba7edf79dec4345f584ba967cce031",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Speaker 2 EAR Test (2023-04-08)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "size": 782,
+    "sha256": "d1028b028187bf61758a304119969db19c18b045ee5431e188e1d9821a0c7cab",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Speed Test (2022-06-12)(Barsky, Evgeny)[!].zip",
+    "group": "common",
+    "size": 758,
+    "sha256": "f0a2076f7cea88db6085c8ca01c24cb03c4427b12f6f381bae814c54e06e8c75",
+    "members": [
+      "speedtest.tap"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Super HALT Invaders Test (2021-10-07)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "size": 9506,
+    "sha256": "309710f88b4c71aed64345dec87c488d6e4c3dbc22d95a1e8a552512f06195d7",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "TSTP3 (1998)(Gimeno Fortea, Pedro)[!].zip",
+    "group": "plus2a-plus3",
+    "size": 4251,
+    "sha256": "c986be9df0504f17c4946057e452d8864081960e1bfa4bddd43e5da8595968ba",
+    "members": [
+      "TSTP3.A80",
+      "TSTP3.TAP"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "TSTR (1998)(Gimeno Fortea, Pedro)[!].zip",
+    "group": "common",
+    "size": 4462,
+    "sha256": "4b91a2182be45f30750bc54e21488ade37bf0c646d77aae2ca920ee97d815ba3",
+    "members": [
+      "TSTR.A80",
+      "TSTR.BIN",
+      "TSTR_MKP.BIN"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "TZX Test Files (2024-03-05)(Woodmass, Mark)[!].zip",
+    "group": "common",
+    "size": 868,
+    "sha256": "983788c51f292da0e77678dd91d6451a67396e9e989e721ebe3b67174feb28fa",
+    "members": [
+      "tzxloopendreturn.tzx",
+      "tzxloopstartcall.tzx",
+      "tzxtestlockcall.tzx",
+      "tzxtestlockjump1.tzx",
+      "tzxtestlockjump2.tzx"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Tape Edge (2021-10-20)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "size": 1173,
+    "sha256": "cb3e4f3717985e37c8cfb0466090ad0f2820efbea4234a15a2b6509dd8e58a98",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Tape Edge (2024-05-20)(Woodmass, Mark)[!].zip",
+    "group": "common",
+    "size": 5388,
+    "sha256": "a43c4e9c5531a404ace4b5b73928961d59cee22a0ceccdcb0a463da750c8bc8b",
+    "members": [
+      "TapeEdgeTest/",
+      "TapeEdgeTest/buildtape.bat",
+      "TapeEdgeTest/bytes34.tap",
+      "TapeEdgeTest/datablock.hdr",
+      "TapeEdgeTest/main.asm",
+      "TapeEdgeTest/main.symbol",
+      "TapeEdgeTest/main.tap",
+      "TapeEdgeTest/tapeedge.tap",
+      "TapeEdgeTest/tapeedge.zip"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Tape Test (2009-08-08)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "size": 1133,
+    "sha256": "6ef5067e3867af4c9c2734b68392025b3cbd53514de2d7b8ee22966b8dfdc17a",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Test CCF (2022-02-15)(Helcmanovsky, Peter)[!].asm",
+    "group": "common",
+    "size": 1979,
+    "sha256": "c30dc089347760af060275a63c24a184e038260729aacebc5c92ef89c57baffd",
+    "members": [],
+    "inspection": "manual"
+  },
+  {
+    "file": "Test CCF (2022-02-15)(Helcmanovsky, Peter)[!].sna",
+    "group": "common",
+    "size": 49179,
+    "sha256": "0edff33d20e26b38d93f4dffd7aa5cc140b8a134db01f241b00937372cdfadfd",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Test CCF (alpha) (2022-02-15)(Helcmanovsky, Peter)[!].sna",
+    "group": "common",
+    "size": 49179,
+    "sha256": "c9b4983ca720713645c555f0b627e95bfe6c9504375917d9ea7730da55e586ae",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Test SCF 9 (2024-09-30)(Titov, Andrey)[!].zip",
+    "group": "common",
+    "size": 591,
+    "sha256": "56794c5dcede4942ab9ed8ff46ac6cc4173dda35cc238e7758c8fd989f4fb588",
+    "members": [
+      "Test SCF 9.tap"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Test SCF 9 (2024-10-01)(Titov, Andrey)(TR-DOS)[!].zip",
+    "group": "common",
+    "size": 674,
+    "sha256": "20215ff1b833cd68d33cd5ac2268f0939b6ba66c28d50850ab70c6d7fffbe090",
+    "members": [
+      "Test SCF9.SCL"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Test SCF v0.1 (2024-09-28)(Titov, Andrey)(Test 4)[!].rar",
+    "group": "common",
+    "size": 327,
+    "sha256": "5fc7066a75d85efe41d6735f53e6a864b3c0a2d058a2ae3a9e9e5a55e0c8a733",
+    "members": [],
+    "inspection": "manual"
+  },
+  {
+    "file": "Test SCF v0.1 (2024-09-28)(Titov, Andrey)(Tests 1-3)[!].rar",
+    "group": "common",
+    "size": 929,
+    "sha256": "44742b195f89cc7c0f51de15ef8165327248455ebe7ab9458ed2899b65b6fb71",
+    "members": [],
+    "inspection": "manual"
+  },
+  {
+    "file": "Test SCF v0.1 (2024-09-29)(Titov, Andrey)(Tests 5-8)[!].rar",
+    "group": "common",
+    "size": 1227,
+    "sha256": "0dfaeb0b29138a89e2ed47ea124019a7f4495336520e3c17fa3d15ec51f0128b",
+    "members": [],
+    "inspection": "manual"
+  },
+  {
+    "file": "Test ULAs (2021-09-25)(Nicolás-González, César)[!].zip",
+    "group": "common",
+    "size": 1404,
+    "sha256": "b1a410921d2e98bffd4a4125eb77b7863e79e63ef50a08c98b225b8655237270",
+    "members": [
+      "TESTULAS.S80",
+      "TESTULAS.TZX"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Test ULAs (beta) (2021-09-25)(Nicolás-González, César)[!].tzx",
+    "group": "common",
+    "size": 408,
+    "sha256": "1026f1465cda9a93a4ce1ce3dc9d66b7a2c9ec21924c5211f540368cf17d5a98",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Test of Screen Switching Timings (2017-11-15)(Weiv)[!].zip",
+    "group": "common",
+    "size": 993,
+    "sha256": "7a204ce47b4466d4f46ae6d1073520421455f67082eddf467602d03b3621339c",
+    "members": [
+      "ptime-128.tap"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Test of Screen Switching Timings (2017-11-17)(Weiv)[!].zip",
+    "group": "common",
+    "size": 1002,
+    "sha256": "0a72577b09e89d26155080f3938e1b5685aa8298cba6b22a52941f278b97002a",
+    "members": [
+      "ptime-128m.tap"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Time to First INT (2022-08-23)(Helcmanovsky, Peter)[!].7z",
+    "group": "common",
+    "size": 3559,
+    "sha256": "42d7d43365d9ec1e9c68ba0e19de6f769eedfbfb83f6519e018c6c5cc36f417d",
+    "members": [],
+    "inspection": "manual"
+  },
+  {
+    "file": "Timing Test v0.2 (2007-09-25)(Rak, Patrik)[!].zip",
+    "group": "common",
+    "size": 6288,
+    "sha256": "0382caa203940160f2cb5ace009bfbb2ac99acfa3e4402d9ed71e3b538984a9e",
+    "members": [
+      "timingtest-0.2/Makefile",
+      "timingtest-0.2/timing.asm",
+      "timingtest-0.2/timing.bas",
+      "timingtest-0.2/timing.tap",
+      "timingtest-0.2/codetime.asm",
+      "timingtest-0.2/frametime.asm",
+      "timingtest-0.2/interrupt.asm",
+      "timingtest-0.2/delay.asm",
+      "timingtest-0.2/getvar.asm",
+      "timingtest-0.2/setvar.asm"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Timing Test v0.3 (2013-12-09)(Rak, Patrik)[!].zip",
+    "group": "common",
+    "size": 6516,
+    "sha256": "bacff01453a01c14754c167b5b02695ec29a0a5960c2f202b52b26494c2e8dff",
+    "members": [
+      "timingtest-0.3/Makefile",
+      "timingtest-0.3/timing.asm",
+      "timingtest-0.3/timing.bas",
+      "timingtest-0.3/timing.tap",
+      "timingtest-0.3/codetime.asm",
+      "timingtest-0.3/frametime.asm",
+      "timingtest-0.3/interrupt.asm",
+      "timingtest-0.3/delay.asm",
+      "timingtest-0.3/getvar.asm",
+      "timingtest-0.3/setvar.asm"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "ULA 128 Timing Test (2012-10-06)(azesmbog)[!].tap",
+    "group": "128k-plus2",
+    "size": 16338,
+    "sha256": "59578bae6352d6a92b1887b392ee786aa9f162624a1ddef9541037b517b0c90f",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "ULA 128E +3 Test (2012-10-07)(azesmbog)[!].tap",
+    "group": "plus2a-plus3",
+    "size": 17147,
+    "sha256": "0ce72ada3b0a666c57e0cd0aaf5bdc85a5a03bef933326699d2063680e9b1ed8",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "ULA 128E +3 Test (2012-10-10)(azesmbog)[!].tap",
+    "group": "plus2a-plus3",
+    "size": 17184,
+    "sha256": "60b3aaeca5b9d45c712d874fafa136c97d373c1569964cb87703ddf53911a8d5",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "ULA 48 Simple Test (2012-10-06)(azesmbog)[!].tap",
+    "group": "48k",
+    "size": 32588,
+    "sha256": "1bcd04d0dda815eb8ae49014b828752288551f596a82c7ffd46662d6f82f2c4e",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "ULA Snow Crash (2018-02-06)(Panov, Astamur)[!].tap",
+    "group": "common",
+    "size": 174,
+    "sha256": "06dee881e353d4f21ad54cf24e094380fb85eff9f3a44060c462e84b7a77a302",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "ULA Test 2 (2007-0x)(Bobrowski, Jan)[!].tap",
+    "group": "common",
+    "size": 943,
+    "sha256": "34772b9b5ea106b77567d8b25b123e9a5131b1add45493e054792d419f17c4e7",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "ULA Test 3 (2007-0x)(Bobrowski, Jan)[!].tap",
+    "group": "common",
+    "size": 1561,
+    "sha256": "584037e8c7a4d25dca1aed38480c67ae00f87dad3f42c1ad27bc709c816747f8",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "ULA Test 3 (2011-08-24)(Bobrowski, Jan)[!].tap",
+    "group": "common",
+    "size": 1522,
+    "sha256": "9445d3bd1661c2d5a62e2b3762ebd1ab00af9b319435ae7397bf6eb51462c6c9",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "ULA Test 3 Modified (2007)(Smith, Christopher David)[!].zip",
+    "group": "common",
+    "size": 1229,
+    "sha256": "5b79e348f496f06a08787bd40e0d60660a1d5b72c2c60ccd5f07154ee881b563",
+    "members": [
+      "ulatest3-modified.tap"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "ULA vs SJS v1.0 (2023-04-20)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "size": 628,
+    "sha256": "3ea9c55225229751bdf11762ea62a582626d8fa3e0e00f1f4ce36f682dcb7677",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "ULA vs SJS v1.0-beta (2023-04-19)(Helcmanovsky, Peter)[!].asm",
+    "group": "common",
+    "size": 7060,
+    "sha256": "442c5cd495aef09e66254c4aab928851efc7ced4aa54c11fb09654d1b2d2487d",
+    "members": [],
+    "inspection": "manual"
+  },
+  {
+    "file": "ULA vs SJS v1.0-beta (2023-04-19)(Helcmanovsky, Peter)[!].sna",
+    "group": "common",
+    "size": 49179,
+    "sha256": "14bfe86799492c0d64c8365b6c3c5b1f47e8000dcdbbdd164eec087f00091c1f",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "ULA vs SJS v1.0-beta (2023-04-19)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "size": 436,
+    "sha256": "1d229c58bf9e193193eefb51e524a4cb983dc39d4ef9eef8ee975fc1a13d6f91",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "ULA vs SJS v1.1 (2023-04-22)(Helcmanovsky, Peter)[!].zip",
+    "group": "common",
+    "size": 7804,
+    "sha256": "584d16dd0bbf8cec9baa1dd79652f92612c59192e84a20f3acb026efd68ff7da",
+    "members": [
+      "ReadMe.txt",
+      "ULAvsSJS.trd",
+      "ULAvsSJS.tap",
+      "ULAvsSJS.sna",
+      "ulavssjs.asm"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "ULA vs SJS v1.1 (2023-04-22)(Helcmanovsky, Peter)[GitHub d8c779acd86f042f3a7e156ed3b2c15ebf6526b3][e].tar.xz",
+    "group": "common",
+    "size": 5664,
+    "sha256": "201dc10b6c248e0741d5b7c168228eaeab24761e1cd162dde8cb9c21d65f1f22",
+    "members": [
+      "ULAvsSJS",
+      "ULAvsSJS/ULAvsSJS.tap",
+      "ULAvsSJS/ULAvsSJS.trd.zip",
+      "ULAvsSJS/ulavssjs.asm",
+      "ULAvsSJS/ReadMe.txt"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "ULA vs SJS v1.1 (2026-06-03)(Helcmanovsky, Peter)[GitHub 6042ebdad1a4ece44fa0ff7feee5bbd1d122dd54][e].tar.xz",
+    "group": "common",
+    "size": 6028,
+    "sha256": "24aadc60f5d68204e9747962c5d2c5027f264539dff2323a2d4df8fce9f53ea5",
+    "members": [
+      "ULAvsSJS",
+      "ULAvsSJS/ReadMe.txt",
+      "ULAvsSJS/ULAvsSJS.tap",
+      "ULAvsSJS/ULAvsSJS.sna",
+      "ULAvsSJS/ulavssjs.asm",
+      "ULAvsSJS/ULAvsSJS.trd.zip"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "Z80 Block Flags Test (alpha) (2021-12-27)(Helcmanovsky, Peter)[!].asm",
+    "group": "common",
+    "size": 5017,
+    "sha256": "d4ad46ad18a8d307ff3ad18c65b172221b465d2685146cc25888623c477a02c4",
+    "members": [],
+    "inspection": "manual"
+  },
+  {
+    "file": "Z80 Block Flags Test (alpha) (2021-12-27)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "size": 752,
+    "sha256": "3bcbbe2ed82d23d8b5caea8db2825e20545272c7fe155552e7ff0d0c05455b25",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Z80 Block Flags Test v1.0 (2021-12-27)(Helcmanovsky, Peter)[!].asm",
+    "group": "common",
+    "size": 5862,
+    "sha256": "02318d737396b5df5ee5558471e5be7db0ed313919768f741b39bc80e61095ea",
+    "members": [],
+    "inspection": "manual"
+  },
+  {
+    "file": "Z80 Block Flags Test v1.0 (2021-12-27)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "size": 495,
+    "sha256": "5b37e295eb83f70478339165908651f97c29b87c8bf02c5901183134a422f57a",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Z80 Block Flags Test v2.0 (2021-12-30)(Helcmanovsky, Peter)[!].asm",
+    "group": "common",
+    "size": 11690,
+    "sha256": "ab556379464e5ee1aa3fd87f271a3b7f5e1f96d03b60fb3a55ae1d3b50169886",
+    "members": [],
+    "inspection": "manual"
+  },
+  {
+    "file": "Z80 Block Flags Test v2.0 (2021-12-30)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "size": 752,
+    "sha256": "303f5853aeb40440f5c67aa0829dcbf189b3b722abff256d35dcee3013dcb5a4",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Z80 Block Flags Test v2.0+ (2021-12-31)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "size": 752,
+    "sha256": "153f634989d7e634f824bd9a60d362369fad94181437efa8d26c46f939e9f5dd",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Z80 Block Flags Test v2.0+1 (2021-12-31)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "size": 1009,
+    "sha256": "0f4de21607dd1c2f58439def378c8ea5e855ce86c66f97557120cd53a6b9d998",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Z80 Block Flags Test v2.0+2 (2021-12-31)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "size": 1009,
+    "sha256": "acb77141e0e8481f06218235cded78a00b51f4b25d8caae10c0807517e8714c0",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Z80 Block Flags Test v2.0-beta (2021-12-30)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "size": 752,
+    "sha256": "4b65e7835590f92b76dd8bd35bd69a64494f9d157e577281d13197fb5aa86891",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Z80 Block Flags Test v2.0-beta.1 (2021-12-30)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "size": 752,
+    "sha256": "8782925467beff8fec48fece36dfc1d0d00264fc7994a59b9e8e984116705ee2",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Z80 Block Flags Test v3.0 (2021-12-31)(Helcmanovsky, Peter)(128K)[!].sna",
+    "group": "128k-plus2",
+    "size": 131103,
+    "sha256": "ac85e49c12432221f90b05d317e21352a686593b86c5ab5a198d7ab75ee895a0",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Z80 Block Flags Test v3.0 (2021-12-31)(Helcmanovsky, Peter)[!].asm",
+    "group": "common",
+    "size": 17806,
+    "sha256": "8156dcbb29b5be89f5e62a2601cd22d849a7ced56334cdef7afd0af84a260e59",
+    "members": [],
+    "inspection": "manual"
+  },
+  {
+    "file": "Z80 Block Flags Test v3.0 (2021-12-31)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "size": 1009,
+    "sha256": "819c6214d97aad40e0d0d8fc388c8c2822e2709afb1da0b71201fc79134de1b6",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Z80 Block Flags Test v3.0+ (2022-01-01)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "size": 1266,
+    "sha256": "4b9b81547e714e87ee60172ea6db5b2618742a6d7afd681308b47af583c7bf58",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Z80 Block Flags Test v4.0 (2022-01-01)(Helcmanovsky, Peter)[!].asm",
+    "group": "common",
+    "size": 24508,
+    "sha256": "2b6be6d0e4bd3454e928e460919f29b1de519eae7968057ddd79b4b9cfb47f11",
+    "members": [],
+    "inspection": "manual"
+  },
+  {
+    "file": "Z80 Block Flags Test v4.0 (2022-01-01)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "size": 1274,
+    "sha256": "4a66c010dbc619df10b4e84929313292f7a6fdb6ba08c1be5231064244ae9181",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Z80 Block Flags Test v4.1 (2022-01-03)(Helcmanovsky, Peter)[GitHub b94ae875ace4055679b2ef721f68447078e5025f][e].tar.xz",
+    "group": "common",
+    "size": 176432,
+    "sha256": "44ac25f05168f0cbfde690bded4cbdfa9e3d75d14080036ce663cfccb398f4fb",
+    "members": [
+      "Z80BlockInstructionFlags",
+      "Z80BlockInstructionFlags/z80_block_flags_test.asm",
+      "Z80BlockInstructionFlags/z80_block_flags_test_v4_arjun_zx48+_sgs_z8400ab1.jpg",
+      "Z80BlockInstructionFlags/z80bltst.tap",
+      "Z80BlockInstructionFlags/README.md"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "Z80 Block Flags Test v4.1+ (2022-01-06)(Helcmanovsky, Peter)[GitHub c300540a16f00c4dcfa089cf883ec84c975d9a5b][e].tar.xz",
+    "group": "common",
+    "size": 177112,
+    "sha256": "c476e3a148e5aa40ed8bb8d387e39b3d7d0511824092293fd1ee52cc567e5dd1",
+    "members": [
+      "Z80BlockInstructionFlags",
+      "Z80BlockInstructionFlags/z80_block_flags_test.asm",
+      "Z80BlockInstructionFlags/z80_block_flags_test_v4_arjun_zx48+_sgs_z8400ab1.jpg",
+      "Z80BlockInstructionFlags/z80bltst.tap",
+      "Z80BlockInstructionFlags/README.md"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "Z80 Block Flags Test v4.1+1 (2022-01-06)(Helcmanovsky, Peter)[GitHub a05e49995bb198d00f1f251dba57b852efe03ec3][e].tar.xz",
+    "group": "common",
+    "size": 177404,
+    "sha256": "2858ba7863c93e1978705f50e04f1269e3d2c432fdbcfc03fdd8a5178ffb62e3",
+    "members": [
+      "Z80BlockInstructionFlags",
+      "Z80BlockInstructionFlags/z80_block_flags_test.asm",
+      "Z80BlockInstructionFlags/z80_block_flags_test_v4_arjun_zx48+_sgs_z8400ab1.jpg",
+      "Z80BlockInstructionFlags/z80bltst.tap",
+      "Z80BlockInstructionFlags/README.md"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "Z80 Block Flags Test v4.1+2 (2022-01-09)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "size": 1529,
+    "sha256": "d1f63215351eb23c880766901efd4df223808d79c31d4cefff0ed80617d89a7f",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Z80 Block Flags Test v5.0 (2022-01-11)(Helcmanovsky, Peter)[GitHub a1c4a8a44e273cd4e426bbbeff6b58685e64dfba][e].tar.xz",
+    "group": "common",
+    "size": 391764,
+    "sha256": "84648e4e8703ebd56480bc3188ffdf53d81a9e2b2fc4aabb070611bf0f0d856e",
+    "members": [
+      "Z80BlockInstructionFlags",
+      "Z80BlockInstructionFlags/z80_block_flags_test.asm",
+      "Z80BlockInstructionFlags/z80_block_flags_test_v4_arjun_zx48+_sgs_z8400ab1.jpg",
+      "Z80BlockInstructionFlags/z80bltst.tap",
+      "Z80BlockInstructionFlags/README.md",
+      "Z80BlockInstructionFlags/z80bltst.trd.zip",
+      "Z80BlockInstructionFlags/z80_block_flags_test_v5_shrek_zx128.jpg"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "Z80 Block Flags Test v5.0 (2022-02-17)(Helcmanovsky, Peter)[GitHub 340f6d35f9b577f4f2c5798e1aac0c1d5b2ff1bc][e].tar.xz",
+    "group": "common",
+    "size": 391784,
+    "sha256": "0aff6918049dd9b4126f511f49ba4df1f52d6a2f08008893cd3c9cc571474f22",
+    "members": [
+      "Z80BlockInstructionFlags",
+      "Z80BlockInstructionFlags/z80_block_flags_test.asm",
+      "Z80BlockInstructionFlags/z80_block_flags_test_v4_arjun_zx48+_sgs_z8400ab1.jpg",
+      "Z80BlockInstructionFlags/z80bltst.tap",
+      "Z80BlockInstructionFlags/README.md",
+      "Z80BlockInstructionFlags/z80bltst.trd.zip",
+      "Z80BlockInstructionFlags/z80_block_flags_test_v5_shrek_zx128.jpg"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "Z80 Block Flags Test v5.0 (2026-06-03)(Helcmanovsky, Peter)[GitHub 6042ebdad1a4ece44fa0ff7feee5bbd1d122dd54][e].tar.xz",
+    "group": "common",
+    "size": 392192,
+    "sha256": "7f918d894944ef0c2f4837408a20b4bd6b15fd232c658251c3f5a2cd68a53968",
+    "members": [
+      "Z80BlockInstructionFlags",
+      "Z80BlockInstructionFlags/z80_block_flags_test_v5_shrek_zx128.jpg",
+      "Z80BlockInstructionFlags/z80bltst.tap",
+      "Z80BlockInstructionFlags/z80_block_flags_test_v4_arjun_zx48+_sgs_z8400ab1.jpg",
+      "Z80BlockInstructionFlags/z80_block_flags_test.asm",
+      "Z80BlockInstructionFlags/z80bltst.trd.zip",
+      "Z80BlockInstructionFlags/README.md",
+      "Z80BlockInstructionFlags/z80bltst.sna"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "Z80 Block Flags Test v5.0-beta (2022-01-11)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "size": 1529,
+    "sha256": "3b5fc9a527e7b97a00e36820dba2812e55d83a773427f23dd53ecabcf34c439e",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Z80 CCF-SCF Outcome Stability (alpha) (2022-01-31)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "size": 323,
+    "sha256": "0d9de81993fe9a86952c54e73cf017df03c2a4595358c97f79fd16ae1cc9c876",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Z80 CCF-SCF Outcome Stability v1.0 (2022-02-01)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "size": 730,
+    "sha256": "bf354a9d8bd96eb2f83a9806bf81bdfdda7257e8482963517a78c4eb5b38f6b0",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Z80 CCF-SCF Outcome Stability v1.0 (2022-02-01)(Helcmanovsky, Peter)[!].trd",
+    "group": "common",
+    "size": 655360,
+    "sha256": "9dd9b524f2c6adbe88037acfc9c63292bf5e4702bdf5c0b9ecb809f67873a0e6",
+    "members": [],
+    "inspection": "manual"
+  },
+  {
+    "file": "Z80 CCF-SCF Outcome Stability v1.0 (2022-02-01)(Helcmanovsky, Peter)[GitHub 2ef90b7fab6f9466ae616bbf7c14d022d501830e][e].tar.xz",
+    "group": "common",
+    "size": 7204,
+    "sha256": "a581e7ab73001a4d44343a9ee015225d511059f19342375a79b4edc24cfcf8f9",
+    "members": [
+      "Z80CcfScfOutcomeStability",
+      "Z80CcfScfOutcomeStability/ReadMe.txt",
+      "Z80CcfScfOutcomeStability/ccffrm.tap",
+      "Z80CcfScfOutcomeStability/ccffrm.trd.zip",
+      "Z80CcfScfOutcomeStability/ccf_per_scanline.asm"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "Z80 CCF-SCF Outcome Stability v1.0 (hack) (2022-02-01)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "size": 730,
+    "sha256": "347f946501a58e2b238fac617836620b7791a347d4a0b6ba4032e3f4eb36cd53",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Z80 CCF-SCF Outcome Stability v1.1 (2022-02-02)(Helcmanovsky, Peter)[GitHub 0b913321283a7e28c8e65621be6f5e19d77ded86][e].tar.xz",
+    "group": "128k-plus2",
+    "size": 8208,
+    "sha256": "bdf57a04f2c26d4fefa8c16fa47d6c6e3c570730863abe18729930592061747e",
+    "members": [
+      "Z80CcfScfOutcomeStability",
+      "Z80CcfScfOutcomeStability/ReadMe.txt",
+      "Z80CcfScfOutcomeStability/ccffrm.tap",
+      "Z80CcfScfOutcomeStability/ccffrm.trd.zip",
+      "Z80CcfScfOutcomeStability/ccf_per_scanline.asm"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "Z80 CCF-SCF Outcome Stability v1.1 (2022-02-17)(Helcmanovsky, Peter)[GitHub 340f6d35f9b577f4f2c5798e1aac0c1d5b2ff1bc][e].tar.xz",
+    "group": "common",
+    "size": 8244,
+    "sha256": "aa0cc0a3f43d94d1a92fe55added6a41adb64fbe6ef11244d7fa78951ba236bf",
+    "members": [
+      "Z80CcfScfOutcomeStability",
+      "Z80CcfScfOutcomeStability/ReadMe.txt",
+      "Z80CcfScfOutcomeStability/ccffrm.tap",
+      "Z80CcfScfOutcomeStability/ccffrm.trd.zip",
+      "Z80CcfScfOutcomeStability/ccf_per_scanline.asm"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "Z80 CCF-SCF Outcome Stability v1.1 (2026-06-03)(Helcmanovsky, Peter)[GitHub 6042ebdad1a4ece44fa0ff7feee5bbd1d122dd54][e].tar.xz",
+    "group": "common",
+    "size": 8636,
+    "sha256": "45d0e0c5d9bee5af6759209f1be24f10d4ed77541cacb20e771070f08de89c00",
+    "members": [
+      "Z80CcfScfOutcomeStability",
+      "Z80CcfScfOutcomeStability/ReadMe.txt",
+      "Z80CcfScfOutcomeStability/ccffrm.sna",
+      "Z80CcfScfOutcomeStability/ccf_per_scanline.asm",
+      "Z80CcfScfOutcomeStability/ccffrm.tap",
+      "Z80CcfScfOutcomeStability/ccffrm.trd.zip"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "Z80 DDFD3 (2022-06-10)(Helcmanovsky, Peter)[!].zip",
+    "group": "common",
+    "size": 1270,
+    "sha256": "984e439367944a2ea359c8a5094b570ffab4b5abb172758f3502a5cc241a7ee9",
+    "members": [
+      "z80_ddfd3.tap",
+      "z80_ddfd3.asm"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Z80 Documented Instruction Set Exerciser for Spectrum (2003-12-29)(Harston, Jonathan Graham)[!].bin",
+    "group": "common",
+    "size": 8611,
+    "sha256": "025e457f6f7dface29ea8915dc2fdea720d41222d165318f5b457e9ee69adf1a",
+    "members": [],
+    "inspection": "manual"
+  },
+  {
+    "file": "Z80 Documented Instruction Set Exerciser for Spectrum (2003-12-29)(Harston, Jonathan Graham)[!].src",
+    "group": "common",
+    "size": 42022,
+    "sha256": "a83d33b5f73d23e44091f7fe7d0e9f0b7932a1a73a4e37892b929eb70270d6b9",
+    "members": [],
+    "inspection": "manual"
+  },
+  {
+    "file": "Z80 Documented Instruction Set Exerciser for Spectrum (2003-12-29)(Harston, Jonathan Graham)[!].tap",
+    "group": "common",
+    "size": 8703,
+    "sha256": "1cd8faf83566f9f283c3f9dccec90c4ecb9d313ca86ce2cb39c28703312019f9",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Z80 Documented Instruction Set Exerciser for Spectrum (2018)(Harston, Jonathan Graham)[!].bin",
+    "group": "common",
+    "size": 8624,
+    "sha256": "dcf9befda9ecb398ec4d6191e61dbbb22f78f314d0433424feb429352ac3ab03",
+    "members": [],
+    "inspection": "manual"
+  },
+  {
+    "file": "Z80 Documented Instruction Set Exerciser for Spectrum (2018)(Harston, Jonathan Graham)[!].src",
+    "group": "common",
+    "size": 42285,
+    "sha256": "d637831e2e2f38442178b750eb9bc053b13c93f8314e55aaa500b79daed0034d",
+    "members": [],
+    "inspection": "manual"
+  },
+  {
+    "file": "Z80 Documented Instruction Set Exerciser for Spectrum (2018)(Harston, Jonathan Graham)[!].tap",
+    "group": "common",
+    "size": 8716,
+    "sha256": "7695f8b19cc41b94a7c29fd73302e69035c489ff8e4c51f60554d4ec955d0466",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Z80 Full Instruction Set Exerciser for Spectrum (2003-05-05)(Harston, Jonathan Graham)[!].sna",
+    "group": "common",
+    "size": 49179,
+    "sha256": "4bec4a02e12f93852048757efc5284928911056d15f73aa3a085fa432242430c",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Z80 Full Instruction Set Exerciser for Spectrum (2003-05-05)(Harston, Jonathan Graham)[!].src",
+    "group": "common",
+    "size": 41894,
+    "sha256": "136753964d226053d2722e426948923e3e6f0a45419081c70604cbe4a493dbe3",
+    "members": [],
+    "inspection": "manual"
+  },
+  {
+    "file": "Z80 Full Instruction Set Exerciser for Spectrum (2003-05-05)(Harston, Jonathan Graham)[!].ssn",
+    "group": "common",
+    "size": 65792,
+    "sha256": "9b4245790a7dc5a4430b4d18aa0066a1b0892ca3b5d5020cfb52c44ec2dc63f0",
+    "members": [],
+    "inspection": "manual"
+  },
+  {
+    "file": "Z80 Full Instruction Set Exerciser for Spectrum (2003-05-05)(Harston, Jonathan Graham)[!].sta",
+    "group": "common",
+    "size": 8624,
+    "sha256": "4b311e2f014686f402504a6abe3ca0d8c623d947789a61fc5641a7a07191f5d7",
+    "members": [],
+    "inspection": "manual"
+  },
+  {
+    "file": "Z80 Full Instruction Set Exerciser for Spectrum (2003-05-05)(Harston, Jonathan Graham)[!].tap",
+    "group": "common",
+    "size": 8628,
+    "sha256": "bf97017463c31a3aa1b787ab93d8561af52fa30624f250d77cb37fb1477cb4a4",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Z80 Full Instruction Set Exerciser for Spectrum (2003-05-05)(Harston, Jonathan Graham)[!].z80",
+    "group": "common",
+    "size": 7733,
+    "sha256": "48a01d3baf3989db7c6b9c21ae4f7494d6605cd436a883f31320aa2547b99bbf",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Z80 Full Instruction Set Exerciser for Spectrum (2003-12-29)(Harston, Jonathan Graham)[!].bin",
+    "group": "common",
+    "size": 8547,
+    "sha256": "d9c742930abe27df2cc799c5adf5461c692a71cb7b9f9c7669596caca688aced",
+    "members": [],
+    "inspection": "manual"
+  },
+  {
+    "file": "Z80 Full Instruction Set Exerciser for Spectrum (2003-12-29)(Harston, Jonathan Graham)[!].src",
+    "group": "common",
+    "size": 42057,
+    "sha256": "b896a61c699a2f27f3ef0cdceaa5c19296394952d946aa38341d67370cb37685",
+    "members": [],
+    "inspection": "manual"
+  },
+  {
+    "file": "Z80 Full Instruction Set Exerciser for Spectrum (2003-12-29)(Harston, Jonathan Graham)[!].tap",
+    "group": "common",
+    "size": 8639,
+    "sha256": "2a8917130bb893b519f8c01fd348b4363c72a012c1ce326f4fb34a5e5b2d04e3",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Z80 Full Instruction Set Exerciser for Spectrum (2009)(Bobrowski, Jan)[!].tap",
+    "group": "common",
+    "size": 8656,
+    "sha256": "96ce0659f6a6fdcf18335975165701404ac1a58703a624ddef80649387fc1a4c",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Z80 Full Instruction Set Exerciser for Spectrum (2011)(Bobrowski, Jan)(Narrowed to BIT Instructions)[!].tap",
+    "group": "common",
+    "size": 8656,
+    "sha256": "67e1a45e0e1502f5be9e674d8a6a0e5640cef2579cb934c3146b0d31e9c7d0de",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Z80 Full Instruction Set Exerciser for Spectrum (2017-0x)(Harston, Jonathan Graham)[!].src",
+    "group": "common",
+    "size": 42145,
+    "sha256": "fc3592c3fa91cb6223e21b2538503a2abdba00a4bd34060f7e51291da4faca1d",
+    "members": [],
+    "inspection": "manual"
+  },
+  {
+    "file": "Z80 Full Instruction Set Exerciser for Spectrum (2017-0x)(Harston, Jonathan Graham)[!].tap",
+    "group": "common",
+    "size": 8704,
+    "sha256": "dc61e5f7aa5159397ffb4bfc16cad7ab4425ca217834fc088c0031da47b2a8e7",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Z80 Full Instruction Set Exerciser for Spectrum (2018)(Harston, Jonathan Graham)[!].bin",
+    "group": "common",
+    "size": 8624,
+    "sha256": "51887abe6b8b2fa96a326305f0c163873824c692bc16363f09fab61694d31df3",
+    "members": [],
+    "inspection": "manual"
+  },
+  {
+    "file": "Z80 Full Instruction Set Exerciser for Spectrum (2018)(Harston, Jonathan Graham)[!].src",
+    "group": "common",
+    "size": 42273,
+    "sha256": "4e06e98f48831a411873c6a01de092f04ea01da01a13c3cada59d11de2a1ca5c",
+    "members": [],
+    "inspection": "manual"
+  },
+  {
+    "file": "Z80 Full Instruction Set Exerciser for Spectrum (2018)(Harston, Jonathan Graham)[!].tap",
+    "group": "common",
+    "size": 8716,
+    "sha256": "b1065e73319f400090e594bd468e0853f632c2d058b67fe9e3d0635b8f0a17fb",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Z80 IM1 vs JR (2022-02-11)(Helcmanovsky, Peter)[!].asm",
+    "group": "common",
+    "size": 2949,
+    "sha256": "946ec803b4eb70b01a3886801b3b285bbad8ed6d542a83479dd5d1b33ee787f8",
+    "members": [],
+    "inspection": "manual"
+  },
+  {
+    "file": "Z80 IM1 vs JR (2022-02-11)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "size": 186,
+    "sha256": "01ff836ea68e273b332cd7d9c2bd18dde3f9d4fcc62f369443517131e8e47a18",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Z80 INT Skip v1.0 (2022-02-17)(Helcmanovsky, Peter)[GitHub 7e97f08090a57d9bc0cccd26bbed32f2ba4b3296][e].tar.xz",
+    "group": "common",
+    "size": 3568,
+    "sha256": "08ef7952b71316fdd5c7620c6890a1ff672ccdafa37abc45ddef0ffa7c72b200",
+    "members": [
+      "Z80IntSkip",
+      "Z80IntSkip/int_skip.tap",
+      "Z80IntSkip/int_skip.trd.zip",
+      "Z80IntSkip/int_skip.asm"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "Z80 INT Skip v1.0-beta (2022-02-17)(Helcmanovsky, Peter)[!].asm",
+    "group": "common",
+    "size": 5325,
+    "sha256": "556b64f40f0ebcd65141105cccbc251d086099d588f3a029de33ffec224ce9ee",
+    "members": [],
+    "inspection": "manual"
+  },
+  {
+    "file": "Z80 INT Skip v1.0-beta (2022-02-17)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "size": 555,
+    "sha256": "707658bbef73d4950303f079dadc732c9b0764b66ae11cdc9d75e0e523bff494",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Z80 INT Skip v2.0 (2022-02-19)(Helcmanovsky, Peter)[GitHub 753274d440f0bcdf0fe08c96d2c77b4e4bd7c6ad][e].tar.xz",
+    "group": "common",
+    "size": 5128,
+    "sha256": "91d1c95c15c0f7094b1c37da3ef035e1971d6fc6cd98bd6276f40af15caea75f",
+    "members": [
+      "Z80IntSkip",
+      "Z80IntSkip/int_skip.tap",
+      "Z80IntSkip/int_skip.trd.zip",
+      "Z80IntSkip/int_skip.asm"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "Z80 INT Skip v2.1 (2022-02-19)(Helcmanovsky, Peter)[GitHub b88e2cbf919cfddbaf8bbb7713cf1b86500304e0][e].tar.xz",
+    "group": "common",
+    "size": 5248,
+    "sha256": "1254da54fbe6cfb22ab91d9653377ad5c94a8911274081fe04cc96e0a44abc7c",
+    "members": [
+      "Z80IntSkip",
+      "Z80IntSkip/int_skip.tap",
+      "Z80IntSkip/int_skip.trd.zip",
+      "Z80IntSkip/int_skip.asm"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "Z80 INT Skip v3.0 (2022-05-16)(Helcmanovsky, Peter)[GitHub d2b3b1582165adf5c7d03ca85b6120365cbbc8a8][e].tar.xz",
+    "group": "common",
+    "size": 6068,
+    "sha256": "6da07b04700774e2d45ef858367ea826d7b18a65ffc77a4aa6a4d42e757edff0",
+    "members": [
+      "Z80IntSkip",
+      "Z80IntSkip/int_skip.tap",
+      "Z80IntSkip/int_skip.trd.zip",
+      "Z80IntSkip/int_skip.asm"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "Z80 INT Skip v3.0 (2022-11-18)(Helcmanovsky, Peter)[GitHub d7d6a274f91b1c2fd00c458807d65464bf5a9921][e].tar.xz",
+    "group": "common",
+    "size": 6324,
+    "sha256": "8d5133166a2db3d85a9001482e95e3b366feb5b9bc1783a5013f93a95c30ce33",
+    "members": [
+      "Z80IntSkip",
+      "Z80IntSkip/int_skip.tap",
+      "Z80IntSkip/ReadMe.txt",
+      "Z80IntSkip/int_skip.trd.zip",
+      "Z80IntSkip/int_skip.asm"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "Z80 INT Skip v4.0 (2023-05-21)(Helcmanovsky, Peter)[GitHub c12ee4af8c169cdaa212944ff3b77ef4e707753b][e].tar.xz",
+    "group": "common",
+    "size": 7412,
+    "sha256": "912f1e8ea86649fd41b0d587803491157263800e80036f81a41f2cdf8b073187",
+    "members": [
+      "Z80IntSkip",
+      "Z80IntSkip/int_skip.tap",
+      "Z80IntSkip/ReadMe.txt",
+      "Z80IntSkip/int_skip.trd.zip",
+      "Z80IntSkip/int_skip.asm"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "Z80 INT Skip v4.1 (2023-05-21)(Helcmanovsky, Peter)[GitHub a388a6111f5a286b5e1c2173c681c5636b607193][e].tar.xz",
+    "group": "common",
+    "size": 7556,
+    "sha256": "b667b969308679a1329bed5cab292e233efd7f1c4aca27227bb401d2a8ca4fbe",
+    "members": [
+      "Z80IntSkip",
+      "Z80IntSkip/int_skip.tap",
+      "Z80IntSkip/ReadMe.txt",
+      "Z80IntSkip/int_skip.trd.zip",
+      "Z80IntSkip/int_skip.asm"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "Z80 INT Skip v4.1 (2026-06-03)(Helcmanovsky, Peter)[GitHub 6042ebdad1a4ece44fa0ff7feee5bbd1d122dd54][e].tar.xz",
+    "group": "common",
+    "size": 7964,
+    "sha256": "9969ee31da394cdfcb2d78c8c545408690f944d579ccf1a3ddbc6f874b359472",
+    "members": [
+      "Z80IntSkip",
+      "Z80IntSkip/ReadMe.txt",
+      "Z80IntSkip/int_skip.sna",
+      "Z80IntSkip/int_skip.trd.zip",
+      "Z80IntSkip/int_skip.asm",
+      "Z80IntSkip/int_skip.tap"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "Z80 INT Skip v5.0 (2026-10-05)(Helcmanovsky, Peter)[GitHub 8adcbc8384b2311fb6d36d424478aef583d5c307][e].tar.xz",
+    "group": "common",
+    "size": 8504,
+    "sha256": "6eb61e7c1b4148e07de4d3438f3fd1ab3b16bc8d833d66ff5b21bcd8e2b87f10",
+    "members": [
+      "Z80IntSkip",
+      "Z80IntSkip/ReadMe.txt",
+      "Z80IntSkip/int_skip.sna",
+      "Z80IntSkip/int_skip.trd.zip",
+      "Z80IntSkip/int_skip.asm",
+      "Z80IntSkip/int_skip.tap"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "Z80 INT Skip vX.27K (2022-05-17)(Helcmanovsky, Peter)[!].sna",
+    "group": "common",
+    "size": 49179,
+    "sha256": "8fc1aa5819a4ab822d9c19d2ca8141848b04c3a7d0bc516d89f9d1a626606308",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Z80 INT Skip vX.27K (2022-05-17)(Helcmanovsky, Peter)[!].tap",
+    "group": "common",
+    "size": 777,
+    "sha256": "cd37d90bac0f626c5087061bbbd16828ce561ebcb81f69ff843fdc034526d4fd",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Z80 Illegal Instruction Test v1.0-alpha (2024-03-29)(Sainz de Baranda y Goñi, Manuel)[!].zip",
+    "group": "common",
+    "size": 1137,
+    "sha256": "1fbbe909062a95b9378d51e0f4378e596312679fa02b30ac8bb5c735ec7ad483",
+    "members": [
+      "Z80 Illegal Instruction Test.tap",
+      "__MACOSX/._Z80 Illegal Instruction Test.tap"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Z80 Illegal Instruction Test v1.0-alpha.1 (2024-03-29)(Sainz de Baranda y Goñi, Manuel)[!].zip",
+    "group": "common",
+    "size": 1189,
+    "sha256": "49914c688209c23bdb81183cc11ea3fd3e8406ad1618c7c95d2e8b9e3abdc352",
+    "members": [
+      "Z80 Illegal Instruction Test.tap",
+      "__MACOSX/._Z80 Illegal Instruction Test.tap"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Z80 Initial Condition Retriever (2011-05-30)(Rodríguez Jódar, Miguel Ángel)[!].zip",
+    "group": "common",
+    "size": 3473,
+    "sha256": "2c071dbef3f925440faa9cb97dfbcb810ce1547eace6e4d69ea2860d08ac50d5",
+    "members": [
+      "chars.bin",
+      "valor_reg_start.rom",
+      "valor_reg_start.asm"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Z80 Instruction Set Exerciser for Spectrum (2003-12-29)(Harston, Jonathan Graham)(Sources)[!].zip",
+    "group": "common",
+    "size": 31928,
+    "sha256": "9fc59aaa84d1c9aca131d3b770aee759bffbd762529faf08ab3dfd9f6750eab0",
+    "members": [
+      "Copying",
+      "Loader",
+      "Makefiles/riscos",
+      "zexall.src",
+      "zexdoc.src"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Z80 Instruction Set Exerciser for Spectrum (2018)(Harston, Jonathan Graham)(Sources)[!].zip",
+    "group": "common",
+    "size": 103842,
+    "sha256": "7c1ec8a1b20f0c3dce31c296122b6312f1fe7004c32d4a5b22bddbd038d88447",
+    "members": [
+      "Copying",
+      "Loader",
+      "!MkRISCOS",
+      "zexall.src",
+      "zexdoc.src"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Z80 Instruction Set Exerciser for Spectrum 2 v0.1 (2012-11-27)(Rak, Patrik)[!].zip",
+    "group": "common",
+    "size": 23877,
+    "sha256": "44e29a6923d2d32562c877532a80e96b4d9c5170e379c9dcb80df644b0a71ac7",
+    "members": [
+      "zexall2-0.1/Makefile",
+      "zexall2-0.1/zexall2.asm",
+      "zexall2-0.1/loader.bas",
+      "zexall2-0.1/zexall2.tap",
+      "zexall2-0.1/zexall2.szx"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Z80 Processor Type Detection (2024-10-04)(Bobrowski, Jan)[!].asm",
+    "group": "common",
+    "size": 12608,
+    "sha256": "2e8f0cf96c906704be6304528cedaf0d3387bdff060f8cb073cbb5fdff47138f",
+    "members": [],
+    "inspection": "manual"
+  },
+  {
+    "file": "Z80 Processor Type Detection (2024-10-04)(Bobrowski, Jan)[!].tap",
+    "group": "common",
+    "size": 1275,
+    "sha256": "e1f7e37d5c656ba70c4ca5dc2b7397a821bbddacdac3922f6bddab28d42f7bc9",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Z80 Speed Test v0.1 (2026-07-05)(Titov, Andrey)(Pentagon)[!].zip",
+    "group": "pentagon",
+    "size": 7742,
+    "sha256": "f7ac3dc2a2fad529ccd9fbde32cb170f41872c57e0a9aa0be2316e0313812882",
+    "members": [
+      "Speed Test v0.1 (Pentagon).tap",
+      "Speed Test v0.1 (Pentagon).z80"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Z80 Speed Test v0.1 (2026-07-06)(Titov, Andrey)(ZX Spectrum 48K, Uncalibrated)[!].zip",
+    "group": "48k",
+    "size": 3319,
+    "sha256": "cf403c54435bc0aeaa4b818fd63407476238452acd3bb6d0fb45a4b053156be1",
+    "members": [
+      "Speed Test v0.1 (Spectrum 48, uncalibrated).tap"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Z80 Speed Test v0.2 (2026-07-08)(Titov, Andrey)(Pentagon)[!].zip",
+    "group": "pentagon",
+    "size": 11168,
+    "sha256": "b0239d8460c2cd20a5ffe9f8d0d2bd3d9a5e59762a54d4316de37cbe41f06fdc",
+    "members": [
+      "Speed Test v0.2 (Pentagon).SCL",
+      "Speed Test v0.2 (Pentagon).tap",
+      "Speed Test v0.2 (Pentagon).z80"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Z80 Speed Test v0.2 (2026-07-08)(Titov, Andrey)(ZX Spectrum 48K)[!].zip",
+    "group": "48k",
+    "size": 3301,
+    "sha256": "dce8ba4266c77c16c51ad97a3727648f8097021322c4cc5fbb67b423d67c2fbd",
+    "members": [
+      "Speed Test v0.2 (Spectrum 48K).tap"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Z80 Test Program (2005-01-16)(Woigk, Günter)[!].tap",
+    "group": "common",
+    "size": 6583,
+    "sha256": "98f77692573357275609b534c0d31012e9749a0463c094c1164a1cc5c4ca8438",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Z80 Test Suite (2008)(Woodmass, Mark)[!].tap",
+    "group": "common",
+    "size": 5573,
+    "sha256": "42ce7fc8393de83876b89015be54f7d0da3c8c5b07a075981c12dd9d84c8b95d",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "Z80 Test Suite (2023-04-18)(Woodmass, Mark)(Sources)[!].zip",
+    "group": "common",
+    "size": 13820,
+    "sha256": "7b756f36a0d4a58c6d04d3214b2a2e6806b758fad6bd20ce739df322a45f0526",
+    "members": [
+      "COPYING",
+      "z80tests.asm",
+      "tests.asm"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Z80 XCF Flavor (beta) (2022-02-17)(Sainz de Baranda y Goñi, Manuel)[!].zip",
+    "group": "common",
+    "size": 2360,
+    "sha256": "2ee127bfee07c0fbb0367419d650b0d9ee3a76ac8c699cb860fbc700aee8c993",
+    "members": [
+      "Z80 XCF Flavor.asm",
+      "Z80 XCF Flavor.tap"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Z80 XCF Flavor v1.0 (2024-01-16)(Sainz de Baranda y Goñi, Manuel)[!].tar.xz",
+    "group": "common",
+    "size": 17364,
+    "sha256": "fdf36316bbf584fcacf147006d5c35b35767efdf2df66c853ac1e20143be64ff",
+    "members": [
+      "Z80 XCF Flavor",
+      "Z80 XCF Flavor/.gitignore",
+      "Z80 XCF Flavor/CHANGELOG.md",
+      "Z80 XCF Flavor/.editorconfig",
+      "Z80 XCF Flavor/sources",
+      "Z80 XCF Flavor/sources/Z80 XCF Flavor.asm",
+      "Z80 XCF Flavor/.github",
+      "Z80 XCF Flavor/.github/workflows",
+      "Z80 XCF Flavor/.github/workflows/build.yml",
+      "Z80 XCF Flavor/Z80 XCF Flavor.tap",
+      "Z80 XCF Flavor/README.md",
+      "Z80 XCF Flavor/CITATION.cff",
+      "Z80 XCF Flavor/Makefile",
+      "Z80 XCF Flavor/COPYING"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "Z80 XCF Flavor v1.1 (2024-01-27)(Sainz de Baranda y Goñi, Manuel)[!].tar.xz",
+    "group": "common",
+    "size": 17712,
+    "sha256": "6cec498cdaec2588d7f1191f22a72e8b1c2d6a6014ac00ccaef5323797d6ccfe",
+    "members": [
+      "Z80 XCF Flavor",
+      "Z80 XCF Flavor/.gitignore",
+      "Z80 XCF Flavor/CHANGELOG.md",
+      "Z80 XCF Flavor/.editorconfig",
+      "Z80 XCF Flavor/sources",
+      "Z80 XCF Flavor/sources/Z80 XCF Flavor.asm",
+      "Z80 XCF Flavor/.github",
+      "Z80 XCF Flavor/.github/workflows",
+      "Z80 XCF Flavor/.github/workflows/build.yml",
+      "Z80 XCF Flavor/Z80 XCF Flavor.tap",
+      "Z80 XCF Flavor/README.md",
+      "Z80 XCF Flavor/CITATION.cff",
+      "Z80 XCF Flavor/Makefile",
+      "Z80 XCF Flavor/COPYING"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "Z80 XCF Flavor v1.2 (2024-01-30)(Sainz de Baranda y Goñi, Manuel)[!].tar.xz",
+    "group": "common",
+    "size": 17632,
+    "sha256": "2b7dbb30ef10535ad6aaba47184a1f05d16a4e1dde9fb965f7523cc437b2285a",
+    "members": [
+      "Z80 XCF Flavor",
+      "Z80 XCF Flavor/Z80 XCF Flavor.asm",
+      "Z80 XCF Flavor/.gitignore",
+      "Z80 XCF Flavor/CHANGELOG.md",
+      "Z80 XCF Flavor/.editorconfig",
+      "Z80 XCF Flavor/.github",
+      "Z80 XCF Flavor/.github/workflows",
+      "Z80 XCF Flavor/.github/workflows/build.yml",
+      "Z80 XCF Flavor/Z80 XCF Flavor.tap",
+      "Z80 XCF Flavor/README.md",
+      "Z80 XCF Flavor/CITATION.cff",
+      "Z80 XCF Flavor/Makefile",
+      "Z80 XCF Flavor/COPYING"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "Z80 XCF Flavor v1.3 (2024-02-04)(Sainz de Baranda y Goñi, Manuel)[!].tar.xz",
+    "group": "common",
+    "size": 18252,
+    "sha256": "0b2feff3d956f7eb8a7742adaf4301e38fa2aec9173e327b77a8b49c4b1ce88b",
+    "members": [
+      "Z80 XCF Flavor",
+      "Z80 XCF Flavor/Z80 XCF Flavor.asm",
+      "Z80 XCF Flavor/.gitignore",
+      "Z80 XCF Flavor/CHANGELOG.md",
+      "Z80 XCF Flavor/.editorconfig",
+      "Z80 XCF Flavor/.github",
+      "Z80 XCF Flavor/.github/workflows",
+      "Z80 XCF Flavor/.github/workflows/build.yml",
+      "Z80 XCF Flavor/Z80 XCF Flavor.tap",
+      "Z80 XCF Flavor/README.md",
+      "Z80 XCF Flavor/CITATION.cff",
+      "Z80 XCF Flavor/Makefile",
+      "Z80 XCF Flavor/Z80 XCF Flavor.sna",
+      "Z80 XCF Flavor/COPYING"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "Z80 XCF Flavor v1.4 (2024-02-05)(Sainz de Baranda y Goñi, Manuel)[!].tar.xz",
+    "group": "common",
+    "size": 18424,
+    "sha256": "40b7978257f894d248f1bd761601f2f8c4cc1cd0311d1c80b57503688806b551",
+    "members": [
+      "Z80 XCF Flavor",
+      "Z80 XCF Flavor/Z80 XCF Flavor.asm",
+      "Z80 XCF Flavor/.gitignore",
+      "Z80 XCF Flavor/CHANGELOG.md",
+      "Z80 XCF Flavor/.editorconfig",
+      "Z80 XCF Flavor/.github",
+      "Z80 XCF Flavor/.github/workflows",
+      "Z80 XCF Flavor/.github/workflows/build.yml",
+      "Z80 XCF Flavor/Z80 XCF Flavor.tap",
+      "Z80 XCF Flavor/README.md",
+      "Z80 XCF Flavor/CITATION.cff",
+      "Z80 XCF Flavor/Makefile",
+      "Z80 XCF Flavor/Z80 XCF Flavor.sna",
+      "Z80 XCF Flavor/COPYING"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "Z80 XCF Flavor v1.5 (2024-02-06)(Sainz de Baranda y Goñi, Manuel)[!].tar.xz",
+    "group": "common",
+    "size": 18540,
+    "sha256": "77af5157ba1e01900a2a353cd58cdb6e47cdf95542b126c54c6aad4f3dc8c03f",
+    "members": [
+      "Z80 XCF Flavor",
+      "Z80 XCF Flavor/Z80 XCF Flavor.asm",
+      "Z80 XCF Flavor/.gitignore",
+      "Z80 XCF Flavor/CHANGELOG.md",
+      "Z80 XCF Flavor/.editorconfig",
+      "Z80 XCF Flavor/.github",
+      "Z80 XCF Flavor/.github/workflows",
+      "Z80 XCF Flavor/.github/workflows/build.yml",
+      "Z80 XCF Flavor/Z80 XCF Flavor.tap",
+      "Z80 XCF Flavor/README.md",
+      "Z80 XCF Flavor/CITATION.cff",
+      "Z80 XCF Flavor/Makefile",
+      "Z80 XCF Flavor/Z80 XCF Flavor.sna",
+      "Z80 XCF Flavor/COPYING"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "ZX FPS Counter (2021-02-10)(Erdikmen, Arda)[GitHub 3eb5363b5b91abb64cb3df86f3b67c0311a21378].zip",
+    "group": "common",
+    "size": 151523,
+    "sha256": "c56d56d77ad143a2272ce235d0ea190f1a1755df52e5d9cb7c7bf481ab48e48c",
+    "members": [
+      "zx_fps_counter-3eb5363b5b91abb64cb3df86f3b67c0311a21378/",
+      "zx_fps_counter-3eb5363b5b91abb64cb3df86f3b67c0311a21378/LICENSE",
+      "zx_fps_counter-3eb5363b5b91abb64cb3df86f3b67c0311a21378/README.md",
+      "zx_fps_counter-3eb5363b5b91abb64cb3df86f3b67c0311a21378/blendedimage1.jpg",
+      "zx_fps_counter-3eb5363b5b91abb64cb3df86f3b67c0311a21378/fpscounter.asm",
+      "zx_fps_counter-3eb5363b5b91abb64cb3df86f3b67c0311a21378/fpscounter.bin",
+      "zx_fps_counter-3eb5363b5b91abb64cb3df86f3b67c0311a21378/fpscounter2.asm",
+      "zx_fps_counter-3eb5363b5b91abb64cb3df86f3b67c0311a21378/fpscounter2out.tap",
+      "zx_fps_counter-3eb5363b5b91abb64cb3df86f3b67c0311a21378/fpscounter_screenrecord.gif",
+      "zx_fps_counter-3eb5363b5b91abb64cb3df86f3b67c0311a21378/fpscounterout.tap"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.21 (2015-04-21)(Alford, Brendan)(Sources)[GitHub dafc961c44bcd1cac889c353fce169e363c1d774].tar.gz",
+    "group": "common",
+    "size": 360004,
+    "sha256": "7513998bb9015ee25f8f8858c4ef7b023db24651c45d4d925556f63de9dc931d",
+    "members": [
+      "zx-diagnostics-0.21",
+      "zx-diagnostics-0.21/128tests.asm",
+      "zx-diagnostics-0.21/48tests.asm",
+      "zx-diagnostics-0.21/FlashUtils",
+      "zx-diagnostics-0.21/FlashUtils/bin",
+      "zx-diagnostics-0.21/FlashUtils/bin/flashutil.bin",
+      "zx-diagnostics-0.21/FlashUtils/bin/flashutil.tap",
+      "zx-diagnostics-0.21/FlashUtils/bin/flashutilrom.bin",
+      "zx-diagnostics-0.21/FlashUtils/bin/flashutilrom.tap",
+      "zx-diagnostics-0.21/FlashUtils/build.bat",
+      "zx-diagnostics-0.21/FlashUtils/flashutil.asm",
+      "zx-diagnostics-0.21/FlashUtils/flashutil.sjasm",
+      "zx-diagnostics-0.21/FlashUtils/flashutilrom.asm",
+      "zx-diagnostics-0.21/FlashUtils/flashutilrom.sjasm",
+      "zx-diagnostics-0.21/FlashUtils/vars.asm",
+      "zx-diagnostics-0.21/LICENSE",
+      "zx-diagnostics-0.21/README.md",
+      "zx-diagnostics-0.21/TestTape",
+      "zx-diagnostics-0.21/TestTape/bin",
+      "zx-diagnostics-0.21/TestTape/bin/testram.bin",
+      "zx-diagnostics-0.21/TestTape/bin/testram.tap",
+      "zx-diagnostics-0.21/TestTape/testram.asm",
+      "zx-diagnostics-0.21/TestTape/testram.sjasm",
+      "zx-diagnostics-0.21/bin",
+      "zx-diagnostics-0.21/bin/testrom.bin",
+      "zx-diagnostics-0.21/bin/testrom.tap",
+      "zx-diagnostics-0.21/build.bat",
+      "zx-diagnostics-0.21/charset.asm",
+      "zx-diagnostics-0.21/crc16.asm",
+      "zx-diagnostics-0.21/defines.asm",
+      "zx-diagnostics-0.21/hardware",
+      "zx-diagnostics-0.21/hardware/29F040B-1.sym",
+      "zx-diagnostics-0.21/hardware/741G04.sym",
+      "zx-diagnostics-0.21/hardware/SOD323.fp",
+      "zx-diagnostics-0.21/hardware/Spectrum-Edge-Conn.fp",
+      "zx-diagnostics-0.21/hardware/Spectrum-Edge-Conn.sym",
+      "zx-diagnostics-0.21/hardware/gafrc",
+      "zx-diagnostics-0.21/hardware/pmos.sym",
+      "zx-diagnostics-0.21/hardware/spectrum-diag.cmd",
+      "zx-diagnostics-0.21/hardware/spectrum-diag.net",
+      "zx-diagnostics-0.21/hardware/spectrum-diag.pcb",
+      "zx-diagnostics-0.21/hardware/spectrum-diag.sch",
+      "zx-diagnostics-0.21/input.asm",
+      "zx-diagnostics-0.21/paging.asm",
+      "zx-diagnostics-0.21/print.asm",
+      "zx-diagnostics-0.21/romcheck.asm",
+      "zx-diagnostics-0.21/testcard.asm",
+      "zx-diagnostics-0.21/testrom.asm",
+      "zx-diagnostics-0.21/testrom.sjasm",
+      "zx-diagnostics-0.21/ulatest.asm",
+      "zx-diagnostics-0.21/vars.asm",
+      "zx-diagnostics-0.21/version.asm",
+      "zx-diagnostics-0.21/wiki",
+      "zx-diagnostics-0.21/wiki/Flash1.jpg",
+      "zx-diagnostics-0.21/wiki/Flash2.jpg",
+      "zx-diagnostics-0.21/wiki/Issue1Ram.jpg",
+      "zx-diagnostics-0.21/wiki/LowerRamFail.jpg",
+      "zx-diagnostics-0.21/wiki/SoakTest.jpg",
+      "zx-diagnostics-0.21/wiki/TestPass48K.jpg",
+      "zx-diagnostics-0.21/wiki/UpperRamFail.jpg",
+      "zx-diagnostics-0.21/wiki/testcard.jpg",
+      "zx-diagnostics-0.21/wiki/ulatest.jpg"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.30 (2015-05-03)(Alford, Brendan)(Sources)[GitHub 4220792d062a9365c976c52c078cfaacfaab560f].tar.gz",
+    "group": "common",
+    "size": 360380,
+    "sha256": "50de43a912c5f2baed9e6889d0ea7f01b9fb07d7cba89ecc2062278a03317d5f",
+    "members": [
+      "zx-diagnostics-0.30",
+      "zx-diagnostics-0.30/128tests.asm",
+      "zx-diagnostics-0.30/48tests.asm",
+      "zx-diagnostics-0.30/FlashUtils",
+      "zx-diagnostics-0.30/FlashUtils/bin",
+      "zx-diagnostics-0.30/FlashUtils/bin/flashutil.bin",
+      "zx-diagnostics-0.30/FlashUtils/bin/flashutil.tap",
+      "zx-diagnostics-0.30/FlashUtils/bin/flashutilrom.bin",
+      "zx-diagnostics-0.30/FlashUtils/bin/flashutilrom.tap",
+      "zx-diagnostics-0.30/FlashUtils/build.bat",
+      "zx-diagnostics-0.30/FlashUtils/flashutil.asm",
+      "zx-diagnostics-0.30/FlashUtils/flashutil.sjasm",
+      "zx-diagnostics-0.30/FlashUtils/flashutilrom.asm",
+      "zx-diagnostics-0.30/FlashUtils/flashutilrom.sjasm",
+      "zx-diagnostics-0.30/FlashUtils/vars.asm",
+      "zx-diagnostics-0.30/LICENSE",
+      "zx-diagnostics-0.30/README.md",
+      "zx-diagnostics-0.30/TestTape",
+      "zx-diagnostics-0.30/TestTape/bin",
+      "zx-diagnostics-0.30/TestTape/bin/testram.bin",
+      "zx-diagnostics-0.30/TestTape/bin/testram.tap",
+      "zx-diagnostics-0.30/TestTape/testram.asm",
+      "zx-diagnostics-0.30/TestTape/testram.sjasm",
+      "zx-diagnostics-0.30/bin",
+      "zx-diagnostics-0.30/bin/testrom.bin",
+      "zx-diagnostics-0.30/bin/testrom.tap",
+      "zx-diagnostics-0.30/build.bat",
+      "zx-diagnostics-0.30/charset.asm",
+      "zx-diagnostics-0.30/crc16.asm",
+      "zx-diagnostics-0.30/defines.asm",
+      "zx-diagnostics-0.30/diagboard.asm",
+      "zx-diagnostics-0.30/hardware",
+      "zx-diagnostics-0.30/hardware/29F040B-1.sym",
+      "zx-diagnostics-0.30/hardware/741G04.sym",
+      "zx-diagnostics-0.30/hardware/SOD323.fp",
+      "zx-diagnostics-0.30/hardware/Spectrum-Edge-Conn.fp",
+      "zx-diagnostics-0.30/hardware/Spectrum-Edge-Conn.sym",
+      "zx-diagnostics-0.30/hardware/gafrc",
+      "zx-diagnostics-0.30/hardware/pmos.sym",
+      "zx-diagnostics-0.30/hardware/spectrum-diag.cmd",
+      "zx-diagnostics-0.30/hardware/spectrum-diag.net",
+      "zx-diagnostics-0.30/hardware/spectrum-diag.pcb",
+      "zx-diagnostics-0.30/hardware/spectrum-diag.sch",
+      "zx-diagnostics-0.30/input.asm",
+      "zx-diagnostics-0.30/paging.asm",
+      "zx-diagnostics-0.30/print.asm",
+      "zx-diagnostics-0.30/romcheck.asm",
+      "zx-diagnostics-0.30/testcard.asm",
+      "zx-diagnostics-0.30/testrom.asm",
+      "zx-diagnostics-0.30/testrom.sjasm",
+      "zx-diagnostics-0.30/ulatest.asm",
+      "zx-diagnostics-0.30/vars.asm",
+      "zx-diagnostics-0.30/version.asm",
+      "zx-diagnostics-0.30/wiki",
+      "zx-diagnostics-0.30/wiki/Flash1.jpg",
+      "zx-diagnostics-0.30/wiki/Flash2.jpg",
+      "zx-diagnostics-0.30/wiki/Issue1Ram.jpg",
+      "zx-diagnostics-0.30/wiki/LowerRamFail.jpg",
+      "zx-diagnostics-0.30/wiki/SoakTest.jpg",
+      "zx-diagnostics-0.30/wiki/TestPass48K.jpg",
+      "zx-diagnostics-0.30/wiki/UpperRamFail.jpg",
+      "zx-diagnostics-0.30/wiki/testcard.jpg",
+      "zx-diagnostics-0.30/wiki/ulatest.jpg"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.31 (2015-06-02)(Alford, Brendan)(Sources)[GitHub 7b61d7889353b8ae2d590b7a32a5ca0111aab48a].tar.gz",
+    "group": "48k",
+    "size": 356194,
+    "sha256": "641085ad1ea64e86f4be3196b365389f3583d54243273df6f992819f20a158d7",
+    "members": [
+      "zx-diagnostics-0.31",
+      "zx-diagnostics-0.31/128tests.asm",
+      "zx-diagnostics-0.31/48tests.asm",
+      "zx-diagnostics-0.31/FlashUtils",
+      "zx-diagnostics-0.31/FlashUtils/bin",
+      "zx-diagnostics-0.31/FlashUtils/bin/flashutil.bin",
+      "zx-diagnostics-0.31/FlashUtils/bin/flashutil.tap",
+      "zx-diagnostics-0.31/FlashUtils/bin/flashutilrom.bin",
+      "zx-diagnostics-0.31/FlashUtils/bin/flashutilrom.tap",
+      "zx-diagnostics-0.31/FlashUtils/build.bat",
+      "zx-diagnostics-0.31/FlashUtils/flashutil.asm",
+      "zx-diagnostics-0.31/FlashUtils/flashutil.sjasm",
+      "zx-diagnostics-0.31/FlashUtils/flashutilrom.asm",
+      "zx-diagnostics-0.31/FlashUtils/flashutilrom.sjasm",
+      "zx-diagnostics-0.31/FlashUtils/vars.asm",
+      "zx-diagnostics-0.31/LICENSE",
+      "zx-diagnostics-0.31/README.md",
+      "zx-diagnostics-0.31/TestTape",
+      "zx-diagnostics-0.31/TestTape/bin",
+      "zx-diagnostics-0.31/TestTape/bin/testram.bin",
+      "zx-diagnostics-0.31/TestTape/bin/testram.tap",
+      "zx-diagnostics-0.31/TestTape/testram.asm",
+      "zx-diagnostics-0.31/TestTape/testram.sjasm",
+      "zx-diagnostics-0.31/bin",
+      "zx-diagnostics-0.31/bin/testrom.bin",
+      "zx-diagnostics-0.31/bin/testrom.tap",
+      "zx-diagnostics-0.31/build.bat",
+      "zx-diagnostics-0.31/charset.asm",
+      "zx-diagnostics-0.31/crc16.asm",
+      "zx-diagnostics-0.31/defines.asm",
+      "zx-diagnostics-0.31/diagboard.asm",
+      "zx-diagnostics-0.31/hardware",
+      "zx-diagnostics-0.31/hardware/29F040B-1.sym",
+      "zx-diagnostics-0.31/hardware/741G04.sym",
+      "zx-diagnostics-0.31/hardware/SOD323.fp",
+      "zx-diagnostics-0.31/hardware/Spectrum-Edge-Conn.fp",
+      "zx-diagnostics-0.31/hardware/Spectrum-Edge-Conn.sym",
+      "zx-diagnostics-0.31/hardware/gafrc",
+      "zx-diagnostics-0.31/hardware/pmos.sym",
+      "zx-diagnostics-0.31/hardware/spectrum-diag.cmd",
+      "zx-diagnostics-0.31/hardware/spectrum-diag.net",
+      "zx-diagnostics-0.31/hardware/spectrum-diag.pcb",
+      "zx-diagnostics-0.31/hardware/spectrum-diag.sch",
+      "zx-diagnostics-0.31/input.asm",
+      "zx-diagnostics-0.31/paging.asm",
+      "zx-diagnostics-0.31/print.asm",
+      "zx-diagnostics-0.31/romcheck.asm",
+      "zx-diagnostics-0.31/testcard.asm",
+      "zx-diagnostics-0.31/testrom.asm",
+      "zx-diagnostics-0.31/testrom.sjasm",
+      "zx-diagnostics-0.31/ulatest.asm",
+      "zx-diagnostics-0.31/vars.asm",
+      "zx-diagnostics-0.31/version.asm",
+      "zx-diagnostics-0.31/wiki",
+      "zx-diagnostics-0.31/wiki/Flash1.jpg",
+      "zx-diagnostics-0.31/wiki/Flash2.jpg",
+      "zx-diagnostics-0.31/wiki/Issue1Ram.jpg",
+      "zx-diagnostics-0.31/wiki/LowerRamFail.jpg",
+      "zx-diagnostics-0.31/wiki/SoakTest.jpg",
+      "zx-diagnostics-0.31/wiki/TestPass48K.jpg",
+      "zx-diagnostics-0.31/wiki/UpperRamFail.jpg",
+      "zx-diagnostics-0.31/wiki/testcard.jpg",
+      "zx-diagnostics-0.31/wiki/ulatest.jpg"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.32 (2015-10-02)(Alford, Brendan)(Sources)[GitHub 59db6166c4ddc74b749b6c9144f0121982f1c362].tar.gz",
+    "group": "common",
+    "size": 1650022,
+    "sha256": "55ece75e5ee6baff4ee5bca3085fe573ca431ee9470c79ee4c94917628cb1ad2",
+    "members": [
+      "zx-diagnostics-0.32",
+      "zx-diagnostics-0.32/128tests.asm",
+      "zx-diagnostics-0.32/48tests.asm",
+      "zx-diagnostics-0.32/FlashUtils",
+      "zx-diagnostics-0.32/FlashUtils/bin",
+      "zx-diagnostics-0.32/FlashUtils/bin/flashutil.bin",
+      "zx-diagnostics-0.32/FlashUtils/bin/flashutil.tap",
+      "zx-diagnostics-0.32/FlashUtils/bin/flashutilrom.bin",
+      "zx-diagnostics-0.32/FlashUtils/bin/flashutilrom.tap",
+      "zx-diagnostics-0.32/FlashUtils/build.bat",
+      "zx-diagnostics-0.32/FlashUtils/flashutil.asm",
+      "zx-diagnostics-0.32/FlashUtils/flashutil.sjasm",
+      "zx-diagnostics-0.32/FlashUtils/flashutilrom.asm",
+      "zx-diagnostics-0.32/FlashUtils/flashutilrom.sjasm",
+      "zx-diagnostics-0.32/FlashUtils/vars.asm",
+      "zx-diagnostics-0.32/LICENSE",
+      "zx-diagnostics-0.32/README.md",
+      "zx-diagnostics-0.32/Spectranet",
+      "zx-diagnostics-0.32/Spectranet/build.bat",
+      "zx-diagnostics-0.32/Spectranet/flash_functions.asm",
+      "zx-diagnostics-0.32/Spectranet/installer.asm",
+      "zx-diagnostics-0.32/Spectranet/installer.sjasm",
+      "zx-diagnostics-0.32/Spectranet/output.asm",
+      "zx-diagnostics-0.32/Spectranet/spectranet.asm",
+      "zx-diagnostics-0.32/Spectranet/spectranet128tests.asm",
+      "zx-diagnostics-0.32/Spectranet/spectranet48tests.asm",
+      "zx-diagnostics-0.32/Spectranet/testmodule1.asm",
+      "zx-diagnostics-0.32/Spectranet/testmodule1.sjasm",
+      "zx-diagnostics-0.32/Spectranet/testmodule2.asm",
+      "zx-diagnostics-0.32/Spectranet/testmodule2.sjasm",
+      "zx-diagnostics-0.32/Spectranet/testroutines.asm",
+      "zx-diagnostics-0.32/Spectranet/vars.asm",
+      "zx-diagnostics-0.32/TestTape",
+      "zx-diagnostics-0.32/TestTape/bin",
+      "zx-diagnostics-0.32/TestTape/bin/testram.bin",
+      "zx-diagnostics-0.32/TestTape/bin/testram.tap",
+      "zx-diagnostics-0.32/TestTape/build.bat",
+      "zx-diagnostics-0.32/TestTape/testram.asm",
+      "zx-diagnostics-0.32/TestTape/testram.sjasm",
+      "zx-diagnostics-0.32/TestTape/testrammain.asm",
+      "zx-diagnostics-0.32/TestTape/testrammain.sjasm",
+      "zx-diagnostics-0.32/about.asm",
+      "zx-diagnostics-0.32/bin",
+      "zx-diagnostics-0.32/bin/testrom.bin",
+      "zx-diagnostics-0.32/bin/testrom.tap",
+      "zx-diagnostics-0.32/build.bat",
+      "zx-diagnostics-0.32/buildall.bat",
+      "zx-diagnostics-0.32/charset.asm",
+      "zx-diagnostics-0.32/crc16.asm",
+      "zx-diagnostics-0.32/defines.asm",
+      "zx-diagnostics-0.32/diagboard.asm",
+      "zx-diagnostics-0.32/hardware",
+      "zx-diagnostics-0.32/hardware/29F040B-1.sym",
+      "zx-diagnostics-0.32/hardware/741G04.sym",
+      "zx-diagnostics-0.32/hardware/SOD323.fp",
+      "zx-diagnostics-0.32/hardware/Spectrum-Edge-Conn.fp",
+      "zx-diagnostics-0.32/hardware/Spectrum-Edge-Conn.sym",
+      "zx-diagnostics-0.32/hardware/gafrc",
+      "zx-diagnostics-0.32/hardware/pmos.sym",
+      "zx-diagnostics-0.32/hardware/spectrum-diag.cmd",
+      "zx-diagnostics-0.32/hardware/spectrum-diag.net",
+      "zx-diagnostics-0.32/hardware/spectrum-diag.pcb",
+      "zx-diagnostics-0.32/hardware/spectrum-diag.sch",
+      "zx-diagnostics-0.32/input.asm",
+      "zx-diagnostics-0.32/keyboardtest.asm",
+      "zx-diagnostics-0.32/membrowser.asm",
+      "zx-diagnostics-0.32/paging.asm",
+      "zx-diagnostics-0.32/print.asm",
+      "zx-diagnostics-0.32/release.bat",
+      "zx-diagnostics-0.32/romcheck.asm",
+      "zx-diagnostics-0.32/romtables.asm",
+      "zx-diagnostics-0.32/scroll.asm",
+      "zx-diagnostics-0.32/testcard.asm",
+      "zx-diagnostics-0.32/testrom.asm",
+      "zx-diagnostics-0.32/testrom.sjasm",
+      "zx-diagnostics-0.32/ulatest.asm",
+      "zx-diagnostics-0.32/vars.asm",
+      "zx-diagnostics-0.32/version.asm",
+      "zx-diagnostics-0.32/wiki",
+      "zx-diagnostics-0.32/wiki/DiagboardNMIFront.jpg",
+      "zx-diagnostics-0.32/wiki/DiagboardNMIRear.jpg",
+      "zx-diagnostics-0.32/wiki/Flash1.jpg",
+      "zx-diagnostics-0.32/wiki/Flash2.jpg",
+      "zx-diagnostics-0.32/wiki/FlashOtherOptions.jpg",
+      "zx-diagnostics-0.32/wiki/Issue1LowerRam.jpg",
+      "zx-diagnostics-0.32/wiki/Issue1Ram.jpg",
+      "zx-diagnostics-0.32/wiki/LowerRamFail.jpg",
+      "zx-diagnostics-0.32/wiki/LowerRamFailTape.jpg",
+      "zx-diagnostics-0.32/wiki/SoakTest.jpg",
+      "zx-diagnostics-0.32/wiki/SoakTestTape.jpg",
+      "zx-diagnostics-0.32/wiki/SpectranetInit.jpg",
+      "zx-diagnostics-0.32/wiki/SpectranetInstall.jpg",
+      "zx-diagnostics-0.32/wiki/SpectranetLocalFail.jpg",
+      "zx-diagnostics-0.32/wiki/SpectranetLocalPass.jpg",
+      "zx-diagnostics-0.32/wiki/SpectranetRemoteTestcard.jpg",
+      "zx-diagnostics-0.32/wiki/SpectranetTestRemote.jpg",
+      "zx-diagnostics-0.32/wiki/SpectranetUpgrade.jpg",
+      "zx-diagnostics-0.32/wiki/TestPass48K.jpg",
+      "zx-diagnostics-0.32/wiki/UpperRamFail.jpg",
+      "zx-diagnostics-0.32/wiki/UpperRamFailTape.jpg",
+      "zx-diagnostics-0.32/wiki/about.jpg",
+      "zx-diagnostics-0.32/wiki/keyboardtest.jpg",
+      "zx-diagnostics-0.32/wiki/membrowser.jpg",
+      "zx-diagnostics-0.32/wiki/testcard.jpg",
+      "zx-diagnostics-0.32/wiki/ulatest.jpg"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.32 (2015-10-02)(Alford, Brendan)[!].zip",
+    "group": "common",
+    "size": 45926,
+    "sha256": "5ddfe721193b2ec543719ba7ab1c211e09d90909a94271da21f18a6de9836dc6",
+    "members": [
+      "FlashUtils/",
+      "FlashUtils/flashutil.bin",
+      "FlashUtils/flashutil.tap",
+      "FlashUtils/flashutilrom.bin",
+      "FlashUtils/flashutilrom.tap",
+      "Spectranet/",
+      "Spectranet/installer.tap",
+      "Spectranet/testmodule1.module",
+      "Spectranet/testmodule2.module",
+      "testrom.bin",
+      "testrom.tap",
+      "TestTape/",
+      "TestTape/testram.tap"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.33 (2016-04-23)(Alford, Brendan)(Sources)[GitHub 11cdb153b17224fb27ff6c38464feb3450eee22b].tar.gz",
+    "group": "common",
+    "size": 1651851,
+    "sha256": "feb80f151939b8235a6318e718b9a3cc12e79443ba1ba9530bbdc5e556369439",
+    "members": [
+      "zx-diagnostics-0.33",
+      "zx-diagnostics-0.33/128tests.asm",
+      "zx-diagnostics-0.33/48tests.asm",
+      "zx-diagnostics-0.33/FlashUtils",
+      "zx-diagnostics-0.33/FlashUtils/build.bat",
+      "zx-diagnostics-0.33/FlashUtils/flashutil.asm",
+      "zx-diagnostics-0.33/FlashUtils/flashutil.sjasm",
+      "zx-diagnostics-0.33/FlashUtils/flashutilrom.asm",
+      "zx-diagnostics-0.33/FlashUtils/flashutilrom.sjasm",
+      "zx-diagnostics-0.33/FlashUtils/vars.asm",
+      "zx-diagnostics-0.33/LICENSE",
+      "zx-diagnostics-0.33/README.md",
+      "zx-diagnostics-0.33/Spectranet",
+      "zx-diagnostics-0.33/Spectranet/build.bat",
+      "zx-diagnostics-0.33/Spectranet/flash_functions.asm",
+      "zx-diagnostics-0.33/Spectranet/installer.asm",
+      "zx-diagnostics-0.33/Spectranet/installer.sjasm",
+      "zx-diagnostics-0.33/Spectranet/output.asm",
+      "zx-diagnostics-0.33/Spectranet/spectranet.asm",
+      "zx-diagnostics-0.33/Spectranet/spectranet128tests.asm",
+      "zx-diagnostics-0.33/Spectranet/spectranet48tests.asm",
+      "zx-diagnostics-0.33/Spectranet/testmodule1.asm",
+      "zx-diagnostics-0.33/Spectranet/testmodule1.sjasm",
+      "zx-diagnostics-0.33/Spectranet/testmodule2.asm",
+      "zx-diagnostics-0.33/Spectranet/testmodule2.sjasm",
+      "zx-diagnostics-0.33/Spectranet/testroutines.asm",
+      "zx-diagnostics-0.33/Spectranet/vars.asm",
+      "zx-diagnostics-0.33/TestTape",
+      "zx-diagnostics-0.33/TestTape/build.bat",
+      "zx-diagnostics-0.33/TestTape/testram.asm",
+      "zx-diagnostics-0.33/TestTape/testram.sjasm",
+      "zx-diagnostics-0.33/TestTape/testrammain.asm",
+      "zx-diagnostics-0.33/TestTape/testrammain.sjasm",
+      "zx-diagnostics-0.33/about.asm",
+      "zx-diagnostics-0.33/build.bat",
+      "zx-diagnostics-0.33/buildmain.bat",
+      "zx-diagnostics-0.33/buildslam.bat",
+      "zx-diagnostics-0.33/charset.asm",
+      "zx-diagnostics-0.33/crc16.asm",
+      "zx-diagnostics-0.33/defines.asm",
+      "zx-diagnostics-0.33/diagboard.asm",
+      "zx-diagnostics-0.33/hardware",
+      "zx-diagnostics-0.33/hardware/29F040B-1.sym",
+      "zx-diagnostics-0.33/hardware/741G04.sym",
+      "zx-diagnostics-0.33/hardware/SOD323.fp",
+      "zx-diagnostics-0.33/hardware/Spectrum-Edge-Conn.fp",
+      "zx-diagnostics-0.33/hardware/Spectrum-Edge-Conn.sym",
+      "zx-diagnostics-0.33/hardware/gafrc",
+      "zx-diagnostics-0.33/hardware/pmos.sym",
+      "zx-diagnostics-0.33/hardware/spectrum-diag.cmd",
+      "zx-diagnostics-0.33/hardware/spectrum-diag.net",
+      "zx-diagnostics-0.33/hardware/spectrum-diag.pcb",
+      "zx-diagnostics-0.33/hardware/spectrum-diag.sch",
+      "zx-diagnostics-0.33/input.asm",
+      "zx-diagnostics-0.33/keyboardtest.asm",
+      "zx-diagnostics-0.33/membrowser.asm",
+      "zx-diagnostics-0.33/paging.asm",
+      "zx-diagnostics-0.33/print.asm",
+      "zx-diagnostics-0.33/release.bat",
+      "zx-diagnostics-0.33/romcheck.asm",
+      "zx-diagnostics-0.33/romtables.asm",
+      "zx-diagnostics-0.33/scroll.asm",
+      "zx-diagnostics-0.33/testcard.asm",
+      "zx-diagnostics-0.33/testrom.asm",
+      "zx-diagnostics-0.33/testrom.sjasm",
+      "zx-diagnostics-0.33/testroutines.asm",
+      "zx-diagnostics-0.33/testslam.asm",
+      "zx-diagnostics-0.33/ulatest.asm",
+      "zx-diagnostics-0.33/vars.asm",
+      "zx-diagnostics-0.33/version.asm",
+      "zx-diagnostics-0.33/wiki",
+      "zx-diagnostics-0.33/wiki/DiagboardNMIFront.jpg",
+      "zx-diagnostics-0.33/wiki/DiagboardNMIRear.jpg",
+      "zx-diagnostics-0.33/wiki/Flash1.jpg",
+      "zx-diagnostics-0.33/wiki/Flash2.jpg",
+      "zx-diagnostics-0.33/wiki/FlashOtherOptions.jpg",
+      "zx-diagnostics-0.33/wiki/Issue1LowerRam.jpg",
+      "zx-diagnostics-0.33/wiki/Issue1Ram.jpg",
+      "zx-diagnostics-0.33/wiki/LowerRamFail.jpg",
+      "zx-diagnostics-0.33/wiki/LowerRamFailTape.jpg",
+      "zx-diagnostics-0.33/wiki/SoakTest.jpg",
+      "zx-diagnostics-0.33/wiki/SoakTestTape.jpg",
+      "zx-diagnostics-0.33/wiki/SpectranetInit.jpg",
+      "zx-diagnostics-0.33/wiki/SpectranetInstall.jpg",
+      "zx-diagnostics-0.33/wiki/SpectranetLocalFail.jpg",
+      "zx-diagnostics-0.33/wiki/SpectranetLocalPass.jpg",
+      "zx-diagnostics-0.33/wiki/SpectranetRemoteTestcard.jpg",
+      "zx-diagnostics-0.33/wiki/SpectranetTestRemote.jpg",
+      "zx-diagnostics-0.33/wiki/SpectranetUpgrade.jpg",
+      "zx-diagnostics-0.33/wiki/TestPass48K.jpg",
+      "zx-diagnostics-0.33/wiki/UpperRamFail.jpg",
+      "zx-diagnostics-0.33/wiki/UpperRamFailTape.jpg",
+      "zx-diagnostics-0.33/wiki/about.jpg",
+      "zx-diagnostics-0.33/wiki/keyboardtest.jpg",
+      "zx-diagnostics-0.33/wiki/membrowser.jpg",
+      "zx-diagnostics-0.33/wiki/testcard.jpg",
+      "zx-diagnostics-0.33/wiki/ulatest.jpg",
+      "zx-diagnostics-0.33/zxtest",
+      "zx-diagnostics-0.33/zxtest/spectrom1.asm",
+      "zx-diagnostics-0.33/zxtest/spectrom2.asm"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.33 (2016-04-23)(Alford, Brendan)[!].zip",
+    "group": "common",
+    "size": 47123,
+    "sha256": "63c20a676f4354925359179704bbb36d1bb2194c3447257f9a5103dfb01571e8",
+    "members": [
+      "FlashUtils/",
+      "FlashUtils/flashutil.bin",
+      "FlashUtils/flashutil.tap",
+      "FlashUtils/flashutilrom.bin",
+      "FlashUtils/flashutilrom.tap",
+      "Spectranet/",
+      "Spectranet/installer.tap",
+      "Spectranet/testmodule1.module",
+      "Spectranet/testmodule2.module",
+      "testrom.bin",
+      "testrom.tap",
+      "TestTape/",
+      "TestTape/testram.tap"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.34 (2016-09-26)(Alford, Brendan)(Sources)[GitHub df962ab4645f6c44ecf1b46dcc289c151860cb8a].tar.gz",
+    "group": "common",
+    "size": 1653908,
+    "sha256": "2ddc2734e2dd00170d5adc070e474996076be0800ed9d21130aa1b3682f90b8d",
+    "members": [
+      "zx-diagnostics-0.34",
+      "zx-diagnostics-0.34/128tests.asm",
+      "zx-diagnostics-0.34/48tests.asm",
+      "zx-diagnostics-0.34/FlashUtils",
+      "zx-diagnostics-0.34/FlashUtils/build.bat",
+      "zx-diagnostics-0.34/FlashUtils/flashutil.asm",
+      "zx-diagnostics-0.34/FlashUtils/flashutil.sjasm",
+      "zx-diagnostics-0.34/FlashUtils/flashutilrom.asm",
+      "zx-diagnostics-0.34/FlashUtils/flashutilrom.sjasm",
+      "zx-diagnostics-0.34/FlashUtils/vars.asm",
+      "zx-diagnostics-0.34/LICENSE",
+      "zx-diagnostics-0.34/README.md",
+      "zx-diagnostics-0.34/Spectranet",
+      "zx-diagnostics-0.34/Spectranet/build.bat",
+      "zx-diagnostics-0.34/Spectranet/flash_functions.asm",
+      "zx-diagnostics-0.34/Spectranet/installer.asm",
+      "zx-diagnostics-0.34/Spectranet/installer.sjasm",
+      "zx-diagnostics-0.34/Spectranet/output.asm",
+      "zx-diagnostics-0.34/Spectranet/spectranet.asm",
+      "zx-diagnostics-0.34/Spectranet/spectranet128tests.asm",
+      "zx-diagnostics-0.34/Spectranet/spectranet48tests.asm",
+      "zx-diagnostics-0.34/Spectranet/testmodule1.asm",
+      "zx-diagnostics-0.34/Spectranet/testmodule1.sjasm",
+      "zx-diagnostics-0.34/Spectranet/testmodule2.asm",
+      "zx-diagnostics-0.34/Spectranet/testmodule2.sjasm",
+      "zx-diagnostics-0.34/Spectranet/testroutines.asm",
+      "zx-diagnostics-0.34/Spectranet/vars.asm",
+      "zx-diagnostics-0.34/TestTape",
+      "zx-diagnostics-0.34/TestTape/build.bat",
+      "zx-diagnostics-0.34/TestTape/testram.asm",
+      "zx-diagnostics-0.34/TestTape/testram.sjasm",
+      "zx-diagnostics-0.34/TestTape/testrammain.asm",
+      "zx-diagnostics-0.34/TestTape/testrammain.sjasm",
+      "zx-diagnostics-0.34/about.asm",
+      "zx-diagnostics-0.34/build.bat",
+      "zx-diagnostics-0.34/builddiag.bat",
+      "zx-diagnostics-0.34/buildmain.bat",
+      "zx-diagnostics-0.34/buildslam.bat",
+      "zx-diagnostics-0.34/charset.asm",
+      "zx-diagnostics-0.34/crc16.asm",
+      "zx-diagnostics-0.34/defines.asm",
+      "zx-diagnostics-0.34/diagboard.asm",
+      "zx-diagnostics-0.34/diagboard.sjasm",
+      "zx-diagnostics-0.34/hardware",
+      "zx-diagnostics-0.34/hardware/29F040B-1.sym",
+      "zx-diagnostics-0.34/hardware/741G04.sym",
+      "zx-diagnostics-0.34/hardware/SOD323.fp",
+      "zx-diagnostics-0.34/hardware/Spectrum-Edge-Conn.fp",
+      "zx-diagnostics-0.34/hardware/Spectrum-Edge-Conn.sym",
+      "zx-diagnostics-0.34/hardware/gafrc",
+      "zx-diagnostics-0.34/hardware/pmos.sym",
+      "zx-diagnostics-0.34/hardware/spectrum-diag.cmd",
+      "zx-diagnostics-0.34/hardware/spectrum-diag.net",
+      "zx-diagnostics-0.34/hardware/spectrum-diag.pcb",
+      "zx-diagnostics-0.34/hardware/spectrum-diag.sch",
+      "zx-diagnostics-0.34/input.asm",
+      "zx-diagnostics-0.34/keyboardtest.asm",
+      "zx-diagnostics-0.34/membrowser.asm",
+      "zx-diagnostics-0.34/paging.asm",
+      "zx-diagnostics-0.34/print.asm",
+      "zx-diagnostics-0.34/release.bat",
+      "zx-diagnostics-0.34/romcheck.asm",
+      "zx-diagnostics-0.34/romtables.asm",
+      "zx-diagnostics-0.34/scroll.asm",
+      "zx-diagnostics-0.34/testcard.asm",
+      "zx-diagnostics-0.34/testrom.asm",
+      "zx-diagnostics-0.34/testrom.sjasm",
+      "zx-diagnostics-0.34/testroutines.asm",
+      "zx-diagnostics-0.34/testslam.asm",
+      "zx-diagnostics-0.34/testslam.sjasm",
+      "zx-diagnostics-0.34/ulatest.asm",
+      "zx-diagnostics-0.34/vars.asm",
+      "zx-diagnostics-0.34/version.asm",
+      "zx-diagnostics-0.34/wiki",
+      "zx-diagnostics-0.34/wiki/DiagboardNMIFront.jpg",
+      "zx-diagnostics-0.34/wiki/DiagboardNMIRear.jpg",
+      "zx-diagnostics-0.34/wiki/Flash1.jpg",
+      "zx-diagnostics-0.34/wiki/Flash2.jpg",
+      "zx-diagnostics-0.34/wiki/FlashOtherOptions.jpg",
+      "zx-diagnostics-0.34/wiki/Issue1LowerRam.jpg",
+      "zx-diagnostics-0.34/wiki/Issue1Ram.jpg",
+      "zx-diagnostics-0.34/wiki/LowerRamFail.jpg",
+      "zx-diagnostics-0.34/wiki/LowerRamFailTape.jpg",
+      "zx-diagnostics-0.34/wiki/SoakTest.jpg",
+      "zx-diagnostics-0.34/wiki/SoakTestTape.jpg",
+      "zx-diagnostics-0.34/wiki/SpectranetInit.jpg",
+      "zx-diagnostics-0.34/wiki/SpectranetInstall.jpg",
+      "zx-diagnostics-0.34/wiki/SpectranetLocalFail.jpg",
+      "zx-diagnostics-0.34/wiki/SpectranetLocalPass.jpg",
+      "zx-diagnostics-0.34/wiki/SpectranetRemoteTestcard.jpg",
+      "zx-diagnostics-0.34/wiki/SpectranetTestRemote.jpg",
+      "zx-diagnostics-0.34/wiki/SpectranetUpgrade.jpg",
+      "zx-diagnostics-0.34/wiki/TestPass48K.jpg",
+      "zx-diagnostics-0.34/wiki/UpperRamFail.jpg",
+      "zx-diagnostics-0.34/wiki/UpperRamFailTape.jpg",
+      "zx-diagnostics-0.34/wiki/about.jpg",
+      "zx-diagnostics-0.34/wiki/keyboardtest.jpg",
+      "zx-diagnostics-0.34/wiki/membrowser.jpg",
+      "zx-diagnostics-0.34/wiki/testcard.jpg",
+      "zx-diagnostics-0.34/wiki/ulatest.jpg",
+      "zx-diagnostics-0.34/zxtest",
+      "zx-diagnostics-0.34/zxtest/spectrom1.asm",
+      "zx-diagnostics-0.34/zxtest/spectrom2.asm"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.35 (2017-05-20)(Alford, Brendan)(Sources)[GitHub 6242936fdb0ad3c8bc8f96b2b4f84c3951b3ee45].tar.gz",
+    "group": "common",
+    "size": 1656384,
+    "sha256": "bd575b07f81803ac849bb5737c4838b213fe3ab8fcd2c0110a7eec8d71b52cee",
+    "members": [
+      "zx-diagnostics-0.35",
+      "zx-diagnostics-0.35/128tests.asm",
+      "zx-diagnostics-0.35/48tests.asm",
+      "zx-diagnostics-0.35/FlashUtils",
+      "zx-diagnostics-0.35/FlashUtils/build.bat",
+      "zx-diagnostics-0.35/FlashUtils/flashutil.asm",
+      "zx-diagnostics-0.35/FlashUtils/flashutil.sjasm",
+      "zx-diagnostics-0.35/FlashUtils/flashutilrom.asm",
+      "zx-diagnostics-0.35/FlashUtils/flashutilrom.sjasm",
+      "zx-diagnostics-0.35/FlashUtils/vars.asm",
+      "zx-diagnostics-0.35/LICENSE",
+      "zx-diagnostics-0.35/README.md",
+      "zx-diagnostics-0.35/TestTape",
+      "zx-diagnostics-0.35/TestTape/build.bat",
+      "zx-diagnostics-0.35/TestTape/testram.asm",
+      "zx-diagnostics-0.35/TestTape/testram.sjasm",
+      "zx-diagnostics-0.35/TestTape/testram_loader.tap",
+      "zx-diagnostics-0.35/TestTape/testrammain.asm",
+      "zx-diagnostics-0.35/TestTape/testrammain.sjasm",
+      "zx-diagnostics-0.35/about.asm",
+      "zx-diagnostics-0.35/build.bat",
+      "zx-diagnostics-0.35/builddiag.bat",
+      "zx-diagnostics-0.35/buildmain.bat",
+      "zx-diagnostics-0.35/buildslam.bat",
+      "zx-diagnostics-0.35/charset.asm",
+      "zx-diagnostics-0.35/crc16.asm",
+      "zx-diagnostics-0.35/defines.asm",
+      "zx-diagnostics-0.35/diagboard.asm",
+      "zx-diagnostics-0.35/diagboard.sjasm",
+      "zx-diagnostics-0.35/hardware",
+      "zx-diagnostics-0.35/hardware/29F040B-1.sym",
+      "zx-diagnostics-0.35/hardware/741G04.sym",
+      "zx-diagnostics-0.35/hardware/SOD323.fp",
+      "zx-diagnostics-0.35/hardware/Spectrum-Edge-Conn.fp",
+      "zx-diagnostics-0.35/hardware/Spectrum-Edge-Conn.sym",
+      "zx-diagnostics-0.35/hardware/gafrc",
+      "zx-diagnostics-0.35/hardware/pmos.sym",
+      "zx-diagnostics-0.35/hardware/spectrum-diag.cmd",
+      "zx-diagnostics-0.35/hardware/spectrum-diag.net",
+      "zx-diagnostics-0.35/hardware/spectrum-diag.pcb",
+      "zx-diagnostics-0.35/hardware/spectrum-diag.sch",
+      "zx-diagnostics-0.35/input.asm",
+      "zx-diagnostics-0.35/keyboardtest.asm",
+      "zx-diagnostics-0.35/membrowser.asm",
+      "zx-diagnostics-0.35/paging.asm",
+      "zx-diagnostics-0.35/print.asm",
+      "zx-diagnostics-0.35/printer.asm",
+      "zx-diagnostics-0.35/release.bat",
+      "zx-diagnostics-0.35/romcheck.asm",
+      "zx-diagnostics-0.35/romtables.asm",
+      "zx-diagnostics-0.35/scroll.asm",
+      "zx-diagnostics-0.35/testcard.asm",
+      "zx-diagnostics-0.35/testrom.asm",
+      "zx-diagnostics-0.35/testrom.sjasm",
+      "zx-diagnostics-0.35/testroutines.asm",
+      "zx-diagnostics-0.35/testslam.asm",
+      "zx-diagnostics-0.35/testslam.sjasm",
+      "zx-diagnostics-0.35/ulatest.asm",
+      "zx-diagnostics-0.35/vars.asm",
+      "zx-diagnostics-0.35/version.asm",
+      "zx-diagnostics-0.35/wiki",
+      "zx-diagnostics-0.35/wiki/DiagboardNMIFront.jpg",
+      "zx-diagnostics-0.35/wiki/DiagboardNMIRear.jpg",
+      "zx-diagnostics-0.35/wiki/Flash1.jpg",
+      "zx-diagnostics-0.35/wiki/Flash2.jpg",
+      "zx-diagnostics-0.35/wiki/FlashOtherOptions.jpg",
+      "zx-diagnostics-0.35/wiki/Issue1LowerRam.jpg",
+      "zx-diagnostics-0.35/wiki/Issue1Ram.jpg",
+      "zx-diagnostics-0.35/wiki/LowerRamFail.jpg",
+      "zx-diagnostics-0.35/wiki/LowerRamFailTape.jpg",
+      "zx-diagnostics-0.35/wiki/SoakTest.jpg",
+      "zx-diagnostics-0.35/wiki/SoakTestTape.jpg",
+      "zx-diagnostics-0.35/wiki/SpectranetInit.jpg",
+      "zx-diagnostics-0.35/wiki/SpectranetInstall.jpg",
+      "zx-diagnostics-0.35/wiki/SpectranetLocalFail.jpg",
+      "zx-diagnostics-0.35/wiki/SpectranetLocalPass.jpg",
+      "zx-diagnostics-0.35/wiki/SpectranetRemoteTestcard.jpg",
+      "zx-diagnostics-0.35/wiki/SpectranetTestRemote.jpg",
+      "zx-diagnostics-0.35/wiki/SpectranetUpgrade.jpg",
+      "zx-diagnostics-0.35/wiki/TestPass48K.jpg",
+      "zx-diagnostics-0.35/wiki/UpperRamFail.jpg",
+      "zx-diagnostics-0.35/wiki/UpperRamFailTape.jpg",
+      "zx-diagnostics-0.35/wiki/about.jpg",
+      "zx-diagnostics-0.35/wiki/keyboardtest.jpg",
+      "zx-diagnostics-0.35/wiki/membrowser.jpg",
+      "zx-diagnostics-0.35/wiki/testcard.jpg",
+      "zx-diagnostics-0.35/wiki/ulatest.jpg",
+      "zx-diagnostics-0.35/zxtest",
+      "zx-diagnostics-0.35/zxtest/spectrom1.asm",
+      "zx-diagnostics-0.35/zxtest/spectrom2.asm"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.35 (2017-05-20)(Alford, Brendan)[!].zip",
+    "group": "common",
+    "size": 38954,
+    "sha256": "e9524b79b0d74574d028ebcf76ea9caf97e7c4dd018a653936bc07799366cfdc",
+    "members": [
+      "FlashUtils/",
+      "FlashUtils/flashutil.bin",
+      "FlashUtils/flashutil.tap",
+      "FlashUtils/flashutilrom.bin",
+      "FlashUtils/flashutilrom.tap",
+      "testrom.bin",
+      "testrom.tap",
+      "TestTape/",
+      "TestTape/testram.tap"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.36 (2017-12-29)(Alford, Brendan)(Sources)[GitHub 9b5ceefe2c3a5b91d062e082a81ce18a58b884f6].tar.gz",
+    "group": "common",
+    "size": 1693263,
+    "sha256": "d30db2064ba608f867b9c528d09ebbcbe126b820e7773510ade270cd19c106a0",
+    "members": [
+      "zx-diagnostics-0.36",
+      "zx-diagnostics-0.36/128tests.asm",
+      "zx-diagnostics-0.36/48tests.asm",
+      "zx-diagnostics-0.36/FlashUtils",
+      "zx-diagnostics-0.36/FlashUtils/build.bat",
+      "zx-diagnostics-0.36/FlashUtils/flashutil.asm",
+      "zx-diagnostics-0.36/FlashUtils/flashutil.sjasm",
+      "zx-diagnostics-0.36/FlashUtils/flashutilrom.asm",
+      "zx-diagnostics-0.36/FlashUtils/flashutilrom.sjasm",
+      "zx-diagnostics-0.36/FlashUtils/vars.asm",
+      "zx-diagnostics-0.36/LICENSE",
+      "zx-diagnostics-0.36/README.md",
+      "zx-diagnostics-0.36/ROMCheck",
+      "zx-diagnostics-0.36/ROMCheck/build.bat",
+      "zx-diagnostics-0.36/ROMCheck/romcheck.asm",
+      "zx-diagnostics-0.36/ROMCheck/romcheck.sjasm",
+      "zx-diagnostics-0.36/ROMCheck/romcheck_loader.tap",
+      "zx-diagnostics-0.36/ROMCheck/vars.asm",
+      "zx-diagnostics-0.36/TestTape",
+      "zx-diagnostics-0.36/TestTape/build.bat",
+      "zx-diagnostics-0.36/TestTape/testram.asm",
+      "zx-diagnostics-0.36/TestTape/testram.sjasm",
+      "zx-diagnostics-0.36/TestTape/testram_loader.tap",
+      "zx-diagnostics-0.36/TestTape/testrammain.asm",
+      "zx-diagnostics-0.36/TestTape/testrammain.sjasm",
+      "zx-diagnostics-0.36/about.asm",
+      "zx-diagnostics-0.36/build.bat",
+      "zx-diagnostics-0.36/builddiag.bat",
+      "zx-diagnostics-0.36/buildmain.bat",
+      "zx-diagnostics-0.36/buildslam.bat",
+      "zx-diagnostics-0.36/charset.asm",
+      "zx-diagnostics-0.36/crc16.asm",
+      "zx-diagnostics-0.36/defines.asm",
+      "zx-diagnostics-0.36/diagboard.asm",
+      "zx-diagnostics-0.36/diagboard.sjasm",
+      "zx-diagnostics-0.36/hardware",
+      "zx-diagnostics-0.36/hardware/29F040B-1.sym",
+      "zx-diagnostics-0.36/hardware/741G04.sym",
+      "zx-diagnostics-0.36/hardware/SOD323.fp",
+      "zx-diagnostics-0.36/hardware/Spectrum-Edge-Conn.fp",
+      "zx-diagnostics-0.36/hardware/Spectrum-Edge-Conn.sym",
+      "zx-diagnostics-0.36/hardware/gafrc",
+      "zx-diagnostics-0.36/hardware/pmos.sym",
+      "zx-diagnostics-0.36/hardware/spectrum-diag.cmd",
+      "zx-diagnostics-0.36/hardware/spectrum-diag.net",
+      "zx-diagnostics-0.36/hardware/spectrum-diag.pcb",
+      "zx-diagnostics-0.36/hardware/spectrum-diag.sch",
+      "zx-diagnostics-0.36/input.asm",
+      "zx-diagnostics-0.36/keyboardtest.asm",
+      "zx-diagnostics-0.36/membrowser.asm",
+      "zx-diagnostics-0.36/paging.asm",
+      "zx-diagnostics-0.36/print.asm",
+      "zx-diagnostics-0.36/printer.asm",
+      "zx-diagnostics-0.36/release.bat",
+      "zx-diagnostics-0.36/romtables.asm",
+      "zx-diagnostics-0.36/scroll.asm",
+      "zx-diagnostics-0.36/testcard.asm",
+      "zx-diagnostics-0.36/testrom.asm",
+      "zx-diagnostics-0.36/testrom.sjasm",
+      "zx-diagnostics-0.36/testroutines.asm",
+      "zx-diagnostics-0.36/testslam.asm",
+      "zx-diagnostics-0.36/testslam.sjasm",
+      "zx-diagnostics-0.36/ulatest.asm",
+      "zx-diagnostics-0.36/vars.asm",
+      "zx-diagnostics-0.36/version.asm",
+      "zx-diagnostics-0.36/wiki",
+      "zx-diagnostics-0.36/wiki/DiagboardNMIFront.jpg",
+      "zx-diagnostics-0.36/wiki/DiagboardNMIRear.jpg",
+      "zx-diagnostics-0.36/wiki/Flash1.jpg",
+      "zx-diagnostics-0.36/wiki/Flash2.jpg",
+      "zx-diagnostics-0.36/wiki/FlashOtherOptions.jpg",
+      "zx-diagnostics-0.36/wiki/Issue1LowerRam.jpg",
+      "zx-diagnostics-0.36/wiki/Issue1Ram.jpg",
+      "zx-diagnostics-0.36/wiki/LowerRamFail.jpg",
+      "zx-diagnostics-0.36/wiki/LowerRamFailTape.jpg",
+      "zx-diagnostics-0.36/wiki/SoakTest.jpg",
+      "zx-diagnostics-0.36/wiki/SoakTestTape.jpg",
+      "zx-diagnostics-0.36/wiki/SpectranetInit.jpg",
+      "zx-diagnostics-0.36/wiki/SpectranetInstall.jpg",
+      "zx-diagnostics-0.36/wiki/SpectranetLocalFail.jpg",
+      "zx-diagnostics-0.36/wiki/SpectranetLocalPass.jpg",
+      "zx-diagnostics-0.36/wiki/SpectranetRemoteTestcard.jpg",
+      "zx-diagnostics-0.36/wiki/SpectranetTestRemote.jpg",
+      "zx-diagnostics-0.36/wiki/SpectranetUpgrade.jpg",
+      "zx-diagnostics-0.36/wiki/TestPass48K.jpg",
+      "zx-diagnostics-0.36/wiki/UpperRamFail.jpg",
+      "zx-diagnostics-0.36/wiki/UpperRamFailTape.jpg",
+      "zx-diagnostics-0.36/wiki/about.jpg",
+      "zx-diagnostics-0.36/wiki/keyboardtest.jpg",
+      "zx-diagnostics-0.36/wiki/membrowser.jpg",
+      "zx-diagnostics-0.36/wiki/testcard.jpg",
+      "zx-diagnostics-0.36/wiki/ulatest.jpg",
+      "zx-diagnostics-0.36/zxtest",
+      "zx-diagnostics-0.36/zxtest/spectrom1.asm",
+      "zx-diagnostics-0.36/zxtest/spectrom2.asm"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.36 (2017-12-29)(Alford, Brendan)[!].zip",
+    "group": "common",
+    "size": 42906,
+    "sha256": "6ae67b398497932c0d1f48cfb971b9dab79da0fa6a74b5f757075f5d24f6f985",
+    "members": [
+      "FlashUtils/",
+      "FlashUtils/flashutil.bin",
+      "FlashUtils/flashutil.tap",
+      "FlashUtils/flashutilrom.bin",
+      "FlashUtils/flashutilrom.tap",
+      "ROMCheck/",
+      "ROMCheck/romcheck.tap",
+      "testrom.bin",
+      "testrom.tap",
+      "TestTape/",
+      "TestTape/testram.tap"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.37 (2018-10-22)(Alford, Brendan)(Sources)[GitHub 7f431d17b0629dedf7f5417ab517c12ccb361b8f].tar.gz",
+    "group": "common",
+    "size": 1752325,
+    "sha256": "50424231454b12fe2f8803017661964747da0b5e7bf421a97dc9b64502d01159",
+    "members": [
+      "zx-diagnostics-0.37",
+      "zx-diagnostics-0.37/128tests.asm",
+      "zx-diagnostics-0.37/48tests.asm",
+      "zx-diagnostics-0.37/FlashUtils",
+      "zx-diagnostics-0.37/FlashUtils/build.bat",
+      "zx-diagnostics-0.37/FlashUtils/build.sh",
+      "zx-diagnostics-0.37/FlashUtils/flashutil.asm",
+      "zx-diagnostics-0.37/FlashUtils/flashutil.sjasm",
+      "zx-diagnostics-0.37/FlashUtils/flashutilrom.asm",
+      "zx-diagnostics-0.37/FlashUtils/flashutilrom.sjasm",
+      "zx-diagnostics-0.37/FlashUtils/vars.asm",
+      "zx-diagnostics-0.37/LICENSE",
+      "zx-diagnostics-0.37/README.md",
+      "zx-diagnostics-0.37/ROMCheck",
+      "zx-diagnostics-0.37/ROMCheck/build.bat",
+      "zx-diagnostics-0.37/ROMCheck/build.sh",
+      "zx-diagnostics-0.37/ROMCheck/romcheck.asm",
+      "zx-diagnostics-0.37/ROMCheck/romcheck.sjasm",
+      "zx-diagnostics-0.37/ROMCheck/romcheck_loader.tap",
+      "zx-diagnostics-0.37/ROMCheck/vars.asm",
+      "zx-diagnostics-0.37/TestTape",
+      "zx-diagnostics-0.37/TestTape/build.bat",
+      "zx-diagnostics-0.37/TestTape/build.sh",
+      "zx-diagnostics-0.37/TestTape/testram.asm",
+      "zx-diagnostics-0.37/TestTape/testram.sjasm",
+      "zx-diagnostics-0.37/TestTape/testram_loader.tap",
+      "zx-diagnostics-0.37/TestTape/testrammain.asm",
+      "zx-diagnostics-0.37/TestTape/testrammain.sjasm",
+      "zx-diagnostics-0.37/about.asm",
+      "zx-diagnostics-0.37/build.bat",
+      "zx-diagnostics-0.37/build.sh",
+      "zx-diagnostics-0.37/builddiag.bat",
+      "zx-diagnostics-0.37/builddiag.sh",
+      "zx-diagnostics-0.37/buildmain.bat",
+      "zx-diagnostics-0.37/buildmain.sh",
+      "zx-diagnostics-0.37/charset.asm",
+      "zx-diagnostics-0.37/crc16.asm",
+      "zx-diagnostics-0.37/defines.asm",
+      "zx-diagnostics-0.37/diagboard.asm",
+      "zx-diagnostics-0.37/diagboard.sjasm",
+      "zx-diagnostics-0.37/hardware",
+      "zx-diagnostics-0.37/hardware/29F040B-1.sym",
+      "zx-diagnostics-0.37/hardware/741G04.sym",
+      "zx-diagnostics-0.37/hardware/SOD323.fp",
+      "zx-diagnostics-0.37/hardware/Spectrum-Edge-Conn.fp",
+      "zx-diagnostics-0.37/hardware/Spectrum-Edge-Conn.sym",
+      "zx-diagnostics-0.37/hardware/gafrc",
+      "zx-diagnostics-0.37/hardware/pmos.sym",
+      "zx-diagnostics-0.37/hardware/spectrum-diag.cmd",
+      "zx-diagnostics-0.37/hardware/spectrum-diag.net",
+      "zx-diagnostics-0.37/hardware/spectrum-diag.pcb",
+      "zx-diagnostics-0.37/hardware/spectrum-diag.sch",
+      "zx-diagnostics-0.37/input.asm",
+      "zx-diagnostics-0.37/keyboardtest.asm",
+      "zx-diagnostics-0.37/membrowser.asm",
+      "zx-diagnostics-0.37/paging.asm",
+      "zx-diagnostics-0.37/print.asm",
+      "zx-diagnostics-0.37/printer.asm",
+      "zx-diagnostics-0.37/release.bat",
+      "zx-diagnostics-0.37/romtables.asm",
+      "zx-diagnostics-0.37/scroll.asm",
+      "zx-diagnostics-0.37/testcard.asm",
+      "zx-diagnostics-0.37/testrom.asm",
+      "zx-diagnostics-0.37/testrom.sjasm",
+      "zx-diagnostics-0.37/testrommain.asm",
+      "zx-diagnostics-0.37/testrommain.sjasm",
+      "zx-diagnostics-0.37/testroutines.asm",
+      "zx-diagnostics-0.37/testslam.asm",
+      "zx-diagnostics-0.37/testslam.sjasm",
+      "zx-diagnostics-0.37/ulatest.asm",
+      "zx-diagnostics-0.37/vars.asm",
+      "zx-diagnostics-0.37/version.asm",
+      "zx-diagnostics-0.37/wiki",
+      "zx-diagnostics-0.37/wiki/DiagboardNMIFront.jpg",
+      "zx-diagnostics-0.37/wiki/DiagboardNMIRear.jpg",
+      "zx-diagnostics-0.37/wiki/Flash1.jpg",
+      "zx-diagnostics-0.37/wiki/Flash2.jpg",
+      "zx-diagnostics-0.37/wiki/FlashOtherOptions.jpg",
+      "zx-diagnostics-0.37/wiki/Issue1LowerRam.jpg",
+      "zx-diagnostics-0.37/wiki/Issue1Ram.jpg",
+      "zx-diagnostics-0.37/wiki/LowerRamFail.jpg",
+      "zx-diagnostics-0.37/wiki/LowerRamFailTape.jpg",
+      "zx-diagnostics-0.37/wiki/SoakTest.jpg",
+      "zx-diagnostics-0.37/wiki/SoakTestTape.jpg",
+      "zx-diagnostics-0.37/wiki/SpectranetInit.jpg",
+      "zx-diagnostics-0.37/wiki/SpectranetInstall.jpg",
+      "zx-diagnostics-0.37/wiki/SpectranetLocalFail.jpg",
+      "zx-diagnostics-0.37/wiki/SpectranetLocalPass.jpg",
+      "zx-diagnostics-0.37/wiki/SpectranetRemoteTestcard.jpg",
+      "zx-diagnostics-0.37/wiki/SpectranetTestRemote.jpg",
+      "zx-diagnostics-0.37/wiki/SpectranetUpgrade.jpg",
+      "zx-diagnostics-0.37/wiki/TestPass48K.jpg",
+      "zx-diagnostics-0.37/wiki/UpperRamFail.jpg",
+      "zx-diagnostics-0.37/wiki/UpperRamFailTape.jpg",
+      "zx-diagnostics-0.37/wiki/about.jpg",
+      "zx-diagnostics-0.37/wiki/integritytestfail.jpg",
+      "zx-diagnostics-0.37/wiki/keyboardtest.jpg",
+      "zx-diagnostics-0.37/wiki/membrowser.jpg",
+      "zx-diagnostics-0.37/wiki/testcard.jpg",
+      "zx-diagnostics-0.37/wiki/ulatest.jpg",
+      "zx-diagnostics-0.37/zxtest",
+      "zx-diagnostics-0.37/zxtest/spectrom1.asm",
+      "zx-diagnostics-0.37/zxtest/spectrom2.asm"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "ZX Spectrum Diagnostics v0.37 (2018-10-22)(Alford, Brendan)[!].zip",
+    "group": "common",
+    "size": 43682,
+    "sha256": "bdb97f1108623c145fd106cd46d69101c836a7cdffa07d64cf073eda5e726306",
+    "members": [
+      "FlashUtils/",
+      "FlashUtils/flashutil.bin",
+      "FlashUtils/flashutil.tap",
+      "FlashUtils/flashutilrom.bin",
+      "FlashUtils/flashutilrom.tap",
+      "ROMCheck/",
+      "ROMCheck/romcheck.tap",
+      "testrom.bin",
+      "testrom.tap",
+      "TestTape/",
+      "TestTape/testram.tap"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "ZX Spectrum Keyboard Tester v1.0 (2020)(Tsiombikas, John)(Sources)[!].tar.gz",
+    "group": "common",
+    "size": 3186,
+    "sha256": "7e0a29d3bc1f6dd64c44d9a6fe396de51cb9d0e1a64cf6ffb4fba50db113bfc6",
+    "members": [
+      "zxkeybtest-1.0",
+      "zxkeybtest-1.0/.gitignore",
+      "zxkeybtest-1.0/Makefile",
+      "zxkeybtest-1.0/data",
+      "zxkeybtest-1.0/data/zxkeyb.xbm",
+      "zxkeybtest-1.0/glyphs.inc",
+      "zxkeybtest-1.0/logo.inc",
+      "zxkeybtest-1.0/zxkeybtest.asm"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "ZX Spectrum Keyboard Tester v1.0 (2020)(Tsiombikas, John)[!].rom",
+    "group": "common",
+    "size": 1013,
+    "sha256": "4bd62bfe7d460dccd90690e9acf4ba1242bb12828b5d1a640a6f599745769663",
+    "members": [],
+    "inspection": "manual"
+  },
+  {
+    "file": "ZX Spectrum Keyboard Tester v1.0 (2020)(Tsiombikas, John)[!].tap",
+    "group": "common",
+    "size": 1093,
+    "sha256": "17a71aa7445151f2675895428829ae67cf856855e3e2a22d9f04af1c6697b818",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "ZX Spectrum Timing Tests - 128K v1.0 (2015-03-30)(Butler, Richard; Butler, Tim)[!].szx",
+    "group": "128k-plus2",
+    "size": 6170,
+    "sha256": "cc380ad8f77fa8a66d4c1e92cd7be4bad71dac6d051da9464d6ca5ca942a7261",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "ZX Spectrum Timing Tests - 128K v1.0 (2015-03-30)(Butler, Richard; Butler, Tim)[!].wav",
+    "group": "128k-plus2",
+    "size": 3619172,
+    "sha256": "7a743019a0cbb50a77023cb6e9e1c142bb68920112cbf8d359be81e9d705a748",
+    "members": [],
+    "inspection": "manual"
+  },
+  {
+    "file": "ZX Spectrum Timing Tests - 48K v1.0 (2010-04-06)(Butler, Richard; Butler, Tim)[!].sna",
+    "group": "48k",
+    "size": 49179,
+    "sha256": "b30fa49bd85dc5cefaf014a3088c6568256796f1a8541fca6ed9edce46bce9cf",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "ZX Spectrum Timing Tests - 48K v1.0 (2010-04-14)(Butler, Richard; Butler, Tim)[!].tap",
+    "group": "48k",
+    "size": 11918,
+    "sha256": "ecdc983879dcd27f232c3abe69e2b6c6c27befcbacfc1d7d5a710b5058f2f2f6",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "ZX Spectrum Timing Tests - 48K v1.0 (2010-04-14)(Butler, Richard; Butler, Tim)[!].tzx",
+    "group": "48k",
+    "size": 11985,
+    "sha256": "10fcd729eadc98faaad89a25085f1cdae933019b5e0adb17c8b93fa679f40841",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "ZX Spectrum Timing Tests - 48K v1.0 (2010-04-14)(Butler, Richard; Butler, Tim)[!].wav",
+    "group": "48k",
+    "size": 3360550,
+    "sha256": "abf5c9bb698d236cbff42ca0201b83f0482f5f0839aabebfef327a8e734bb04f",
+    "members": [],
+    "inspection": "manual"
+  },
+  {
+    "file": "ZX Spectrum Timing Tests - 48K v1.0 (2025-05-05)(Woodmass, Mark)(Sane Loader)[!].tap",
+    "group": "48k",
+    "size": 23473,
+    "sha256": "d82a60025f818bc3993c120c1c456e252fa5f638982a208a2a2af93b2ddceb7f",
+    "members": [],
+    "inspection": "media (runtime verdict pending)"
+  },
+  {
+    "file": "ZXTests v3 (2011-08-24)(Bobrowski, Jan)(Sources)[!].tar.gz",
+    "group": "common",
+    "size": 4469,
+    "sha256": "07968e6bd1b661d53d1b9c569288fe0c4a05c961904eec5c155e718ac196d71b",
+    "members": [
+      "zxtests-3/Makefile",
+      "zxtests-3/README",
+      "zxtests-3/btime.asm",
+      "zxtests-3/stime.asm",
+      "zxtests-3/minfo.asm",
+      "zxtests-3/ulatest3.asm",
+      "zxtests-3/btime.bas",
+      "zxtests-3/stime.bas",
+      "zxtests-3/minfo.bas",
+      "zxtests-3/ulatest3.bas",
+      "zxtests-3/instint.asm",
+      "zxtests-3/delay.asm",
+      "zxtests-3/frametime.asm",
+      "zxtests-3/alignint.asm",
+      "zxtests-3/getvar.asm",
+      "zxtests-3/setvar.asm",
+      "zxtests-3/print.asm"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "ZXTests v3p (2014-03-11)(Rak, Patrik)(Sources)[!].tar.gz",
+    "group": "common",
+    "size": 5535,
+    "sha256": "80db03ca379eeb91614fedf3e14fcace9ea65d0aa9d87ac4a3491f3b04ca4cb3",
+    "members": [
+      "zxtests-3p/Makefile",
+      "zxtests-3p/README",
+      "zxtests-3p/btime.asm",
+      "zxtests-3p/stime.asm",
+      "zxtests-3p/atime.asm",
+      "zxtests-3p/ptime.asm",
+      "zxtests-3p/minfo.asm",
+      "zxtests-3p/ulatest3.asm",
+      "zxtests-3p/btime.bas",
+      "zxtests-3p/stime.bas",
+      "zxtests-3p/atime.bas",
+      "zxtests-3p/ptime.bas",
+      "zxtests-3p/minfo.bas",
+      "zxtests-3p/ulatest3.bas",
+      "zxtests-3p/instint.asm",
+      "zxtests-3p/delay.asm",
+      "zxtests-3p/frametime.asm",
+      "zxtests-3p/alignint.asm",
+      "zxtests-3p/getvar.asm",
+      "zxtests-3p/setvar.asm",
+      "zxtests-3p/print.asm"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "ZXTests v3p (2014-03-20)(Rak, Patrik)(Sources)[!].tar.gz",
+    "group": "common",
+    "size": 5617,
+    "sha256": "dcd8445b2fef38b2d0bde0f5fa27e591bd1e550ff6b052d420bd4512177fdf91",
+    "members": [
+      "zxtests-3p/Makefile",
+      "zxtests-3p/README",
+      "zxtests-3p/btime.asm",
+      "zxtests-3p/stime.asm",
+      "zxtests-3p/atime.asm",
+      "zxtests-3p/ptime.asm",
+      "zxtests-3p/minfo.asm",
+      "zxtests-3p/ulatest3.asm",
+      "zxtests-3p/btime.bas",
+      "zxtests-3p/stime.bas",
+      "zxtests-3p/atime.bas",
+      "zxtests-3p/ptime.bas",
+      "zxtests-3p/minfo.bas",
+      "zxtests-3p/ulatest3.bas",
+      "zxtests-3p/instint.asm",
+      "zxtests-3p/delay.asm",
+      "zxtests-3p/frametime.asm",
+      "zxtests-3p/alignint.asm",
+      "zxtests-3p/getvar.asm",
+      "zxtests-3p/setvar.asm",
+      "zxtests-3p/print.asm"
+    ],
+    "inspection": "archive index OK"
+  },
+  {
+    "file": "ZXTests v3p (2014-03-20)(Rak, Patrik)[!].zip",
+    "group": "common",
+    "size": 5565,
+    "sha256": "911bffcab0d5c424c7a1e97cb8c179445637117c3c6bf6797f790f34599bb0c0",
+    "members": [
+      "btime.tap",
+      "stime.tap",
+      "atime.tap",
+      "ptime.tap",
+      "minfo.tap",
+      "ulatest3.tap"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.0 (2012-12-08)(Rak, Patrik)[!].zip",
+    "group": "common",
+    "size": 56941,
+    "sha256": "b98e9e7f202ebb02637829ac949c38ddd403708160b32728edaed77f19c789e7",
+    "members": [
+      "z80test-1.0/src/Makefile",
+      "z80test-1.0/src/loader.bas",
+      "z80test-1.0/src/z80full.asm",
+      "z80test-1.0/src/z80flags.asm",
+      "z80test-1.0/src/z80doc.asm",
+      "z80test-1.0/src/z80docflags.asm",
+      "z80test-1.0/src/z80ccf.asm",
+      "z80test-1.0/src/z80memptr.asm",
+      "z80test-1.0/src/main.asm",
+      "z80test-1.0/src/idea.asm",
+      "z80test-1.0/src/crctab.asm",
+      "z80test-1.0/src/tests.asm",
+      "z80test-1.0/src/testmacros.asm",
+      "z80test-1.0/src/print.asm",
+      "z80test-1.0/changes.txt",
+      "z80test-1.0/license.txt",
+      "z80test-1.0/readme.txt",
+      "z80test-1.0/z80ccf.tap",
+      "z80test-1.0/z80doc.tap",
+      "z80test-1.0/z80docflags.tap",
+      "z80test-1.0/z80flags.tap",
+      "z80test-1.0/z80full.tap",
+      "z80test-1.0/z80memptr.tap"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.1 (2022-01-16)(Rak, Patrik)[!].zip",
+    "group": "common",
+    "size": 59646,
+    "sha256": "cf1cebae51afe883362323a553011db329a1e69fdfe20e7100f9375b273ac4da",
+    "members": [
+      "z80test-1.1/src/Makefile",
+      "z80test-1.1/src/loader.bas",
+      "z80test-1.1/src/z80full.asm",
+      "z80test-1.1/src/z80flags.asm",
+      "z80test-1.1/src/z80doc.asm",
+      "z80test-1.1/src/z80docflags.asm",
+      "z80test-1.1/src/z80ccf.asm",
+      "z80test-1.1/src/z80memptr.asm",
+      "z80test-1.1/src/main.asm",
+      "z80test-1.1/src/idea.asm",
+      "z80test-1.1/src/crctab.asm",
+      "z80test-1.1/src/tests.asm",
+      "z80test-1.1/src/testmacros.asm",
+      "z80test-1.1/src/print.asm",
+      "z80test-1.1/changes.txt",
+      "z80test-1.1/license.txt",
+      "z80test-1.1/readme.txt",
+      "z80test-1.1/z80ccf.tap",
+      "z80test-1.1/z80doc.tap",
+      "z80test-1.1/z80docflags.tap",
+      "z80test-1.1/z80flags.tap",
+      "z80test-1.1/z80full.tap",
+      "z80test-1.1/z80memptr.tap"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.1a (2022-01-17)(Rak, Patrik)[!].zip",
+    "group": "common",
+    "size": 59755,
+    "sha256": "f41926f98cb5e1cf55fc99cbb2d10d4e261c6a6624ef165ef798e530af275dc4",
+    "members": [
+      "z80test-1.1a/src/Makefile",
+      "z80test-1.1a/src/loader.bas",
+      "z80test-1.1a/src/z80full.asm",
+      "z80test-1.1a/src/z80flags.asm",
+      "z80test-1.1a/src/z80doc.asm",
+      "z80test-1.1a/src/z80docflags.asm",
+      "z80test-1.1a/src/z80ccf.asm",
+      "z80test-1.1a/src/z80memptr.asm",
+      "z80test-1.1a/src/main.asm",
+      "z80test-1.1a/src/idea.asm",
+      "z80test-1.1a/src/crctab.asm",
+      "z80test-1.1a/src/tests.asm",
+      "z80test-1.1a/src/testmacros.asm",
+      "z80test-1.1a/src/print.asm",
+      "z80test-1.1a/changes.txt",
+      "z80test-1.1a/license.txt",
+      "z80test-1.1a/readme.txt",
+      "z80test-1.1a/z80ccf.tap",
+      "z80test-1.1a/z80doc.tap",
+      "z80test-1.1a/z80docflags.tap",
+      "z80test-1.1a/z80flags.tap",
+      "z80test-1.1a/z80full.tap",
+      "z80test-1.1a/z80memptr.tap"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.1rc1 (2022-01-13)(Rak, Patrik)[!].zip",
+    "group": "common",
+    "size": 30295,
+    "sha256": "42255ac1c018179b8e7241cdc3059109c4ef5c73cdece35b8bfd95161be3f0fe",
+    "members": [
+      "z80ccf.tap",
+      "z80doc.tap",
+      "z80docflags.tap",
+      "z80flags.tap",
+      "z80full.tap",
+      "z80memptr.tap"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.2 (2022-01-26)(Rak, Patrik)[!].zip",
+    "group": "common",
+    "size": 61492,
+    "sha256": "864e49505924830eb86daee9ccd139f456cb9d4d2059dc670c4f55249b4bf6f5",
+    "members": [
+      "z80test-1.2/src/Makefile",
+      "z80test-1.2/src/loader.bas",
+      "z80test-1.2/src/z80full.asm",
+      "z80test-1.2/src/z80flags.asm",
+      "z80test-1.2/src/z80doc.asm",
+      "z80test-1.2/src/z80docflags.asm",
+      "z80test-1.2/src/z80ccf.asm",
+      "z80test-1.2/src/z80memptr.asm",
+      "z80test-1.2/src/z80ccfscr.asm",
+      "z80test-1.2/src/main.asm",
+      "z80test-1.2/src/idea.asm",
+      "z80test-1.2/src/crctab.asm",
+      "z80test-1.2/src/tests.asm",
+      "z80test-1.2/src/testmacros.asm",
+      "z80test-1.2/src/print.asm",
+      "z80test-1.2/changes.txt",
+      "z80test-1.2/license.txt",
+      "z80test-1.2/readme.txt",
+      "z80test-1.2/z80ccf.tap",
+      "z80test-1.2/z80ccfscr.tap",
+      "z80test-1.2/z80doc.tap",
+      "z80test-1.2/z80docflags.tap",
+      "z80test-1.2/z80flags.tap",
+      "z80test-1.2/z80full.tap",
+      "z80test-1.2/z80memptr.tap"
+    ],
+    "inspection": "archive CRC OK"
+  },
+  {
+    "file": "Zilog Z80 CPU Test Suite v1.2a (2023-12-02)(Rak, Patrik)[!].zip",
+    "group": "common",
+    "size": 61595,
+    "sha256": "7df0443d703e6b3114ea04b4cdef3e13b91421c62e37185c1036d06864cacbaf",
+    "members": [
+      "z80test-1.2a/src/Makefile",
+      "z80test-1.2a/src/loader.bas",
+      "z80test-1.2a/src/z80full.asm",
+      "z80test-1.2a/src/z80flags.asm",
+      "z80test-1.2a/src/z80doc.asm",
+      "z80test-1.2a/src/z80docflags.asm",
+      "z80test-1.2a/src/z80ccf.asm",
+      "z80test-1.2a/src/z80memptr.asm",
+      "z80test-1.2a/src/z80ccfscr.asm",
+      "z80test-1.2a/src/main.asm",
+      "z80test-1.2a/src/idea.asm",
+      "z80test-1.2a/src/crctab.asm",
+      "z80test-1.2a/src/tests.asm",
+      "z80test-1.2a/src/testmacros.asm",
+      "z80test-1.2a/src/print.asm",
+      "z80test-1.2a/changes.txt",
+      "z80test-1.2a/license.txt",
+      "z80test-1.2a/readme.txt",
+      "z80test-1.2a/z80ccf.tap",
+      "z80test-1.2a/z80ccfscr.tap",
+      "z80test-1.2a/z80doc.tap",
+      "z80test-1.2a/z80docflags.tap",
+      "z80test-1.2a/z80flags.tap",
+      "z80test-1.2a/z80full.tap",
+      "z80test-1.2a/z80memptr.tap"
+    ],
+    "inspection": "archive CRC OK"
+  }
+]

@@ -35,7 +35,9 @@ enum class VideoDisplayMode : uint8_t {
     Pentagon16Color  // Pentagon 16-colour pixel mode
 };
 
-/// Scanline-based ULA / Timex SCLD / Pentagon renderer producing contiguous RGBA8888 VideoFrames.
+/// ULA / Timex SCLD / Pentagon renderer producing contiguous RGBA8888 VideoFrames.
+/// Sinclair machines use the incremental raster; static redraws and other machines
+/// can use the scanline renderer.
 /// Supports dynamic VRAM bank switching (e.g. 128K shadow screen page 5/7, HC-2000/CoBra
 /// VRAM at 0x4000 vs 0xC000) and mid-frame border/mode changes.
 class UlaRenderer {
@@ -75,6 +77,13 @@ public:
 
     void renderFullFrame(const Mmu &mmu, VideoFrame &frame);
 
+    /// Draw the ULA timeline before mutating video RAM or port state. Fetches
+    /// latch bitmap and attribute bytes independently, including shadow paging.
+    void beginRasterFrame(const FrameTimings &timings);
+    void renderUntil(uint32_t frameTstate, const Mmu &mmu);
+    void copyRasterScanline(uint32_t y, VideoFrame &frame) const;
+    void endRasterFrame() noexcept { m_rasterActive = false; }
+
     void advanceFlashCounter() noexcept;
     bool flashInverted() const noexcept { return m_flashInvert; }
 
@@ -86,6 +95,13 @@ public:
 
 private:
     const MemoryBank &m_mmuBank(const Mmu &mmu) const;
+
+    VideoFrame m_rasterFrame;
+    FrameTimings m_rasterTimings{};
+    uint32_t m_rasterCursor = 0;
+    bool m_rasterActive = false;
+    std::array<uint8_t, 2> m_bitmapLatch{};
+    uint8_t m_attributeLatch = 0;
 
     uint8_t m_borderColor = 7;
     uint8_t m_scldReg = 0;

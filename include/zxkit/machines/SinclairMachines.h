@@ -61,7 +61,8 @@ inline constexpr FrameTimings kTimings128k = {
     .screenLines = 192,
     .bottomBorderLines = 56,
     .linesPerFrame = 311,
-    .interruptLength = 36
+    .interruptLength = 36,
+    .screenStartOffset = -2
 };
 
 /// ZX Spectrum 16K / 48K / 48K NTSC
@@ -74,6 +75,7 @@ public:
     std::string_view id() const noexcept override;
     std::string_view name() const noexcept override;
     FrameTimings timings() const noexcept override;
+    bool usesRasterUla() const noexcept override { return true; }
 
     void initialize(MachineContext &ctx, UlaRenderer &ula) override;
     void reset(MachineContext &ctx, UlaRenderer &ula, ResetKind kind) override;
@@ -90,6 +92,7 @@ public:
     std::string_view id() const noexcept override;
     std::string_view name() const noexcept override;
     FrameTimings timings() const noexcept override;
+    bool usesRasterUla() const noexcept override { return true; }
 
     void initialize(MachineContext &ctx, UlaRenderer &ula) override;
     void reset(MachineContext &ctx, UlaRenderer &ula, ResetKind kind) override;
@@ -120,6 +123,7 @@ public:
     std::string_view id() const noexcept override;
     std::string_view name() const noexcept override;
     FrameTimings timings() const noexcept override;
+    bool usesRasterUla() const noexcept override { return true; }
     ContentionPattern contentionPattern() const noexcept override;
     bool hasFloatingBus() const noexcept override;
 

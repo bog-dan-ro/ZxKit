@@ -44,6 +44,7 @@ public:
     virtual std::string_view name() const noexcept = 0;
     virtual FrameTimings timings() const noexcept = 0;
     virtual ContentionPattern contentionPattern() const noexcept;
+    virtual bool usesRasterUla() const noexcept { return false; }
     virtual bool hasFloatingBus() const noexcept;
     virtual bool supportsZ80n() const noexcept;
     /// Software sees a 48K Spectrum: a 16K/48K machine (or clone), or a 128K one with its paging

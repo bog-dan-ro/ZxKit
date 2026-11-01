@@ -218,6 +218,9 @@ int main(int argc, char **argv)
             steps.emplace_back(arg);
     }
 
+#ifdef ZXKIT_TEST_ROM_DIR
+    romDirs.emplace_back(ZXKIT_TEST_ROM_DIR);
+#endif
     EmulatorConfig cfg;
     cfg.romResolver = [romDirs](std::string_view name, std::size_t) -> std::vector<uint8_t> {
         for (const auto &dir : romDirs) {

@@ -217,11 +217,11 @@ void Z80Cpu::requestNmi(bool stackless) noexcept
     m_nmiStackless = stackless;
 }
 
-void Z80Cpu::requestInterrupt(uint8_t vector) noexcept
+void Z80Cpu::requestInterrupt(uint8_t vector, uint32_t elapsedTstates) noexcept
 {
     m_intPending = true;
     m_intVector = vector;
-    m_intRequestedAt = m_clock.totalTstates();
+    m_intRequestedAt = m_clock.totalTstates() - elapsedTstates;
 }
 
 uint8_t Z80Cpu::readByte(uint16_t addr)
@@ -345,7 +345,7 @@ bool Z80Cpu::serviceInterrupt()
         const uint64_t elapsed = m_clock.totalTstates() - m_intRequestedAt;
         // /INT is held for interruptLength CPU clock cycles (on the Next the pulse
         // counts CPU clocks, so at 28MHz it is 8x shorter in time)
-        if (elapsed > m_clock.timings().interruptLength) {
+        if (elapsed >= m_clock.timings().interruptLength) {
             m_intPending = false;
             if (!hasHwIm2)
                 return false;
@@ -369,7 +369,10 @@ bool Z80Cpu::serviceInterrupt()
 
     m_regs.IFF1 = m_regs.IFF2 = 0;
     m_regs.incrementR(1);
-    m_intPending = false;
+    // Acknowledging an interrupt does not deassert the external /INT line.
+    // EI inside a short handler may accept the same ULA pulse again.
+    if (!m_interruptRetrigger)
+        m_intPending = false;
 
     m_clock.advance(7);
 

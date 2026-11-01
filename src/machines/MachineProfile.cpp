@@ -46,7 +46,9 @@ bool MachineProfile::supportsZ80n() const noexcept
 
 void MachineProfile::onFrameStart(MachineContext &ctx)
 {
-    ctx.cpu.requestInterrupt(0xFF);
+    // The previous instruction can straddle the frame boundary. The ULA
+    // pulse began at the boundary, before that instruction finished.
+    ctx.cpu.requestInterrupt(0xFF, ctx.clock.frameTstates());
 }
 
 void MachineProfile::onScanlineStart(uint16_t /*line*/, MachineContext & /*ctx*/)
