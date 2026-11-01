@@ -22,6 +22,7 @@
 #include "zxkit/machines/SinclairMachines.h"
 
 #include <format>
+#include <utility>
 
 namespace zxkit {
 
@@ -214,8 +215,51 @@ void CobraMachine::initialize(MachineContext &ctx, UlaRenderer &ula)
             ctx.mmu.bank(m_romBank).loadData((i + 1) * 16 * 1024, ctx.loadRom(std::format("cobra1_sys-{}.rom", i), 16 * 1024));
     }
 
-    registerStandardUlaPort(ctx, ula, 0x00FF, 0x00FE);
+    // The 8255's port A: the keyboard's six columns, the tape, the RS-232 input
+    registerStandardUlaPort(ctx, ula, 0x00FF, 0x00FE, 0x3F);
     ctx.audioMixer.setAyChipCount(0);
+
+    // The floppy disk board. The CTC interrupts in IM2 (channel 0 has the highest priority)
+    m_ctc.onInterrupt = [&ctx](std::size_t, uint8_t vector, bool pending) {
+        ctx.im2.setVectorBase(vector & 0xE0);
+        const auto index = static_cast<uint8_t>((vector & 0x1E) >> 1);
+        if (pending)
+            ctx.im2.raiseVector(index);
+        else
+            ctx.im2.clearVector(index);
+    };
+    // ZC/TO0 clocks channel 1, ZC/TO1 channel 2, ZC/TO2 is the 8272's TC
+    m_ctc.onZeroCount = [this](std::size_t channel) {
+        if (channel < 2) {
+            m_ctc.setTrigger(channel + 1, true);
+            m_ctc.setTrigger(channel + 1, false);
+        } else if (channel == 2) {
+            m_terminalCount = true;
+        }
+    };
+    ctx.ioBus.registerSimpleHandler(
+        std::string(id()) + "_ctc",
+        0x0004,
+        0x0000,
+        [this](uint16_t port) -> uint8_t { return m_ctc.read((port >> 3) & 3); },
+        [this](uint16_t port, uint8_t val) { m_ctc.write((port >> 3) & 3, val); });
+    ctx.ioBus.registerHandler(
+        std::string(id()) + "_fdc",
+        0x0002,
+        0x0000,
+        [this, &ctx](uint16_t port) -> IoReadResult {
+            const uint64_t now = ctx.clock.totalTstates();
+            const bool data = (port & 0x08) != 0;
+            const uint8_t value = data ? m_fdc.readData(now) : m_fdc.readMainStatus(now);
+            updateFdcInterrupt(now, data);
+            return {value, 0xFF};
+        },
+        [this, &ctx](uint16_t port, uint8_t val) {
+            if (port & 0x08) {
+                m_fdc.writeData(val, ctx.clock.totalTstates());
+                updateFdcInterrupt(ctx.clock.totalTstates(), true);
+            }
+        });
 
     // 8255 Control port 0xDF
     ctx.ioBus.registerSimpleHandler(
@@ -263,6 +307,14 @@ void CobraMachine::reset(MachineContext &ctx, UlaRenderer &ula, ResetKind kind)
 {
     if (kind == ResetKind::Hard)
         ctx.mmu.bank(m_ramBank).fill(0x00);
+    // The CTC answers the interrupt acknowledge with its vectors
+    ctx.im2.reset();
+    ctx.im2.setHardwareIm2Enabled(true);
+    m_ctc.reset();
+    // NVS is high between the vertical sync pulses
+    m_ctc.setTrigger(3, true);
+    m_fdc.reset();
+    m_terminalCount = false;
 
     m_8255Ctrl = 0x9B;
     reset8255PortC();
@@ -270,6 +322,115 @@ void CobraMachine::reset(MachineContext &ctx, UlaRenderer &ula, ResetKind kind)
     m_lo6 = 1;
     m_locked = false;
     updateMemoryMap(ctx, ula);
+}
+
+void CobraMachine::onFrameStart(MachineContext &ctx)
+{
+    // The 50Hz interrupt reaches the CPU in the Spectrum configuration only (U17/11)
+    if (basicConfiguration())
+        MachineProfile::onFrameStart(ctx);
+    // NVS, the vertical sync (low during the pulse), is CTC channel 3's input
+    m_ctc.setTrigger(3, false);
+    m_ctc.setTrigger(3, true);
+}
+
+void CobraMachine::renderScanline(uint32_t y, const MachineContext &ctx, const UlaRenderer &ula, VideoFrame &frame)
+{
+    MachineProfile::renderScanline(y, ctx, ula, frame);
+    renderWideCells(y, ctx, ula, frame);
+}
+
+void CobraMachine::renderFullFrame(MachineContext &ctx, UlaRenderer &ula, VideoFrame &frame)
+{
+    MachineProfile::renderFullFrame(ctx, ula, frame);
+    for (uint32_t y = 0; y < frame.height(); ++y)
+        renderWideCells(y, ctx, ula, frame);
+}
+
+void CobraMachine::renderWideCells(uint32_t y, const MachineContext &ctx, const UlaRenderer &ula, VideoFrame &frame) const
+{
+    constexpr uint32_t kTop = UlaRenderer::kBorderTopLines;
+    if (!m_wide || y < kTop || y >= kTop + UlaRenderer::kScreenLines)
+        return;
+
+    // The 4 cells left and right of the screen: positions 7C-7F and 20-23 of the line's
+    // character counter (fig. 7), whose AC5 is AV13, the video RAM's upper half
+    const uint32_t screenY = y - kTop;
+    const auto vram = ctx.mmu.bank(m_ramBank).span16k(1);
+    const auto pixelLine = static_cast<uint16_t>(0x2000 | ((screenY & 0xC0) << 5) | ((screenY & 0x07) << 8) | ((screenY & 0x38) << 2));
+    const auto attrLine = static_cast<uint16_t>(0x3800 | ((screenY >> 3) << 5));
+    const auto &palette = ula.palette();
+    auto line = frame.scanline(y);
+    const auto drawCell = [&](uint32_t x, uint32_t column) {
+        const uint8_t bitmap = vram[pixelLine + column];
+        const uint8_t attr = vram[attrLine + column];
+        uint8_t ink = attr & 0x07;
+        uint8_t paper = (attr >> 3) & 0x07;
+        if ((attr & 0x80) && ula.flashInverted())
+            std::swap(ink, paper);
+        const uint8_t bright = (attr & 0x40) ? 8 : 0;
+        for (uint32_t bit = 0; bit < 8 && x + bit < line.size(); ++bit)
+            line[x + bit] = palette[((bitmap & (0x80 >> bit)) ? ink : paper) + bright];
+    };
+    for (uint32_t cell = 0; cell < 4; ++cell) {
+        drawCell(UlaRenderer::kBorderLeftPx - 32 + cell * 8, 28 + cell);
+        drawCell(UlaRenderer::kBorderLeftPx + UlaRenderer::kScreenWidthPx + cell * 8, cell);
+    }
+}
+
+void CobraMachine::onScanlineStart(uint16_t /*line*/, MachineContext &ctx)
+{
+    m_ctc.tick(timings().tstatesPerLine);
+    // The 8272's INT can rise with time (the result phase)
+    updateFdcInterrupt(ctx.clock.totalTstates(), false);
+}
+
+OptionalRef<DiskImage> CobraMachine::diskDrive(std::size_t idx) noexcept
+{
+    if (idx >= diskDriveCount())
+        return std::nullopt;
+    return m_fdc.drive(idx);
+}
+
+void CobraMachine::updateFdcInterrupt(uint64_t now, bool byteMoved)
+{
+    if (byteMoved)
+        m_ctc.setTrigger(0, false);
+    m_ctc.setTrigger(0, m_fdc.interruptLine(now));
+    // Channel 2's zero count ends the sector, which changes the line again
+    while (std::exchange(m_terminalCount, false)) {
+        m_fdc.terminalCount();
+        m_ctc.setTrigger(0, m_fdc.interruptLine(now));
+    }
+}
+
+void CobraMachine::saveState(StateWriter &w) const
+{
+    w.write(m_8255Ctrl);
+    w.write(m_8255PortC);
+    w.write(m_po);
+    w.write(m_lo6);
+    w.writeBool(m_locked);
+    w.writeBool(m_wideLatch);
+    w.writeBool(m_terminalCount);
+    // The CTC drives CP/M's interrupts. The 8272's state is not saved (as on the +3)
+    m_ctc.saveState(w);
+}
+
+void CobraMachine::loadState(StateReader &r, MachineContext &ctx, UlaRenderer &ula)
+{
+    m_8255Ctrl = r.read<uint8_t>();
+    m_8255PortC = r.read<uint8_t>();
+    m_po = r.read<uint8_t>();
+    m_lo6 = r.read<uint8_t>();
+    m_locked = r.readBool();
+    m_wideLatch = r.readBool();
+    m_terminalCount = r.readBool();
+    m_ctc.loadState(r);
+    // the locked BASIC map is mapped again too
+    const bool locked = std::exchange(m_locked, false);
+    updateMemoryMap(ctx, ula);
+    m_locked = locked;
 }
 
 uint8_t CobraMachine::poFlipFlop() const noexcept
@@ -326,23 +487,36 @@ void CobraMachine::updateMemoryMap(MachineContext &ctx, UlaRenderer &ula)
             ctx.mmu.map8k(0xE000, m_ramBank, 1, false);
             ula.setVramSource(m_ramBank, 1);
         } else {
-            // 80KB model
+            // 80KB model: O6 gives the CPU the video RAM (page 1) or DRAM#1 (page 4) in the video
+            // window; the video controller always reads the video RAM, its upper 8KB half when
+            // LO6 and O5 are set (AV13, fig. A1.15)
+            const uint8_t o5 = (m_8255PortC >> 5) & 1;
+            // The 80 characters modification (fig. "Modificari"): in CP/M (PO = 0, LO6 = 1) O5 sets
+            // a latch that keeps the wide screen on; elsewhere the latch follows O5
+            const bool cpm = m_po == 0 && m_lo6 == 1;
+            if (!cpm)
+                m_wideLatch = o5 != 0;
+            else if (o5)
+                m_wideLatch = true;
+            m_wide = cpm && m_wideLatch;
+            // AV13: the border cells' upper half in the wide mode, else LO6 and O5
+            const uint16_t videoHalf = (!m_wide && m_lo6 && o5) ? 0x2000 : 0;
             if (m_po == 1) {
                 ctx.mmu.map16k(0x0000, m_romBank, 0, false);
                 ctx.mmu.map16k(0x4000, m_romBank, sysRomPage, false);
                 ctx.mmu.map16k(0x8000, m_ramBank, 0, false);
                 ctx.mmu.map16k(0xC000, m_ramBank, o6 ? 1 : 4, false);
-                ula.setVramSource(m_ramBank, 1);
             } else {
                 ctx.mmu.map16k(0x0000, m_ramBank, 0, false);
                 ctx.mmu.map16k(0x4000, m_ramBank, o6 ? 1 : 4, false);
                 ctx.mmu.map16k(0x8000, m_ramBank, 2, false);
                 ctx.mmu.map16k(0xC000, m_ramBank, 3, false);
-                ula.setVramSource(m_ramBank, o6 ? 1 : 4);
             }
+            ula.setVramSource(m_ramBank, 1, videoHalf);
         }
     } else {
         // PO == 0 && LO6 == 0: Spectrum 48K compatibility mode (16K R/O DRAM#0 at 0x0000, locked)
+        m_wide = false;
         m_locked = true;
         ctx.mmu.map16k(0x0000, m_ramBank, 0, false, /*forceReadOnly=*/true);
         ctx.mmu.map16k(0x4000, m_ramBank, 1, false);
@@ -379,54 +553,45 @@ bool Cobra2Machine::hasFloatingBus() const noexcept
 
 void Cobra2Machine::initialize(MachineContext &ctx, UlaRenderer &ula)
 {
-    m_romBank = ctx.mmu.registerBank("rom", 4 * 16 * 1024, false, false);
+    // The 16K EEPROM: the boot, its logo and a compacted Spectrum ROM (https://cobrasov.org/download/)
+    m_romBank = ctx.mmu.registerBank("rom", 16 * 1024, false, false);
     m_ramBank = ctx.mmu.registerBank("ram", 4 * 16 * 1024, true, true);
-    if (ctx.romResolver) {
-        for (std::size_t i = 0; i < 4; ++i)
-            ctx.mmu.bank(m_romBank).loadData(i * 16 * 1024, ctx.loadRom(std::format("cobra2_TS_4_OS-{}.rom", i), 16 * 1024));
-    }
+    if (ctx.romResolver)
+        ctx.mmu.bank(m_romBank).loadData(0, ctx.loadRom("cobra2_ts_boot.rom", 16 * 1024));
 
-    // Port 0xFE is fully decoded (no ULA chip); it also stores the F5 register
-    registerStandardUlaPort(ctx, ula, 0x00FF, 0x00FE);
+    // Any even port (A0 = 0): an IN reads the keyboard and the tape (the B buffer), an OUT stores
+    // the F5 register (border, tape, speaker, the mode flops' inputs)
+    registerStandardUlaPort(ctx, ula);
     ctx.ioBus.registerSimpleHandler(
         std::string(id()) + "_f5",
-        0x00FF,
-        0x00FE,
+        0x0001,
+        0x0000,
         nullptr,
-        [this, &ctx, &ula](uint16_t, uint8_t val) {
-            // Q3 / Q7 drive A15 / A14 of the EPROM directly, so the ROM bank follows at once
-            const bool romChanged = ((m_portFe ^ val) & 0x88) != 0;
-            m_portFe = val;
-            if (romChanged)
-                updateMemoryMap(ctx, ula);
-        });
+        [this](uint16_t, uint8_t val) { m_portFe = val; });
 
-    // Reading port 0x7E clocks the nCE / SM flip-flops
-    ctx.ioBus.registerSimpleHandler(
-        std::string(id()) + "_cfg_7e",
-        0x00FF,
-        0x007E,
-        [this, &ctx, &ula](uint16_t) -> uint8_t {
-            m_latched = m_portFe;
-            updateMemoryMap(ctx, ula);
-            return 0xFF;
+    // Any IN loads F5's Q5 and Q6 into the CE and SM flops (TS specification, 2.7 and 2.12). The
+    // boot switches modes with OUT (FE) then IN; once SM is set both flops stay set until a reset.
+    // Asked first (whatever the port, before an exclusive device), it drives no data bit.
+    ctx.ioBus.registerHandler(
+        std::string(id()) + "_cfg_in",
+        0x0000,
+        0x0000,
+        [this, &ctx, &ula](uint16_t) -> IoReadResult {
+            if (!(m_latched & kSpectrumMode)) {
+                const uint8_t latched = (m_portFe & kSpectrumMode) ? (kEepromDisabled | kSpectrumMode)
+                                                                   : (m_portFe & kEepromDisabled);
+                if (latched != m_latched) {
+                    m_latched = latched;
+                    updateMemoryMap(ctx, ula);
+                }
+            }
+            return {0xFF, 0x00};
         },
-        nullptr);
-
-    // Timex style AY: register select 0xF5, data 0xF6
-    ctx.audioMixer.setAyChipCount(1);
-    ctx.ioBus.registerSimpleHandler(
-        std::string(id()) + "_ay_reg",
-        0x00FF,
-        0x00F5,
-        [&ctx](uint16_t) -> uint8_t { return ctx.audioMixer.activeAy().readRegister(); },
-        [&ctx](uint16_t, uint8_t val) { ctx.audioMixer.activeAy().selectRegister(val); });
-    ctx.ioBus.registerSimpleHandler(
-        std::string(id()) + "_ay_data",
-        0x00FF,
-        0x00F6,
         nullptr,
-        [&ctx](uint16_t, uint8_t val) { ctx.audioMixer.writeAyRegister(ctx.clock.frameBaseTstates(), val); });
+        1000);
+
+    // The sound is the speaker only (Q4): no AY
+    ctx.audioMixer.setAyChipCount(0);
 }
 
 void Cobra2Machine::reset(MachineContext &ctx, UlaRenderer &ula, ResetKind kind)
@@ -458,14 +623,12 @@ void Cobra2Machine::loadState(StateReader &r, MachineContext &ctx, UlaRenderer &
 
 void Cobra2Machine::updateMemoryMap(MachineContext &ctx, UlaRenderer &ula)
 {
-    const bool nCe = (m_latched & 0x20) != 0;
-    const bool sm  = (m_latched & 0x40) != 0;
-    // Q3 drives A15 and Q7 A14 of the system EPROM; the ROM select follows F5 directly
-    const std::size_t romIdx = static_cast<std::size_t>(((m_portFe & 0x08) ? 2 : 0) | ((m_portFe & 0x80) ? 1 : 0));
+    const bool nCe = (m_latched & kEepromDisabled) != 0;
+    const bool sm  = (m_latched & kSpectrumMode) != 0;
 
     if (!nCe && !sm) {
-        // EPROM boot mode
-        ctx.mmu.map16k(0x0000, m_romBank, romIdx, false);
+        // EEPROM mode
+        ctx.mmu.map16k(0x0000, m_romBank, 0, false);
         ctx.mmu.map16k(0x4000, m_ramBank, 3, false);
         ctx.mmu.map16k(0x8000, m_ramBank, 0, false);
         ctx.mmu.map16k(0xC000, m_ramBank, 1, false);
@@ -478,6 +641,9 @@ void Cobra2Machine::updateMemoryMap(MachineContext &ctx, UlaRenderer &ula)
     } else if (nCe && !sm) {
         // 64KB DRAM mode, transitory between boot and Spectrum mode (and CP/M)
         ctx.mmu.map16k(0x0000, m_ramBank, 2, false);
+        ctx.mmu.map16k(0x4000, m_ramBank, 3, false);
+        ctx.mmu.map16k(0x8000, m_ramBank, 0, false);
+        ctx.mmu.map16k(0xC000, m_ramBank, 1, false);
     }
     ula.setVramSource(m_ramBank, 1);
 }

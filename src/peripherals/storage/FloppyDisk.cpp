@@ -72,6 +72,10 @@ bool startsWith(std::span<const uint8_t> bytes, std::string_view magic) noexcept
 void DiskImage::loadFromBytes(std::span<const uint8_t> raw, std::string_view ext)
 {
     clear();
+    if (ext == ".td0" || startsWith(raw, "TD") || startsWith(raw, "td")) {
+        parseTeledisk(raw);
+        return;
+    }
     if (raw.size() >= 256 && (startsWith(raw, "MV - CPC") || startsWith(raw, "EXTENDED"))) {
         parseDsk(raw);
         return;
@@ -318,6 +322,7 @@ void DiskImage::parseDsk(std::span<const uint8_t> raw)
                     .sizeCode = sInfo[3],
                     .st1 = sInfo[4],
                     .st2 = sInfo[5],
+                    .mfm = trkHdr[0x13] != 1,
                     .data = std::vector<uint8_t>(std::from_range, raw.subspan(dataCursor, actualSize))
                 });
                 dataCursor += actualSize;
@@ -351,6 +356,11 @@ constexpr uint8_t kSt1Overrun             = 0x10;
 constexpr uint64_t kByteTstates = 112;
 constexpr uint64_t kOverrunTstates = 4 * kByteTstates;
 constexpr uint64_t kFirstByteTstates = 70'000;
+// After the last data byte the controller reads the CRC, then interrupts for the result phase
+constexpr uint64_t kResultIntTstates = 2 * kByteTstates + 32;
+// The first data byte interrupts once the sector is under the head: not at once (CoBra's loaders
+// enable the interrupts, then switch registers to the buffer pointer)
+constexpr uint64_t kFirstByteIntTstates = 1000;
 
 } // namespace
 
@@ -368,6 +378,9 @@ void Upd765Fdc::reset() noexcept
     m_tcCanNormalize = false;
     m_transferTimed = false;
     m_readTrack = false;
+    m_nonDma = false;
+    m_resultInt = false;
+    m_tcStop = SIZE_MAX;
 }
 
 DiskImage &Upd765Fdc::drive(std::size_t idx) noexcept
@@ -397,6 +410,13 @@ void Upd765Fdc::checkOverrun(uint64_t now) noexcept
 uint8_t Upd765Fdc::readMainStatus(uint64_t now) noexcept
 {
     checkOverrun(now);
+    if (m_nonDma && (m_phase == PhaseExecRead || m_phase == PhaseExecWrite || m_phase == PhaseExecFormat)
+        && now < m_execIntFrom)
+        return static_cast<uint8_t>((m_msr & ~kMsrRqm) | m_driveBusy);
+    // After the last data byte the controller still reads the CRC: it is busy executing until
+    // the result phase interrupts (CoBra's loaders HALT until EXM clears)
+    if (m_phase == PhaseResult && m_resultInt && now < m_resultIntFrom)
+        return static_cast<uint8_t>(kMsrCb | (m_nonDma ? kMsrExm : 0) | m_driveBusy);
     return static_cast<uint8_t>(m_msr | m_driveBusy);
 }
 
@@ -407,16 +427,23 @@ uint8_t Upd765Fdc::headUnit() const noexcept
 
 uint8_t Upd765Fdc::readData(uint64_t now)
 {
+    m_lastAccess = now;
     checkOverrun(now);
+    if ((m_nonDma && m_phase == PhaseExecRead && now < m_execIntFrom)
+        || (m_phase == PhaseResult && m_resultInt && now < m_resultIntFrom))
+        return 0xFF;
     if (m_phase == PhaseExecRead) {
         m_transferDeadline = now + kOverrunTstates;
         const uint8_t b = m_dataBuf[m_dataPos++];
-        if (m_dataPos >= m_dataBuf.size())
+        if (m_dataPos >= m_tcStop)
+            finishTransfer(true);
+        else if (m_dataPos >= m_dataBuf.size())
             finishTransfer(false);
         return b;
     }
     if (m_phase == PhaseResult) {
         m_tcCanNormalize = false;
+        m_resultInt = false;
         const uint8_t b = m_resBuf[m_resPos++];
         if (m_resPos >= m_resBuf.size()) {
             m_phase = PhaseCommand;
@@ -429,7 +456,10 @@ uint8_t Upd765Fdc::readData(uint64_t now)
 
 void Upd765Fdc::writeData(uint8_t val, uint64_t now)
 {
+    m_lastAccess = now;
     checkOverrun(now);
+    if (m_nonDma && (m_phase == PhaseExecWrite || m_phase == PhaseExecFormat) && now < m_execIntFrom)
+        return;
     if (m_phase == PhaseExecWrite || m_phase == PhaseExecFormat) {
         m_transferDeadline = now + kOverrunTstates;
         m_dataBuf[m_dataPos++] = val;
@@ -437,6 +467,10 @@ void Upd765Fdc::writeData(uint8_t val, uint64_t now)
             // Commit each sector as soon as it is complete
             if (std::ranges::find(m_sectorEnds, m_dataPos) != m_sectorEnds.end())
                 commitWriteSector();
+            if (m_dataPos >= m_tcStop) {
+                finishTransfer(true);
+                return;
+            }
         }
         if (m_dataPos >= m_dataBuf.size()) {
             if (m_phase == PhaseExecFormat)
@@ -464,7 +498,11 @@ void Upd765Fdc::writeData(uint8_t val, uint64_t now)
 void Upd765Fdc::terminalCount() noexcept
 {
     if (m_phase == PhaseExecRead || m_phase == PhaseExecWrite) {
-        finishTransfer(true);
+        // In the middle of a sector the byte already presented still moves
+        if (m_dataPos == 0 || std::ranges::find(m_sectorEnds, m_dataPos) != m_sectorEnds.end())
+            finishTransfer(true);
+        else
+            m_tcStop = m_dataPos + 1;
     } else if (m_phase == PhaseExecFormat) {
         commitFormat();
     } else if (m_phase == PhaseResult && m_tcCanNormalize) {
@@ -504,6 +542,37 @@ void Upd765Fdc::enterResultPhase() noexcept
     m_phase = PhaseResult;
     m_resPos = 0;
     m_msr = kMsrRqm | kMsrDio | kMsrCb;
+    // The transfer commands interrupt at their result phase (not SENSE DRIVE STATUS, SENSE
+    // INTERRUPT STATUS or an invalid command)
+    switch (m_execCmd.empty() ? 0 : m_execCmd[0] & 0x1F) {
+    case 0x02: case 0x05: case 0x06: case 0x09: case 0x0A: case 0x0C: case 0x0D: case 0x11: case 0x19: case 0x1D:
+        m_resultInt = true;
+        // the controller reads the sector's CRC (two bytes, about 64us) before it interrupts
+        m_resultIntFrom = m_lastAccess + kResultIntTstates;
+        break;
+    default:
+        m_resultInt = false;
+        break;
+    }
+}
+
+bool Upd765Fdc::interruptLine(uint64_t now) const noexcept
+{
+    switch (m_phase) {
+    case PhaseExecRead:
+        return m_nonDma && now >= m_execIntFrom && m_dataPos < m_dataBuf.size();
+    case PhaseExecWrite:
+    case PhaseExecFormat:
+        return m_nonDma && now >= m_execIntFrom;
+    case PhaseResult:
+        return m_resultInt && now >= m_resultIntFrom;
+    default:
+        for (unsigned unit = 0; unit < 4; ++unit) {
+            if ((m_pendingInts & (1u << unit)) && now >= m_seekIntFrom[unit])
+                return true;
+        }
+        return false;
+    }
 }
 
 void Upd765Fdc::setResult(uint8_t st0, uint8_t st1, uint8_t st2, uint8_t c, uint8_t h, uint8_t r, uint8_t n)
@@ -517,11 +586,14 @@ void Upd765Fdc::executeCommand(uint8_t cmd)
     m_execCmd = m_cmdBuf;
     m_resBuf.clear();
     m_tcCanNormalize = false;
+    m_resultInt = false;
+    m_tcStop = SIZE_MAX;
     // The commands naming a drive (all but SPECIFY, SENSE INTERRUPT STATUS and VERSION)
     if (cmd != 0x03 && cmd != 0x08 && cmd != 0x10 && m_cmdBuf.size() > 1)
         m_drives[(m_cmdBuf[1] & 0x03) & m_unitMask].noteAccess();
     switch (cmd) {
     case 0x03: // SPECIFY
+        m_nonDma = m_execCmd.size() > 2 && (m_execCmd[2] & 1);
         m_phase = PhaseCommand;
         m_msr = kMsrRqm;
         break;
@@ -545,6 +617,9 @@ void Upd765Fdc::executeCommand(uint8_t cmd)
         m_currentTrack[us & m_unitMask] = (cmd == 0x07) ? 0 : m_cmdBuf[2];
         m_driveBusy |= static_cast<uint8_t>(1u << us);
         m_pendingInts |= static_cast<uint8_t>(1u << us);
+        // Leave time for the CPU to enter its wait loop. In particular the original
+        // CoBra 64K boot follows the last parameter with HALT, rather than polling.
+        m_seekIntFrom[us] = m_lastAccess + kFirstByteIntTstates;
         m_phase = PhaseCommand;
         m_msr = kMsrRqm;
         break;
@@ -568,7 +643,9 @@ void Upd765Fdc::executeCommand(uint8_t cmd)
         const uint8_t unit = hu & m_unitMask;
         const uint8_t hd = (hu >> 2) & 1;
         const auto &disk = m_drives[unit];
-        const auto onTrack = disk.trackSectors(m_currentTrack[unit], hd);
+        auto onTrack = disk.trackSectors(m_currentTrack[unit], hd);
+        const bool mfm = (m_cmdBuf[0] & 0x40) != 0;
+        std::erase_if(onTrack, [mfm](const auto &sector) { return sector.get().mfm != mfm; });
         if (onTrack.empty()) {
             setResult(static_cast<uint8_t>(kSt0AbnormalTermination | (disk.empty() ? kSt0NotReady : 0) | hu),
                       kSt1MissingAddressMark, 0, m_currentTrack[unit], hd, 1, 2);
@@ -599,6 +676,7 @@ void Upd765Fdc::executeCommand(uint8_t cmd)
         m_dataBuf.assign(static_cast<std::size_t>(m_cmdBuf[3]) * 4, 0);
         m_dataPos = 0;
         m_phase = PhaseExecFormat;
+        m_execIntFrom = m_lastAccess + kFirstByteIntTstates;
         m_msr = kMsrRqm | kMsrExm | kMsrCb;
         if (m_dataBuf.empty())
             commitFormat();
@@ -681,6 +759,8 @@ void Upd765Fdc::startRead(uint8_t cmd)
         const std::size_t length = std::size_t{128} << std::min<uint8_t>(m_xferN, 7);
         uint8_t expectR = r;
         for (const DiskImage::Sector &sec : disk.trackSectors(m_xferTrack, m_xferSide)) {
+            if (sec.mfm != ((m_cmdBuf[0] & 0x40) != 0))
+                continue;
             if (m_sectorIds.size() >= eot)
                 break;
             if (sec.track != m_xferC || sec.side != m_xferH || sec.sectorId != expectR)
@@ -704,7 +784,7 @@ void Upd765Fdc::startRead(uint8_t cmd)
         uint8_t h = m_xferH;
         for (uint8_t id = r;; ++id) {
             const auto sec = disk.findSectorById(m_xferTrack, side, m_xferC, h, id, m_xferN);
-            if (!sec)
+            if (!sec || sec->get().mfm != ((m_cmdBuf[0] & 0x40) != 0))
                 break;
             addSector(*sec);
             if (markMismatch)
@@ -751,6 +831,7 @@ void Upd765Fdc::startRead(uint8_t cmd)
     }
     m_dataPos = 0;
     m_phase = PhaseExecRead;
+    m_execIntFrom = m_lastAccess + kFirstByteIntTstates;
     m_msr = kMsrRqm | kMsrDio | kMsrExm | kMsrCb;
 }
 
@@ -785,7 +866,7 @@ void Upd765Fdc::startWrite(uint8_t /*cmd*/)
     std::size_t total = 0;
     for (uint8_t id = r;; ++id) {
         const auto sec = disk.findSectorById(m_xferTrack, m_xferSide, m_xferC, m_xferH, id, m_xferN);
-        if (!sec)
+        if (!sec || sec->get().mfm != ((m_cmdBuf[0] & 0x40) != 0))
             break;
         total += sec->get().data.size();
         m_sectorEnds.push_back(total);
@@ -800,6 +881,7 @@ void Upd765Fdc::startWrite(uint8_t /*cmd*/)
     m_dataBuf.assign(total, 0);
     m_dataPos = 0;
     m_phase = PhaseExecWrite;
+    m_execIntFrom = m_lastAccess + kFirstByteIntTstates;
     m_msr = kMsrRqm | kMsrExm | kMsrCb; // DIO = 0: CPU -> FDC
 }
 
@@ -878,6 +960,7 @@ void Upd765Fdc::commitFormat()
             .side = m_dataBuf[i + 1],
             .sectorId = m_dataBuf[i + 2],
             .sizeCode = m_dataBuf[i + 3],
+            .mfm = (m_execCmd[0] & 0x40) != 0,
             .data = std::vector<uint8_t>(std::size_t{128} << std::min<uint8_t>(m_dataBuf[i + 3], 7), filler)
         });
     }

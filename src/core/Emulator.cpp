@@ -39,7 +39,8 @@ constexpr std::size_t kMaxPooledFrames = 8;
 constexpr std::array kSnapshotExtensions{std::string_view{".sna"}, std::string_view{".z80"},
                                          std::string_view{".szx"}, std::string_view{".nex"}};
 constexpr std::array kDiskExtensions{std::string_view{".dsk"}, std::string_view{".trd"}, std::string_view{".scl"},
-                                     std::string_view{".img"}, std::string_view{".mgt"}, std::string_view{".opd"}};
+                                     std::string_view{".img"}, std::string_view{".mgt"}, std::string_view{".opd"},
+                                     std::string_view{".td0"}};
 
 // Normalizes a file extension to ".ext" in lower case. Accepts "ext", ".ext",
 // a multi-part suffix ("tar.dsk") or a whole file name.

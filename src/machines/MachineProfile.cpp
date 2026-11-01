@@ -127,18 +127,19 @@ void MachineProfile::loadState(StateReader & /*r*/, MachineContext & /*ctx*/, Ul
 {
 }
 
-void MachineProfile::registerStandardUlaPort(MachineContext &ctx, UlaRenderer &ula, uint16_t mask, uint16_t value)
+void MachineProfile::registerStandardUlaPort(MachineContext &ctx, UlaRenderer &ula, uint16_t mask, uint16_t value,
+                                             uint8_t keyMask)
 {
     ctx.ioBus.registerHandler(
         std::string(id()) + "_ula",
         mask,
         value,
-        [&ctx](uint16_t port) -> IoReadResult {
+        [&ctx, keyMask](uint16_t port) -> IoReadResult {
             const uint8_t keys = ctx.keyboard.readRows(static_cast<uint8_t>(port >> 8));
             // Bit 6 echoes the EAR output (Issue 3), and the tape signal flips it
             const bool tapeLevel = ctx.tape.readEar(ctx);
             const uint8_t ear = (ctx.audioMixer.beeper().earBit() != tapeLevel) ? 0x40 : 0x00;
-            return IoReadResult{static_cast<uint8_t>(0xA0 | ear | (keys & 0x1F)), 0xFF};
+            return IoReadResult{static_cast<uint8_t>((0xA0 & ~keyMask) | ear | (keys & keyMask)), 0xFF};
         },
         [&ctx, &ula](uint16_t /*port*/, uint8_t val) {
             ctx.tape.update(ctx);

@@ -30,7 +30,7 @@
 namespace zxkit {
 
 /// Universal Floppy Disk Image container supporting raw sector images (.trd, .scl, .mgt, .img, .opd, .d40, .d80)
-/// as well as standard and extended CPC/Spectrum +3/HC-2000/CoBra .dsk / .edsk images.
+/// as well as CPC/Spectrum .dsk / .edsk and Teledisk .td0 (normal and advanced compression).
 class DiskImage {
 public:
     struct Sector {
@@ -42,6 +42,7 @@ public:
         uint8_t sizeCode = 2;  // 128 << sizeCode
         uint8_t st1 = 0;
         uint8_t st2 = 0;
+        bool mfm = true;      ///< false for a single-density FM track
         std::vector<uint8_t> data;  ///< several copies of a weak sector (an EDSK can store them)
         uint32_t reads = 0;         ///< reads so far: the copy the next one returns
     };
@@ -78,6 +79,7 @@ private:
     void loadRawGeometry(std::span<const uint8_t> raw, uint8_t tracks, uint8_t sides, uint8_t spt, uint16_t secSize, uint8_t firstId);
     void parseScl(std::span<const uint8_t> raw);
     void parseDsk(std::span<const uint8_t> raw);
+    void parseTeledisk(std::span<const uint8_t> raw);
 
     std::vector<Sector> m_sectors;
     bool m_modified = false;
@@ -99,11 +101,21 @@ public:
 
     // `now` is the CPU's T-state (`Clock::totalTstates()`): a CPU too slow to move the
     // bytes of a transfer makes the controller end it with an overrun, like the real one.
+    // After a transfer's last byte the main status shows the controller busy (CB, and EXM in
+    // non-DMA mode, no RQM) while it reads the sector's CRC, then the result phase.
     uint8_t readMainStatus(uint64_t now) noexcept;
     uint8_t readData(uint64_t now);
     void writeData(uint8_t val, uint64_t now);
-    /// Terminal Count: ends the current read / write / format execution phase.
+    /// Terminal Count: ends the current read / write / format execution phase. Between two
+    /// sectors (software TC after the last byte) at once; in the middle of a sector (a
+    /// hardware TC from the byte request that presents a sector's last byte) once that
+    /// byte has moved.
     void terminalCount() noexcept;
+    /// The INT pin: in non-DMA mode (SPECIFY) high while a byte waits for the CPU during the
+    /// execution phase; high at the start of a transfer command's result phase (once the
+    /// sector's CRC has gone by) until its first byte is read, and while a seek interrupt waits
+    /// for SENSE INTERRUPT STATUS.
+    bool interruptLine(uint64_t now) const noexcept;
 
 private:
     enum Phase : uint8_t {
@@ -140,6 +152,13 @@ private:
     std::vector<uint8_t> m_resBuf;
     std::size_t m_resPos = 0;
     bool m_tcCanNormalize = false; // TC right after the last byte still ends normally
+    bool m_nonDma = false;         // SPECIFY's ND bit
+    std::array<uint64_t, 4> m_seekIntFrom{}; // seek completion cannot interrupt before the caller can HALT
+    bool m_resultInt = false;      // the result phase's interrupt, until its first byte is read
+    uint64_t m_resultIntFrom = 0;  // ... which rises after the CRC bytes
+    uint64_t m_lastAccess = 0;     // the T-state of the last register access
+    uint64_t m_execIntFrom = 0;    // the first data byte's interrupt (the sector comes under the head)
+    std::size_t m_tcStop = SIZE_MAX; // a TC came in the middle of a sector: the transfer ends here
     bool m_readTrack = false;      // the transfer is a READ TRACK
     int m_speedlock = 0;           // FUSE's Speedlock weak sector emulation: re-reads of C0 H0 R2
     uint32_t m_lastSectorRead = 0;

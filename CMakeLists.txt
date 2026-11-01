@@ -49,6 +49,7 @@ set(ZXKIT_PUBLIC_HEADERS
     include/zxkit/core/SpinSharedMutex.h
     include/zxkit/core/StateStream.h
     include/zxkit/cpu/Im2Controller.h
+    include/zxkit/cpu/Z80Ctc.h
     include/zxkit/cpu/Z80Cpu.h
     include/zxkit/cpu/Z80Registers.h
     include/zxkit/memory/ContentionModel.h
@@ -111,6 +112,7 @@ set(ZXKIT_SOURCES
     src/core/Scheduler.cpp
     src/core/StateStream.cpp
     src/cpu/Im2Controller.cpp
+    src/cpu/Z80Ctc.cpp
     src/cpu/Z80Cpu.cpp
     src/cpu/Z80Registers.cpp
     src/memory/ContentionModel.cpp
@@ -138,6 +140,7 @@ set(ZXKIT_SOURCES
     src/peripherals/next/ZxnDma.cpp
     src/peripherals/storage/Beta128.cpp
     src/peripherals/storage/FloppyDisk.cpp
+    src/peripherals/storage/Teledisk.cpp
     src/peripherals/storage/Interface1.cpp
     src/peripherals/storage/FatVolume.cpp
     src/peripherals/storage/MassStorage.cpp

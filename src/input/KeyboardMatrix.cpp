@@ -26,7 +26,7 @@ KeyboardMatrix::KeyboardMatrix()
 
 void KeyboardMatrix::reset() noexcept
 {
-    m_rows.fill(0x1F); // Active low: bits 0..4 = 1 when released
+    m_rows.fill(0x3F); // Active low: bits 0..5 = 1 when released
 }
 
 void KeyboardMatrix::setKeyState(ZxKey key, bool pressed) noexcept
@@ -34,7 +34,7 @@ void KeyboardMatrix::setKeyState(ZxKey key, bool pressed) noexcept
     const uint8_t code = static_cast<uint8_t>(key);
     const uint8_t row = (code >> 4) & 0x07;
     const uint8_t bit = code & 0x07;
-    if (bit >= 5)
+    if (bit >= 6)
         return;
     if (pressed)
         m_rows[row] &= static_cast<uint8_t>(~(1u << bit));
@@ -44,7 +44,7 @@ void KeyboardMatrix::setKeyState(ZxKey key, bool pressed) noexcept
 
 uint8_t KeyboardMatrix::readRows(uint8_t highAddrByte) const noexcept
 {
-    uint8_t result = 0x1F;
+    uint8_t result = 0x3F;
     for (int row = 0; row < 8; ++row) {
         if ((highAddrByte & (1u << row)) == 0)
             result &= m_rows[row];

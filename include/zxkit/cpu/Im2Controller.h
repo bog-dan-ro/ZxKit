@@ -27,7 +27,8 @@ namespace zxkit {
 /// 14-vector hardware IM2 priority daisy-chain controller.
 class Im2Controller {
 public:
-    static constexpr std::size_t kMaxVectors = 14;
+    // 14 on the Next; a Z80 CTC's vectors take 16 (4 channels in 4 vector groups)
+    static constexpr std::size_t kMaxVectors = 16;
 
     void reset() noexcept;
 

@@ -86,6 +86,7 @@ public:
 
     void advanceFlashCounter() noexcept;
     bool flashInverted() const noexcept { return m_flashInvert; }
+    const std::array<uint32_t, 16> &palette() const noexcept { return m_palette; }
 
     /// Floating bus emulation for 48K / 128K / +2 during active display.
     uint8_t readFloatingBus(const Clock &clock, const Mmu &mmu) const noexcept;

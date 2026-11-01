@@ -55,6 +55,9 @@ public:
     }
     std::vector<uint8_t> result()
     {
+        // After the last data byte the controller reads the CRC: busy, not ready
+        for (int i = 0; i < 100 && (status() & 0x90) == 0x10; ++i)
+            wait(16);
         std::vector<uint8_t> out;
         while ((status() & 0xD0) == 0xD0) // RQM, DIO, busy: a result byte
             out.push_back(read());

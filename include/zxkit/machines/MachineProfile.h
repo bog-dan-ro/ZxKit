@@ -81,7 +81,9 @@ public:
     virtual void loadState(StateReader &r, MachineContext &ctx, UlaRenderer &ula);
 
 protected:
-    void registerStandardUlaPort(MachineContext &ctx, UlaRenderer &ula, uint16_t mask = 0x0001, uint16_t value = 0x0000);
+    /// `keyMask`: the keyboard columns read (bits 0-4; 0x3F adds the CoBra's sixth column)
+    void registerStandardUlaPort(MachineContext &ctx, UlaRenderer &ula, uint16_t mask = 0x0001, uint16_t value = 0x0000,
+                                 uint8_t keyMask = 0x1F);
     void registerStandardAyPorts(MachineContext &ctx);
 
     BankId m_ramBank = 0;

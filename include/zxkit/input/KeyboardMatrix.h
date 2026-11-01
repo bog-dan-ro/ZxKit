@@ -38,7 +38,9 @@ enum class ZxKey : uint8_t {
     // Row 6 (0xBFFE): A14 = 0
     Enter = 0x60, L = 0x61, K = 0x62, J = 0x63, H = 0x64,
     // Row 7 (0x7FFE): A15 = 0
-    Space = 0x70, SymbolShift = 0x71, M = 0x72, N = 0x73, B = 0x74
+    Space = 0x70, SymbolShift = 0x71, M = 0x72, N = 0x73, B = 0x74,
+    // The CoBra's sixth column (bit 5), one key per row
+    Ctrl = 0x05, NoScroll = 0x15, LineFeed = 0x25, Esc = 0x35, F1 = 0x45, F2 = 0x55, F3 = 0x65, F4 = 0x75
 };
 
 class KeyboardMatrix {
@@ -48,7 +50,8 @@ public:
     void reset() noexcept;
     void setKeyState(ZxKey key, bool pressed) noexcept;
 
-    /// Reads the 5-bit active-low keyboard state for a given high address byte (A15..A8).
+    /// Reads the active-low keyboard state for a given high address byte (A15..A8): bits 0-4,
+    /// and bit 5 for the CoBra's extra column (the machines read the bits they have).
     uint8_t readRows(uint8_t highAddrByte) const noexcept;
 
 private:

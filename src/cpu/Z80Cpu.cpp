@@ -1061,6 +1061,16 @@ uint32_t Z80Cpu::stepInstruction()
         for (const auto &h : m_postM1Hooks)
             h.fn(fetchPc, opcode);
     }
+    // R's bit 7 reaches the address bus in this M1's refresh, after the opcode was fetched:
+    // a change by LD R,A shows up one instruction later (the CoBra's configurator: the
+    // opcode after LD R,A, e.g. JP (HL), still comes from the old memory map)
+    if ((m_activeHooksMask & HookFlags::RfshEdge) && m_rfshHook && fetchPc != 0) [[unlikely]] {
+        const uint8_t curR7 = m_regs.R7 & 0x80;
+        if (curR7 != m_lastR7) {
+            m_lastR7 = curR7;
+            m_rfshHook(curR7);
+        }
+    }
     uint8_t last_Q = 0;
 
 end_opcode:
@@ -1122,14 +1132,6 @@ end_opcode:
 
     m_regs.R &= 0x7F;
     m_regs.lastQ = last_Q;
-
-    if ((m_activeHooksMask & HookFlags::RfshEdge) && m_rfshHook && fetchPc != 0) [[unlikely]] {
-        const uint8_t curR7 = m_regs.R7 & 0x80;
-        if (curR7 != m_lastR7) {
-            m_lastR7 = curR7;
-            m_rfshHook(curR7);
-        }
-    }
 
     return static_cast<uint32_t>(m_clock.totalTstates() - startTs);
 }

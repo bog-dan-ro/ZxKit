@@ -51,7 +51,7 @@ MediaClass classifyMediaFile(std::string_view fileName, std::span<const uint8_t>
         return MediaClass::Snapshot;
     if (ext == ".tap" || ext == ".tzx" || ext == ".pzx" || ext == ".csw" || ext == ".wav")
         return MediaClass::Tape;
-    if (ext == ".dsk" || ext == ".edsk" || ext == ".trd" || ext == ".scl" || ext == ".mgt" || ext == ".img" || ext == ".opd" || ext == ".d40" || ext == ".d80")
+    if (ext == ".dsk" || ext == ".edsk" || ext == ".trd" || ext == ".scl" || ext == ".mgt" || ext == ".img" || ext == ".opd" || ext == ".d40" || ext == ".d80" || ext == ".td0")
         return MediaClass::Disk;
     if (ext == ".mdr")
         return MediaClass::Microdrive;
@@ -65,6 +65,8 @@ MediaClass classifyMediaFile(std::string_view fileName, std::span<const uint8_t>
         return MediaClass::Archive;
 
     if (data.size() >= 8) {
+        if ((data[0] == 'T' && data[1] == 'D') || (data[0] == 't' && data[1] == 'd'))
+            return MediaClass::Disk;
         if (std::memcmp(data.data(), "ZXST", 4) == 0 || std::memcmp(data.data(), "Next", 4) == 0)
             return MediaClass::Snapshot;
         if (std::memcmp(data.data(), "ZXTape!", 7) == 0 || std::memcmp(data.data(), "PZXT", 4) == 0)

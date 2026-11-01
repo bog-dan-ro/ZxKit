@@ -29,6 +29,7 @@
 #include "zxkit/core/StateStream.h"
 
 #include "zxkit/cpu/Im2Controller.h"
+#include "zxkit/cpu/Z80Ctc.h"
 #include "zxkit/cpu/Z80Cpu.h"
 #include "zxkit/cpu/Z80Registers.h"
 

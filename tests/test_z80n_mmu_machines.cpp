@@ -168,7 +168,12 @@ void testRomanianCpmBankingAndIf1Fdc()
         eng.cpu().stepInstruction();
         eng.cpu().stepInstruction();
         assert(cobra.poFlipFlop() == 1);
+        eng.mmu().poke(0x8008, 0x00);                               // NOP
         eng.cpu().stepInstruction();
+        eng.cpu().stepInstruction();
+        // R7 fell to 0, but the flip-flop clocks after the next opcode fetch (the ROMs switch
+        // with LD R,A ; JP (HL), the jump still fetched from the old map)
+        assert(cobra.poFlipFlop() == 1);
         eng.cpu().stepInstruction();
         // R7 fell to 0 while Port C bit 6 was 1 -> PO=0, LO6=1 (CP/M 80K all-RAM mode!)
         assert(cobra.poFlipFlop() == 0);
@@ -207,6 +212,9 @@ void testRomanianCpmBankingAndIf1Fdc()
         for (int i = 1; i < 512; ++i)
             io.read(0x0087);
         io.write(0x0007, 0x19); // Terminal Count, drive A selected
+        // the controller reads the sector's CRC, then enters its result phase
+        assert((io.read(0x0085) & 0x90) == 0x10);
+        eng.clock().advance(300);
         assert((io.read(0x0085) & 0xD0) == 0xD0); // result phase
         assert(io.read(0x0087) == 0x00);          // ST0: normal termination thanks to TC
         assert(io.read(0x0087) == 0x00);          // ST1

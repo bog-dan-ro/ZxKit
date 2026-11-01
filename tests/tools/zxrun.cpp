@@ -46,6 +46,7 @@
 //   count:ADDR        count the times ADDR (hex) runs; counts prints the counts
 //   dumptrace:N       print the last N recorded instructions
 //   out:PORT,VALUE    write a port (hex)
+//   im2               print the IM2 daisy chain's state (pending, in service)
 //   trdos             boot TR-DOS (Pentagon, Scorpion, Beta 128), like FUSE's disk autoload
 //   reset | hardreset | nmi
 
@@ -81,6 +82,9 @@ const std::map<std::string, ZxKey> &keyNames()
             {"0", ZxKey::Num0}, {"1", ZxKey::Num1}, {"2", ZxKey::Num2}, {"3", ZxKey::Num3},
             {"4", ZxKey::Num4}, {"5", ZxKey::Num5}, {"6", ZxKey::Num6}, {"7", ZxKey::Num7},
             {"8", ZxKey::Num8}, {"9", ZxKey::Num9},
+            // the CoBra's sixth column
+            {"CTRL", ZxKey::Ctrl}, {"NOSCROLL", ZxKey::NoScroll}, {"LF", ZxKey::LineFeed}, {"ESC", ZxKey::Esc},
+            {"F1", ZxKey::F1}, {"F2", ZxKey::F2}, {"F3", ZxKey::F3}, {"F4", ZxKey::F4},
         };
         const std::pair<char, ZxKey> letters[] = {
             {'A', ZxKey::A}, {'B', ZxKey::B}, {'C', ZxKey::C}, {'D', ZxKey::D}, {'E', ZxKey::E},
@@ -403,6 +407,11 @@ int main(int argc, char **argv)
                 const auto r = emulator.registers();
                 std::println("PC={:04X} SP={:04X} AF={:04X} BC={:04X} DE={:04X} HL={:04X} IX={:04X} IY={:04X} I={:02X} IM={}",
                              r.PC, r.SP, r.AF, r.BC, r.DE, r.HL, r.IX, r.IY, r.I, r.IM);
+            } else if (cmd == "im2") {
+                const auto &im2 = emulator.im2();
+                const auto r = emulator.registers();
+                std::println("IM2 hw={} base={:02X} pending={:04X} inService={:04X} IFF1={}", im2.isHardwareIm2Enabled(),
+                             im2.vectorBase(), im2.pendingMask(), im2.inServiceMask(), r.IFF1);
             } else if (cmd == "out") {
                 // out:PORT,VALUE (hex)
                 const auto comma = arg.find(',');

@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include "zxkit/cpu/Z80Ctc.h"
 #include "zxkit/machines/MachineProfile.h"
 #include "zxkit/peripherals/storage/FloppyDisk.h"
 
@@ -74,6 +75,19 @@ private:
 /// - Startup/Boot (PO == 1): 32KB ROM (0x0000..0x7FFF) + RAM (0x8000..0xFFFF)
 /// - CP/M 64K/80K (PO == 0 && LO6 == 1): All-RAM 64KB mode with selectable VRAM page
 /// - Spectrum 48K (PO == 0 && LO6 == 0): Locked 16KB Read-Only RAM at 0x0000 + 48KB RAM
+/// The 50Hz interrupt reaches the CPU only in the Spectrum configuration.
+///
+/// The floppy disk board: an i8272 (status 0xF5, data 0xFD: A1 = 0 selects it, A3 the register)
+/// without DMA, and a Z80 CTC (A2 = 0 selects it, A3-A4 the channel: 0xE3, 0xEB, 0xF3, 0xFB)
+/// in IM2: the 8272's INT clocks channel 0 (an interrupt for each byte), channel 1 counts
+/// channel 0's zero counts and channel 2 channel 1's, whose zero count is the 8272's Terminal
+/// Count (the end of a sector). Channel 3 counts the vertical sync (CP/M's 50Hz interrupt).
+/// The keyboard has a sixth column (bit 5): CTRL, NO SCROLL, LINE FEED, ESC, F1-F4.
+///
+/// The 80KB model (mainboard v1.3) has the "80 characters per line in CP/M" modification: in
+/// the CP/M configuration, once O5 has been set, the border's 4 character cells left and right
+/// of the screen show the upper half of the video RAM (columns 28-31 and 0-3 of each row), a
+/// 320x192 screen for CP/M's 80 columns of 4 pixel wide characters.
 class CobraMachine : public MachineProfile {
 public:
     explicit CobraMachine(bool mode80k = true) noexcept;
@@ -86,6 +100,15 @@ public:
 
     void initialize(MachineContext &ctx, UlaRenderer &ula) override;
     void reset(MachineContext &ctx, UlaRenderer &ula, ResetKind kind) override;
+    void onFrameStart(MachineContext &ctx) override;
+    void onScanlineStart(uint16_t line, MachineContext &ctx) override;
+    void renderScanline(uint32_t y, const MachineContext &ctx, const UlaRenderer &ula, VideoFrame &frame) override;
+    void renderFullFrame(MachineContext &ctx, UlaRenderer &ula, VideoFrame &frame) override;
+    void saveState(StateWriter &w) const override;
+    void loadState(StateReader &r, MachineContext &ctx, UlaRenderer &ula) override;
+
+    std::size_t diskDriveCount() const noexcept override { return 4; }
+    OptionalRef<DiskImage> diskDrive(std::size_t idx) noexcept override;
 
     uint8_t poFlipFlop() const noexcept;
     uint8_t lo6FlipFlop() const noexcept;
@@ -95,7 +118,18 @@ private:
     void reset8255PortC() noexcept;
     void write8255PortC(uint8_t val, MachineContext &ctx, UlaRenderer &ula);
     void updateMemoryMap(MachineContext &ctx, UlaRenderer &ula);
+    // The 8272's INT line into the CTC; `byteMoved`: a data byte moved, the line fell and rises
+    // again for the next one
+    void updateFdcInterrupt(uint64_t now, bool byteMoved);
+    bool basicConfiguration() const noexcept { return m_po == 0 && m_lo6 == 0; }
+    // The 80 characters screen's cells in the border, from the video RAM's upper half
+    void renderWideCells(uint32_t y, const MachineContext &ctx, const UlaRenderer &ula, VideoFrame &frame) const;
 
+    Upd765Fdc m_fdc;
+    Z80Ctc m_ctc;
+    bool m_terminalCount = false; // channel 2 reached zero: the 8272's TC
+    bool m_wideLatch = false;     // the 80 characters modification's latch (set by O5 in CP/M)
+    bool m_wide = false;          // ... and the screen is 320 pixels wide
     bool m_mode80k = true;
     uint8_t m_8255Ctrl = 0x9B;
     uint8_t m_8255PortC = 0x00;
@@ -104,13 +138,14 @@ private:
     bool m_locked = false;
 };
 
-/// Brasov CoBra 2 (TS) - 64KB, no ULA chip, four 16KB system ROMs (Sinclair
-/// BASIC + boot, Devil BASIC, Opus, ITCI BASIC) and a Timex style AY (0xF5/0xF6).
-/// An OUT to port 0xFE stores the F5 register: Q3/Q7 select the ROM, Q5/Q6 feed
-/// the nCE/SM flip-flops, which are clocked by an IN from port 0x7E:
-/// - nCE = 0, SM = 0: boot, ROM at 0x0000, video RAM at 0xC000
-/// - nCE = 1, SM = 0: 64KB DRAM (CP/M), RAM page 2 at 0x0000
-/// - nCE = 1, SM = 1: Spectrum 48K, read-only RAM page 0 at 0x0000
+/// The CoBra 2, the Turbo Spectrum (Sorin Cismas, Brasov, the late 1980s; specification, sources
+/// and binaries at https://cobrasov.org/download/): 64KB of DRAM, no ULA chip, a 16KB EEPROM
+/// with the boot, its TURBO SPECTRUM logo and a compacted Spectrum ROM. An OUT to any even
+/// port stores the F5 register (border, tape, speaker; Q5 and Q6 feed the CE and SM flops),
+/// any IN loads the flops:
+/// - CE = 0, SM = 0: EEPROM mode, the EEPROM at 0x0000, the video RAM at 0xC000
+/// - CE = 1, SM = 0: 64KB DRAM mode, DRAM at 0x0000 (A15 inverted: the video RAM stays at 0xC000)
+/// - SM = 1: Spectrum mode (CE set too, until a reset), the read-only DRAM copy of the ROM at 0x0000
 class Cobra2Machine : public MachineProfile {
 public:
     std::string_view id() const noexcept override;
@@ -128,8 +163,12 @@ public:
 private:
     void updateMemoryMap(MachineContext &ctx, UlaRenderer &ula);
 
+    // F5's Q5 and Q6, the inputs of the CE (EEPROM disabled) and SM (Spectrum mode) flops
+    static constexpr uint8_t kEepromDisabled = 0x20;
+    static constexpr uint8_t kSpectrumMode = 0x40;
+
     uint8_t m_portFe = 0;  // F5 register
-    uint8_t m_latched = 0; // nCE / SM flip-flops, latched from F5 by IN 0x7E
+    uint8_t m_latched = 0; // the CE / SM flops (kEepromDisabled, kSpectrumMode), loaded by any IN
 };
 
 } // namespace zxkit
