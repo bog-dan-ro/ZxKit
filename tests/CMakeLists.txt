@@ -27,6 +27,12 @@ target_link_libraries(test_audio PRIVATE ZX::Kit)
 target_compile_options(test_audio PRIVATE $<IF:$<CXX_COMPILER_ID:MSVC>,/UNDEBUG,-UNDEBUG>)
 add_test(NAME test_audio COMMAND test_audio)
 
+add_executable(test_engine_pacing test_engine_pacing.cpp)
+target_link_libraries(test_engine_pacing PRIVATE ZX::Kit)
+target_compile_options(test_engine_pacing PRIVATE $<IF:$<CXX_COMPILER_ID:MSVC>,/UNDEBUG,-UNDEBUG>)
+add_test(NAME test_engine_pacing COMMAND test_engine_pacing)
+set_tests_properties(test_engine_pacing PROPERTIES TIMEOUT 45)
+
 add_executable(test_fuse_z80 test_fuse_z80.cpp)
 target_link_libraries(test_fuse_z80 PRIVATE ZX::Kit)
 add_test(NAME test_fuse_z80 COMMAND test_fuse_z80 ${CMAKE_CURRENT_SOURCE_DIR}/fixtures)

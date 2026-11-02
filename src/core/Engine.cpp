@@ -59,11 +59,27 @@ void Engine::stop() noexcept
 
 void Engine::setFlag(uint32_t flag, bool on) noexcept
 {
-    if (on)
-        m_state.fetch_or(flag, std::memory_order_acq_rel);
-    else
-        m_state.fetch_and(~flag, std::memory_order_acq_rel);
+    bool changed;
+    {
+        const std::lock_guard lock(m_pacingMutex);
+        const auto previous = on ? m_state.fetch_or(flag, std::memory_order_acq_rel)
+                                 : m_state.fetch_and(~flag, std::memory_order_acq_rel);
+        changed = bool(previous & flag) != on;
+        if (changed && flag != kRefresh)
+            ++m_pacingRevision;
+    }
     m_state.notify_all();
+    if (changed && flag != kRefresh)
+        m_pacingChanged.notify_all();
+}
+
+void Engine::wakePacing() noexcept
+{
+    {
+        const std::lock_guard lock(m_pacingMutex);
+        ++m_pacingRevision;
+    }
+    m_pacingChanged.notify_all();
 }
 
 void Engine::setPaused(bool paused) noexcept
@@ -73,7 +89,9 @@ void Engine::setPaused(bool paused) noexcept
 
 void Engine::setSpeed(uint32_t percent) noexcept
 {
-    m_speedPercent.store(std::max(percent, 1u), std::memory_order_relaxed);
+    const auto speed = std::max(percent, 1u);
+    if (m_speedPercent.exchange(speed, std::memory_order_relaxed) != speed)
+        wakePacing();
 }
 
 void Engine::setTurbo(bool turbo) noexcept
@@ -97,6 +115,7 @@ void Engine::stepOver()
 void Engine::setCallbacks(EngineCallbacks callbacks)
 {
     *m_callbacks.writeLock() = std::move(callbacks);
+    wakePacing();
 }
 
 void Engine::setVideoFrameCallback(Weak<VideoFrameCallback> callback)
@@ -129,6 +148,27 @@ void Engine::setMediaActivityCallback(Weak<MediaActivityCallback> callback)
     m_callbacks.writeLock()->mediaActivity = std::move(callback);
 }
 
+void Engine::setAudioClockCallback(Weak<AudioClockCallback> callback)
+{
+    m_callbacks.writeLock()->audioClock = std::move(callback);
+    wakePacing();
+}
+
+std::optional<AudioPacingInfo::Clock::time_point> Engine::audioDeadline(const AudioPacingInfo &info) noexcept
+{
+    const auto callback = m_callbacks.readLock()->audioClock.lock();
+    if (callback) {
+        try {
+            const auto guard = callback.readLock();
+            if (*guard)
+                return (*guard)(info);
+        } catch (...) {
+            // A device disappearing or a failed host clock must not stop audio.
+        }
+    }
+    return std::nullopt;
+}
+
 template <typename Function, typename... Args>
 void Engine::notify(Weak<Function> EngineCallbacks::*callback, Args &&...args) noexcept
 {
@@ -153,6 +193,7 @@ void Engine::run()
     auto deadline = SteadyClock::now();
     // Starting paused is not an event, the host asked for it
     bool pauseReported = isPaused();
+    bool audioPaced = false;
     std::vector<int16_t> audio;
     MediaActivity lastActivity;
 
@@ -170,7 +211,13 @@ void Engine::run()
     service(m_threadHooks.started);
 
     for (;;) {
-        const uint32_t state = m_state.load(std::memory_order_acquire);
+        uint32_t state;
+        uint64_t pacingRevision;
+        {
+            const std::lock_guard lock(m_pacingMutex);
+            pacingRevision = m_pacingRevision;
+            state = m_state.load(std::memory_order_acquire);
+        }
         if (state & kStop)
             break;
 
@@ -199,6 +246,7 @@ void Engine::run()
         if (pauseReported) {
             pauseReported = false;
             deadline = SteadyClock::now();
+            audioPaced = false;
             notify(&EngineCallbacks::resumed);
         }
         if (state & kRefresh)
@@ -261,18 +309,33 @@ void Engine::run()
             continue;
         if ((m_state.load(std::memory_order_acquire) & kTurbo) || tapeTurbo) {
             deadline = SteadyClock::now();
+            audioPaced = false;
             continue;
         }
         // Paced to the machine's frame rate times the speed. The lock is free while we sleep.
-        const double speed = m_speedPercent.load(std::memory_order_relaxed) / 100.0;
+        const uint32_t speedPercent = m_speedPercent.load(std::memory_order_relaxed);
+        const double speed = speedPercent / 100.0;
         const auto frameDuration = std::chrono::duration_cast<SteadyClock::duration>(
             std::chrono::duration<double>(1.0 / (frameRate * speed)));
-        deadline += frameDuration;
         const auto now = SteadyClock::now();
-        if (deadline > now)
-            std::this_thread::sleep_until(deadline);
-        else if (now - deadline > frameDuration * 4)
-            deadline = now; // too far behind (e.g. the host held the lock): don't try to catch up
+        const AudioPacingInfo pacing{now, std::chrono::duration_cast<std::chrono::nanoseconds>(frameDuration),
+                                     audio.size() / 2, sampleRate, speedPercent, 2};
+        if (const auto hostDeadline = audioDeadline(pacing)) {
+            deadline = *hostDeadline;
+            audioPaced = true;
+        } else {
+            if (audioPaced)
+                deadline = now;
+            audioPaced = false;
+            deadline += frameDuration;
+            if (now > deadline && now - deadline > frameDuration * 4)
+                deadline = now; // too far behind: don't try to catch up
+        }
+        if (deadline > SteadyClock::now()) {
+            std::unique_lock lock(m_pacingMutex);
+            if (m_pacingChanged.wait_until(lock, deadline, [&] { return m_pacingRevision != pacingRevision; }))
+                deadline = SteadyClock::now(); // a control change invalidated the old schedule
+        }
     }
     service(m_threadHooks.stopped);
 }

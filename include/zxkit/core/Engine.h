@@ -22,7 +22,10 @@
 #include "zxkit/core/Shared.h"
 
 #include <atomic>
+#include <condition_variable>
 #include <cstdint>
+#include <mutex>
+#include <optional>
 #include <thread>
 
 namespace zxkit {
@@ -35,6 +38,7 @@ struct EngineCallbacks {
     Weak<ResumeCallback> resumed;
     Weak<LogCallback> log;
     Weak<MediaActivityCallback> mediaActivity;
+    Weak<AudioClockCallback> audioClock;
 };
 
 struct EngineConfig {
@@ -111,6 +115,9 @@ public:
     void setResumeCallback(Weak<ResumeCallback> callback);
     void setLogCallback(Weak<LogCallback> callback);
     void setMediaActivityCallback(Weak<MediaActivityCallback> callback);
+    /// Optional host device-clock pacing. Changing callbacks wakes a pacing
+    /// wait; the replacement is used after the next completed frame.
+    void setAudioClockCallback(Weak<AudioClockCallback> callback);
 
 private:
     static constexpr uint32_t kPaused = 1u << 0;
@@ -120,6 +127,8 @@ private:
 
     void run();
     void setFlag(uint32_t flag, bool on) noexcept;
+    void wakePacing() noexcept;
+    std::optional<AudioPacingInfo::Clock::time_point> audioDeadline(const AudioPacingInfo &info) noexcept;
 
     template <typename Function, typename... Args>
     void notify(Weak<Function> EngineCallbacks::*callback, Args &&...args) noexcept;
@@ -130,6 +139,9 @@ private:
     std::atomic<uint32_t> m_state{0};
     std::atomic<uint32_t> m_speedPercent{100};
     std::atomic_bool m_tapeTurbo{false};
+    std::mutex m_pacingMutex;
+    std::condition_variable m_pacingChanged;
+    uint64_t m_pacingRevision = 0; // protected by m_pacingMutex
     std::jthread m_thread; // last: it starts after everything else is ready
 };
 

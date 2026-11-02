@@ -19,8 +19,9 @@ less disruptive than a crackle or gap in the sound. Clone and extension work sta
 - [x] Speaker models: representative TV (ULA/AY), internal beeper (ULA/tape only), and unfiltered responses.
       External DACs remain direct; runtime changes crossfade, and reset/rewind preserve host preferences and
       restore filter/edge history. Response, routing and waveform continuity regressions run standalone.
-- [ ] Engine: an optional host audio-clock pacing API. Spectacol now corrects device-clock drift with adaptive
-      output resampling and plays at other speeds, including turbo; the standalone Engine still uses wall-clock pacing.
+- [x] Engine: optional host audio-clock pacing via a weak deadline callback, with wall-clock fallback and
+      interruptible waits for pause, speed, turbo, callback changes and stop. Standalone regressions cover queue
+      admission, callback lifetime/failure, control races and manual/tape turbo; see `docs/audio-pacing.md`.
 
 ## RZX compatibility and progress
 

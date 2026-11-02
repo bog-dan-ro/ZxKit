@@ -21,9 +21,11 @@
 #include "zxkit/video/VideoFrame.h"
 
 #include <concepts>
+#include <chrono>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
+#include <optional>
 #include <span>
 #include <string_view>
 #include <utility>
@@ -80,6 +82,24 @@ using ResumeCallback = std::function<void()>;
 using LogCallback = std::function<void(LogLevel level, std::string_view message)>;
 /// Called at the end of a frame when the media activity changed.
 using MediaActivityCallback = std::function<void(const MediaActivity &activity)>;
+
+/// The frame just delivered to the host, at its current fixed playback speed.
+struct AudioPacingInfo {
+    using Clock = std::chrono::steady_clock;
+    Clock::time_point now{};
+    std::chrono::nanoseconds frameDuration{};
+    std::size_t sampleFrames = 0;
+    uint32_t sampleRate = 0;
+    uint32_t speedPercent = 100;
+    uint8_t channels = 2;
+};
+
+/// Called after audio/video delivery, without an emulator lock. Return the
+/// earliest steady-clock time for the next frame, using the host's device
+/// playback position/queue depth. A past time requests immediate catch-up;
+/// nullopt, an expired callback or an exception uses ordinary wall-clock pacing.
+/// Must return promptly, never wait for the device. Not called during turbo.
+using AudioClockCallback = std::function<std::optional<AudioPacingInfo::Clock::time_point>(const AudioPacingInfo &)>;
 
 /// Owns a callback given to an `Engine` as a `Weak` reference (see `weak()`).
 ///
