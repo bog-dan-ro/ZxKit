@@ -179,6 +179,32 @@ add_library(zxkit::zxkit ALIAS zxkit)
 
 target_compile_features(zxkit PUBLIC cxx_std_23)
 
+# NDK r27's libc++ implements jthread/stop_token behind its experimental-library
+# switch. Probe the toolchain rather than requiring that flag on newer NDKs.
+# Engine's public header uses jthread, so consumers need the same configuration.
+if(ANDROID)
+    # Qt's targets already do this; standalone/shared ZxKit targets and their
+    # consumers must also load on Android devices with 16 KiB memory pages.
+    target_link_options(zxkit PUBLIC "LINKER:-z,max-page-size=16384")
+    include(CheckCXXSourceCompiles)
+    include(CMakePushCheckState)
+    cmake_push_check_state(RESET)
+    set(CMAKE_REQUIRED_FLAGS "-std=c++23")
+    set(_zxkit_thread_probe "#include <thread>\nint main() { std::jthread t([](std::stop_token) {}); }")
+    check_cxx_source_compiles("${_zxkit_thread_probe}" ZXKIT_HAS_JTHREAD)
+    if(NOT ZXKIT_HAS_JTHREAD)
+        set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -fexperimental-library")
+        check_cxx_source_compiles("${_zxkit_thread_probe}" ZXKIT_HAS_EXPERIMENTAL_JTHREAD)
+        if(NOT ZXKIT_HAS_EXPERIMENTAL_JTHREAD)
+            message(FATAL_ERROR "The Android C++ library must provide std::jthread and std::stop_token.")
+        endif()
+        target_compile_options(zxkit PUBLIC -fexperimental-library)
+        target_link_options(zxkit PUBLIC -fexperimental-library)
+    endif()
+    cmake_pop_check_state()
+    unset(_zxkit_thread_probe)
+endif()
+
 target_include_directories(zxkit
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
