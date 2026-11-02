@@ -263,6 +263,8 @@ if(ZXKIT_INSTALL)
         DESTINATION ${CMAKE_INSTALL_DATADIR}/zxkit/video-filters)
     install(FILES src/video/filters/xbrz/License.txt
         DESTINATION ${CMAKE_INSTALL_DATADIR}/zxkit/video-filters/xbrz)
+    install(FILES LICENSES/ayumi.txt
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/zxkit/licenses)
 
     install(DIRECTORY include/zxkit
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}

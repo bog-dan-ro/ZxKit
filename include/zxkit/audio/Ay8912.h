@@ -31,12 +31,15 @@ enum class AyStereoMode : uint8_t {
     ABC
 };
 
+enum class AyModel : uint8_t { AY8912, YM2149 };
+
 /// Cycle-stepped AY-3-8912 / YM2149 programmable sound generator.
 class Ay8912 {
 public:
+    // Measured AY DAC curve, scaled to the existing mix headroom.
+    // Derived from Ayumi (Peter Sovietov, MIT), see LICENSES/ayumi.txt.
     static constexpr std::array<int16_t, 16> kVolumeLevels = {
-        0, 58, 82, 116, 164, 232, 328, 464,
-        656, 928, 1312, 1855, 2624, 3711, 5248, 7422
+        0, 74, 107, 156, 228, 338, 479, 797, 940, 1521, 2169, 2767, 3656, 4715, 5979, 7422
     };
 
     static constexpr std::array<uint8_t, 16> kRegMasks = {
@@ -58,6 +61,10 @@ public:
     uint8_t readRegister() const noexcept;
     void writeRegister(uint8_t val) noexcept;
 
+    /// Host sound preference, retained across hardware reset and rewind.
+    void setModel(AyModel model) noexcept { m_model = model; m_dirty = true; }
+    AyModel model() const noexcept { return m_model; }
+
     /// Renders `sampleCount` stereo sample pairs into `stereoAccum` (interleaved L, R).
     void renderSamples(std::span<int32_t> stereoAccum,
                        uint32_t sampleRate,
@@ -70,21 +77,44 @@ public:
     void loadState(StateReader &r);
 
 private:
-    void stepInternalTick() noexcept;
+    void updatePeriods() noexcept;
+    void advanceTicks(uint32_t ticks) noexcept;
+    void advanceSilentTicks(uint64_t ticks) noexcept;
+    void stepEnvelope() noexcept;
+    void updateOutput(AyStereoMode mode, uint64_t elapsed, uint64_t phaseScale) noexcept;
+
+    static constexpr std::size_t kFilterLength = 32;
 
     uint8_t m_selectedReg = 0;
     std::array<uint8_t, 16> m_regs{};
     std::array<uint16_t, 3> m_toneCount{};
     std::array<uint8_t, 3> m_toneOut{1, 1, 1};
+    std::array<uint16_t, 3> m_tonePeriod{1, 1, 1};
+    uint8_t m_toneMask = 7;
+    uint8_t m_outputMask = 0;
+    uint8_t m_outputEnvelope = 0;
+    uint8_t m_averagedToneMask = 0;
     uint8_t m_noiseCount = 0;
+    uint8_t m_noisePeriod = 2;
     uint32_t m_noiseRng = 1;
     uint8_t m_noiseOut = 1;
-    uint16_t m_envCount = 0;
+    uint32_t m_envCount = 0;
+    uint16_t m_envPeriod = 1;
     uint8_t m_envStep = 0;
     uint8_t m_envVolume = 0;
     bool m_envHolding = false;
     uint8_t m_envAttack = 0;
-    uint32_t m_phaseAccum = 0;
+    uint64_t m_phaseAccum = 0;
+    AyModel m_model = AyModel::AY8912;
+    AyStereoMode m_lastStereoMode = AyStereoMode::ACB;
+    bool m_dirty = true;
+    int32_t m_left = 0;
+    int32_t m_right = 0;
+    std::array<int32_t, 3> m_channelLeft{};
+    std::array<int32_t, 3> m_channelRight{};
+    std::size_t m_filterIndex = 0;
+    std::array<float, kFilterLength> m_leftTail{};
+    std::array<float, kFilterLength> m_rightTail{};
 };
 
 } // namespace zxkit

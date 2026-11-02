@@ -12,7 +12,10 @@ less disruptive than a crackle or gap in the sound. Clone and extension work sta
       video frames; do not count CPU instruction overshoot twice. Publish audio before video callbacks and expose
       automatic tape turbo to hosts. Regressions cover exact long-run sample counts, waveform partitioning,
       actual CPU frame boundaries and callback ordering. Spectacol's output now bypasses GUI event delivery.
-- [ ] AY: band-limited synthesis (it is point sampled at the output rate: high tones alias); AY vs YM volume tables.
+- [x] AY: band-limited synthesis with a shared sinc step filter and measured AY/YM volume curves.
+      All envelope shapes, YM's 32 steps, long periods, fractional chip clocks, reset and rewind are covered by
+      standalone audio regressions. Spectacol exposes the chip model in Sound settings; physical listening stays
+      on its checklist.
 - [ ] Speaker models (TV speaker, beeper, unfiltered): Spectacol has a "speaker type" setting waiting for them.
 - [ ] Engine: an optional host audio-clock pacing API. Spectacol now corrects device-clock drift with adaptive
       output resampling and plays at other speeds, including turbo; the standalone Engine still uses wall-clock pacing.

@@ -67,6 +67,13 @@ public:
     void setStereoMode(AyStereoMode mode) noexcept { m_stereoMode = mode; }
     AyStereoMode stereoMode() const noexcept { return m_stereoMode; }
 
+    void setAyModel(AyModel model) noexcept
+    {
+        for (auto &ay : m_ayChips)
+            ay.setModel(model);
+    }
+    AyModel ayModel() const noexcept { return m_ayChips.front().model(); }
+
     uint32_t sampleRate() const noexcept { return m_sampleRate; }
 
     /// Finalizes the current video frame's audio and returns interleaved stereo int16 PCM samples.
