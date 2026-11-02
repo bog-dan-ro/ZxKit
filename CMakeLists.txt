@@ -66,6 +66,7 @@ set(ZXKIT_PUBLIC_HEADERS
     include/zxkit/audio/Ay8912.h
     include/zxkit/audio/Beeper.h
     include/zxkit/audio/BlipBuffer.h
+    include/zxkit/audio/SpeakerFilter.h
     include/zxkit/audio/Dac.h
     include/zxkit/input/Joystick.h
     include/zxkit/input/KeyboardMatrix.h
@@ -130,6 +131,7 @@ set(ZXKIT_SOURCES
     src/audio/Ay8912.cpp
     src/audio/Beeper.cpp
     src/audio/BlipBuffer.cpp
+    src/audio/SpeakerFilter.cpp
     src/audio/Dac.cpp
     src/input/Joystick.cpp
     src/input/KeyboardMatrix.cpp

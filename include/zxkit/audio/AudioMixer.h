@@ -21,6 +21,7 @@
 #include "zxkit/audio/Beeper.h"
 #include "zxkit/audio/BlipBuffer.h"
 #include "zxkit/audio/Dac.h"
+#include "zxkit/audio/SpeakerFilter.h"
 #include "zxkit/core/StateStream.h"
 
 #include <array>
@@ -58,6 +59,16 @@ public:
     Beeper &beeper() noexcept { return m_beeper; }
     const Beeper &beeper() const noexcept { return m_beeper; }
 
+    /// Routed ULA/tape writes. Direct writes to left/rightBlip are external audio.
+    void writeBeeper(uint32_t tstate, bool ear, bool mic) noexcept
+    {
+        m_beeper.setPortFeBits(tstate, ear, mic, m_beeperBlip);
+    }
+    void writeTapeEar(uint32_t tstate, bool ear) noexcept
+    {
+        m_beeper.setTapeEar(tstate, ear, m_beeperBlip);
+    }
+
     Dac &dac() noexcept { return m_dac; }
     const Dac &dac() const noexcept { return m_dac; }
 
@@ -73,6 +84,9 @@ public:
             ay.setModel(model);
     }
     AyModel ayModel() const noexcept { return m_ayChips.front().model(); }
+
+    void setSpeakerModel(SpeakerModel model) noexcept { m_speaker.setModel(model); }
+    SpeakerModel speakerModel() const noexcept { return m_speaker.model(); }
 
     uint32_t sampleRate() const noexcept { return m_sampleRate; }
 
@@ -97,9 +111,12 @@ private:
     std::array<Ay8912, kMaxAyChips> m_ayChips;
     BlipBuffer m_leftBlip;
     BlipBuffer m_rightBlip;
+    BlipBuffer m_beeperBlip;
+    SpeakerFilter m_speaker;
 
     std::vector<int32_t> m_leftAccum;
     std::vector<int32_t> m_rightAccum;
+    std::vector<int32_t> m_beeperAccum;
     std::vector<int32_t> m_ayInterleaved;
     std::vector<int16_t> m_outputPcm;
     std::array<std::size_t, kMaxAyChips> m_ayRendered{}; // samples of this frame each AY rendered

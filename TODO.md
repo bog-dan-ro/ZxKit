@@ -16,7 +16,9 @@ less disruptive than a crackle or gap in the sound. Clone and extension work sta
       All envelope shapes, YM's 32 steps, long periods, fractional chip clocks, reset and rewind are covered by
       standalone audio regressions. Spectacol exposes the chip model in Sound settings; physical listening stays
       on its checklist.
-- [ ] Speaker models (TV speaker, beeper, unfiltered): Spectacol has a "speaker type" setting waiting for them.
+- [x] Speaker models: representative TV (ULA/AY), internal beeper (ULA/tape only), and unfiltered responses.
+      External DACs remain direct; runtime changes crossfade, and reset/rewind preserve host preferences and
+      restore filter/edge history. Response, routing and waveform continuity regressions run standalone.
 - [ ] Engine: an optional host audio-clock pacing API. Spectacol now corrects device-clock drift with adaptive
       output resampling and plays at other speeds, including turbo; the standalone Engine still uses wall-clock pacing.
 

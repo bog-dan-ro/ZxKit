@@ -46,17 +46,16 @@ std::size_t BlipBuffer::samplesUntil(uint32_t frameTstate) const noexcept
 void BlipBuffer::clearFrame() noexcept
 {
     std::ranges::fill(m_deltas, 0);
+    m_pendingUntil = 0;
 }
 
 void BlipBuffer::addDelta(uint32_t frameTstate, int32_t delta) noexcept
 {
     if (delta == 0 || m_deltas.empty())
         return;
-    const std::size_t idx = samplesUntil(frameTstate);
-    if (idx < m_deltas.size())
-        m_deltas[idx] += delta;
-    else
-        m_deltas.back() += delta;
+    const std::size_t idx = std::min(samplesUntil(frameTstate), m_deltas.size() - 1);
+    m_deltas[idx] += delta;
+    m_pendingUntil = std::max(m_pendingUntil, idx + 1);
 }
 
 std::size_t BlipBuffer::endFrame(uint32_t frameTstates, std::span<int32_t> accumOut) noexcept
@@ -66,21 +65,50 @@ std::size_t BlipBuffer::endFrame(uint32_t frameTstates, std::span<int32_t> accum
         std::min(m_deltas.size(), accumOut.size()));
 
     int32_t level = m_integrator;
-    for (std::size_t i = 0; i < sampleCount; ++i) {
-        level += m_deltas[i];
-        // High-pass DC blocker (~20 Hz cutoff)
-        level -= (level >> 10);
-        accumOut[i] += level;
+    if (level || m_pendingUntil) {
+        for (std::size_t i = 0; i < sampleCount; ++i) {
+            level += m_deltas[i];
+            // Retain the legacy DC leak (about 7.5 Hz at 48 kHz).
+            level -= (level >> 10);
+            accumOut[i] += level;
+        }
     }
     m_integrator = level;
     m_sampleRemainder = (m_sampleRemainder + static_cast<uint64_t>(frameTstates) * m_sampleRate) % m_clockHz;
     // A write in an instruction that straddles the frame boundary belongs to
     // the next frame. Do not discard its delta or the fractional sample clock.
-    if (sampleCount) {
-        std::move(m_deltas.begin() + sampleCount, m_deltas.end(), m_deltas.begin());
-        std::fill(m_deltas.end() - sampleCount, m_deltas.end(), 0);
+    if (sampleCount && m_pendingUntil) {
+        const std::size_t remaining = m_pendingUntil > sampleCount ? m_pendingUntil - sampleCount : 0;
+        if (remaining)
+            std::move(m_deltas.begin() + sampleCount, m_deltas.begin() + m_pendingUntil, m_deltas.begin());
+        std::fill(m_deltas.begin() + remaining, m_deltas.begin() + m_pendingUntil, 0);
+        m_pendingUntil = remaining;
     }
     return sampleCount;
+}
+
+void BlipBuffer::saveState(StateWriter &writer) const
+{
+    writer.write(m_integrator);
+    writer.write(m_sampleRemainder);
+    writer.write(static_cast<uint32_t>(m_pendingUntil));
+    for (std::size_t i = 0; i < m_pendingUntil; ++i)
+        writer.write(m_deltas[i]);
+}
+
+void BlipBuffer::loadState(StateReader &reader)
+{
+    const auto integrator = reader.read<int32_t>();
+    const auto remainder = reader.read<uint32_t>();
+    const auto pending = reader.read<uint32_t>();
+    if (remainder >= m_clockHz || pending > m_deltas.size())
+        throw FormatException("Invalid audio delta buffer state");
+    clearFrame();
+    m_integrator = integrator;
+    m_sampleRemainder = remainder;
+    m_pendingUntil = pending;
+    for (std::size_t i = 0; i < pending; ++i)
+        m_deltas[i] = reader.read<int32_t>();
 }
 
 } // namespace zxkit

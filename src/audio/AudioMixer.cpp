@@ -19,6 +19,7 @@
 
 #include <algorithm>
 
+
 namespace zxkit {
 
 AudioMixer::AudioMixer()
@@ -33,10 +34,13 @@ void AudioMixer::configure(uint32_t cpuClockHz, uint32_t sampleRate, uint32_t ts
     m_tstatesPerFrame = tstatesPerFrame;
     m_leftBlip.configure(cpuClockHz, sampleRate, tstatesPerFrame);
     m_rightBlip.configure(cpuClockHz, sampleRate, tstatesPerFrame);
+    m_beeperBlip.configure(cpuClockHz, sampleRate, tstatesPerFrame);
+    m_speaker.configure(sampleRate);
 
     const std::size_t maxSamples = (static_cast<std::size_t>(sampleRate) * tstatesPerFrame / cpuClockHz) + 64;
     m_leftAccum.resize(maxSamples, 0);
     m_rightAccum.resize(maxSamples, 0);
+    m_beeperAccum.resize(maxSamples, 0);
     m_ayInterleaved.resize(maxSamples * 2, 0);
     m_outputPcm.resize(maxSamples * 2, 0);
     std::ranges::fill(m_ayInterleaved, 0);
@@ -52,6 +56,8 @@ void AudioMixer::reset() noexcept
     m_activeAyIndex = 0;
     m_leftBlip.reset();
     m_rightBlip.reset();
+    m_beeperBlip.reset();
+    m_speaker.reset();
     std::ranges::fill(m_ayInterleaved, 0);
     m_ayRendered.fill(0);
 }
@@ -88,19 +94,33 @@ std::span<const int16_t> AudioMixer::endFrame(uint32_t frameTstates) noexcept
 {
     std::ranges::fill(m_leftAccum, 0);
     std::ranges::fill(m_rightAccum, 0);
+    std::ranges::fill(m_beeperAccum, 0);
 
     const std::size_t count = m_leftBlip.endFrame(frameTstates, m_leftAccum);
     m_rightBlip.endFrame(frameTstates, m_rightAccum);
+    m_beeperBlip.endFrame(frameTstates, m_beeperAccum);
 
     if (m_ayChipCount > 0 && count > 0) {
         // The AYs rendered up to their last register write already, finish the frame
         for (uint8_t i = 0; i < m_ayChipCount; ++i)
             renderAyUpTo(i, count);
-        for (std::size_t s = 0; s < count; ++s) {
-            m_leftAccum[s]  += m_ayInterleaved[s * 2];
-            m_rightAccum[s] += m_ayInterleaved[s * 2 + 1];
+    }
+    const bool bypass = m_speaker.bypassed();
+    for (std::size_t s = 0; s < count; ++s) {
+        const int32_t ayLeft = m_ayChipCount ? m_ayInterleaved[s * 2] : 0;
+        const int32_t ayRight = m_ayChipCount ? m_ayInterleaved[s * 2 + 1] : 0;
+        if (bypass) {
+            m_outputPcm[s * 2] = static_cast<int16_t>(std::clamp(m_leftAccum[s] + m_beeperAccum[s] + ayLeft, -32768, 32767));
+            m_outputPcm[s * 2 + 1] = static_cast<int16_t>(std::clamp(m_rightAccum[s] + m_beeperAccum[s] + ayRight, -32768, 32767));
+        } else {
+            const auto filtered = m_speaker.process(m_beeperAccum[s], ayLeft, ayRight);
+            const double left = std::clamp(m_leftAccum[s] + filtered.left, -32768., 32767.);
+            const double right = std::clamp(m_rightAccum[s] + filtered.right, -32768., 32767.);
+            m_outputPcm[s * 2] = static_cast<int16_t>(left + (left >= 0 ? .5 : -.5));
+            m_outputPcm[s * 2 + 1] = static_cast<int16_t>(right + (right >= 0 ? .5 : -.5));
         }
     }
+
     // AY writes in the last CPU instruction may render beyond the nominal
     // frame boundary. Carry those samples forward just like the delta buffers.
     if (count * 2) {
@@ -109,11 +129,6 @@ std::span<const int16_t> AudioMixer::endFrame(uint32_t frameTstates) noexcept
     }
     for (auto &rendered : m_ayRendered)
         rendered = rendered > count ? rendered - count : 0;
-
-    for (std::size_t s = 0; s < count; ++s) {
-        m_outputPcm[s * 2]     = static_cast<int16_t>(std::clamp(m_leftAccum[s], -32768, 32767));
-        m_outputPcm[s * 2 + 1] = static_cast<int16_t>(std::clamp(m_rightAccum[s], -32768, 32767));
-    }
 
     return std::span<const int16_t>(m_outputPcm.data(), count * 2);
 }
@@ -126,6 +141,17 @@ void AudioMixer::saveState(StateWriter &w) const
     w.write(m_activeAyIndex);
     for (const auto &ay : m_ayChips)
         ay.saveState(w);
+    m_leftBlip.saveState(w);
+    m_rightBlip.saveState(w);
+    m_beeperBlip.saveState(w);
+    m_speaker.saveState(w);
+    std::size_t pending = 0;
+    for (auto rendered : m_ayRendered) {
+        w.write(static_cast<uint32_t>(rendered));
+        pending = std::max(pending, rendered);
+    }
+    for (std::size_t i = 0; i < pending * 2; ++i)
+        w.write(m_ayInterleaved[i]);
 }
 
 void AudioMixer::loadState(StateReader &r)
@@ -134,8 +160,24 @@ void AudioMixer::loadState(StateReader &r)
     m_dac.loadState(r);
     m_ayChipCount   = r.read<uint8_t>();
     m_activeAyIndex = r.read<uint8_t>();
+    if (m_ayChipCount > kMaxAyChips || m_activeAyIndex >= kMaxAyChips)
+        throw FormatException("Invalid AY chip state");
     for (auto &ay : m_ayChips)
         ay.loadState(r);
+    m_leftBlip.loadState(r);
+    m_rightBlip.loadState(r);
+    m_beeperBlip.loadState(r);
+    m_speaker.loadState(r);
+    std::size_t pending = 0;
+    for (auto &rendered : m_ayRendered) {
+        rendered = r.read<uint32_t>();
+        if (rendered > m_ayInterleaved.size() / 2)
+            throw FormatException("Invalid AY audio tail state");
+        pending = std::max(pending, rendered);
+    }
+    std::ranges::fill(m_ayInterleaved, 0);
+    for (std::size_t i = 0; i < pending * 2; ++i)
+        m_ayInterleaved[i] = r.read<int32_t>();
 }
 
 } // namespace zxkit

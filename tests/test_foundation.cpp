@@ -183,7 +183,7 @@ void testContinuousAudioClock()
             samples += mixer.endFrame(frame).size() / 2;
             assert(samples == uint64_t(n) * frame * 48'000 / clock);
         }
-        mixer.beeper().setPortFeBits(0, true, false, mixer.leftBlip(), mixer.rightBlip());
+        mixer.writeBeeper(0, true, false);
         mixer.endFrame(frame);
         mixer.reset();
         for (const auto sample : mixer.endFrame(frame))

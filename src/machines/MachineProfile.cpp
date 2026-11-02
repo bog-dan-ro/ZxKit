@@ -146,9 +146,7 @@ void MachineProfile::registerStandardUlaPort(MachineContext &ctx, UlaRenderer &u
             ula.setBorderColor(val & 0x07);
             const bool ear = (val & 0x10) != 0;
             const bool mic = (val & 0x08) != 0;
-            ctx.audioMixer.beeper().setPortFeBits(
-                ctx.clock.frameBaseTstates(), ear, mic,
-                ctx.audioMixer.leftBlip(), ctx.audioMixer.rightBlip());
+            ctx.audioMixer.writeBeeper(ctx.clock.frameBaseTstates(), ear, mic);
         });
 }
 

@@ -51,6 +51,7 @@
 #include "zxkit/audio/Beeper.h"
 #include "zxkit/audio/BlipBuffer.h"
 #include "zxkit/audio/Dac.h"
+#include "zxkit/audio/SpeakerFilter.h"
 
 #include "zxkit/input/Joystick.h"
 #include "zxkit/input/KeyboardMatrix.h"

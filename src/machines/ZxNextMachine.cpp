@@ -103,8 +103,7 @@ void ZxNextMachine::initialize(MachineContext &ctx, UlaRenderer &ula)
         [&ctx, &ula](uint16_t, uint8_t value) {
             ctx.tape.update(ctx);
             ula.setBorderColor(value & 7);
-            ctx.audioMixer.beeper().setPortFeBits(ctx.clock.frameBaseTstates(), value & 0x10, value & 8,
-                                                  ctx.audioMixer.leftBlip(), ctx.audioMixer.rightBlip());
+            ctx.audioMixer.writeBeeper(ctx.clock.frameBaseTstates(), value & 0x10, value & 8);
         });
     registerStandardAyPorts(ctx);
 

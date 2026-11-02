@@ -430,7 +430,7 @@ void TapeDeck::setLevel(bool level, uint64_t at, MachineContext &ctx) noexcept
     const uint64_t behind = (now > at ? now - at : 0) / ctx.clock.speedMultiplier();
     const uint32_t frameTs = ctx.clock.frameBaseTstates();
     const uint32_t ts = behind >= frameTs ? 0 : frameTs - static_cast<uint32_t>(behind);
-    ctx.audioMixer.beeper().setTapeEar(ts, sound, ctx.audioMixer.leftBlip(), ctx.audioMixer.rightBlip());
+    ctx.audioMixer.writeTapeEar(ts, sound);
 }
 
 void TapeDeck::startTimeline(MachineContext &ctx)

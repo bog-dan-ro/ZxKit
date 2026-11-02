@@ -33,6 +33,8 @@ public:
 
     void setPortFeBits(uint32_t frameTstate, bool ear, bool mic, BlipBuffer &left, BlipBuffer &right) noexcept;
     void setTapeEar(uint32_t frameTstate, bool tapeEar, BlipBuffer &left, BlipBuffer &right) noexcept;
+    void setPortFeBits(uint32_t frameTstate, bool ear, bool mic, BlipBuffer &mono) noexcept;
+    void setTapeEar(uint32_t frameTstate, bool tapeEar, BlipBuffer &mono) noexcept;
 
     bool earBit() const noexcept { return m_earBit; }
     bool micBit() const noexcept { return m_micBit; }
@@ -42,7 +44,7 @@ public:
     void loadState(StateReader &r);
 
 private:
-    void updateAmplitude(uint32_t frameTstate, BlipBuffer &left, BlipBuffer &right) noexcept;
+    int32_t amplitudeDelta() noexcept;
 
     bool m_earBit = false;
     bool m_micBit = false;

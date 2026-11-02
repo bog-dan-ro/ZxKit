@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include "zxkit/core/StateStream.h"
+
 #include <cstdint>
 #include <span>
 #include <vector>
@@ -34,6 +36,8 @@ public:
     std::size_t samplesUntil(uint32_t frameTstate) const noexcept;
     void addDelta(uint32_t frameTstate, int32_t delta) noexcept;
     std::size_t endFrame(uint32_t frameTstates, std::span<int32_t> accumOut) noexcept;
+    void saveState(StateWriter &writer) const;
+    void loadState(StateReader &reader);
 
 private:
     uint32_t m_clockHz = 3'500'000;
@@ -42,6 +46,7 @@ private:
     int32_t m_integrator = 0;
     uint32_t m_sampleRemainder = 0;
     std::vector<int32_t> m_deltas;
+    std::size_t m_pendingUntil = 0;
 };
 
 } // namespace zxkit

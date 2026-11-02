@@ -311,6 +311,152 @@ void testSilentAdvancement()
         assert(std::all_of(tail.begin() + 64, tail.end(), [](auto value) { return value == 0; }));
     }
 }
+void testSpeakerResponses()
+{
+    for (uint32_t rate : {44100u, 48000u, 96000u}) {
+        const auto gain = [rate](SpeakerModel model, double hz, bool ay) {
+            SpeakerFilter filter;
+            filter.setModel(model);
+            filter.configure(rate);
+            double energy = 0;
+            for (uint32_t i = 0; i < rate; ++i) {
+                const double sample = 5000 * std::sin(2 * 3.141592653589793 * hz * i / rate);
+                const auto output = filter.process(ay ? 0 : sample, ay ? sample : 0, 0);
+                if (ay)
+                    assert(output.right == 0);
+                if (i >= rate / 2)
+                    energy += output.left * output.left;
+            }
+            return std::sqrt(energy / (rate / 2)) / (5000 / std::sqrt(2.));
+        };
+        const double tvLow = gain(SpeakerModel::TV, 30, true);
+        const double tvMid = gain(SpeakerModel::TV, 1000, true);
+        const double tvHigh = gain(SpeakerModel::TV, 18000, true);
+        const double beeperLow = gain(SpeakerModel::Beeper, 50, false);
+        const double beeperMid = gain(SpeakerModel::Beeper, 1500, false);
+        const double beeperHigh = gain(SpeakerModel::Beeper, 18000, false);
+        std::printf("Speaker %u Hz: TV %.3f/%.3f/%.3f, beeper %.3f/%.3f/%.3f\n",
+                    rate, tvLow, tvMid, tvHigh, beeperLow, beeperMid, beeperHigh);
+        assert(tvLow < .35 && tvMid > .9 && tvMid < 1.05 && tvHigh < .8);
+        assert(beeperLow < .01 && beeperMid > .65 && beeperHigh < .4);
+        assert(std::abs(gain(SpeakerModel::Beeper, 1000, true) - 1) < 1e-5);
+        assert(std::abs(gain(SpeakerModel::Unfiltered, 1000, false) - 1) < 1e-5);
+    }
+}
+
+void testSpeakerTransitionsAndState()
+{
+    SpeakerFilter filter;
+    filter.configure(48000);
+    assert(filter.bypassed());
+    assert(filter.process(0, 1000, -1000).left == 1000);
+    filter.setModel(SpeakerModel::TV);
+    assert(!filter.bypassed());
+    double previous = 1000;
+    for (int i = 0; i < 480; ++i) {
+        // Rapid changes are deferred until the current crossfade finishes.
+        if (i == 50) filter.setModel(SpeakerModel::Unfiltered);
+        if (i == 100) filter.setModel(SpeakerModel::Beeper);
+        const auto output = filter.process(0, 1000, -1000);
+        assert(std::abs(output.left - previous) <= 5);
+        assert(output.right == -output.left);
+        previous = output.left;
+    }
+    assert(previous == 1000);
+    filter.setModel(SpeakerModel::TV);
+    for (int i = 0; i < 47; ++i)
+        filter.process(i % 2 ? 4096 : -4096, i * 3, -i * 3);
+    StateWriter state;
+    filter.saveState(state);
+    std::vector<SpeakerFilter::Stereo> expected;
+    for (int i = 0; i < 1000; ++i)
+        expected.push_back(filter.process(i % 2 ? 4096 : -4096, i * 3, -i * 3));
+    StateReader reader(state.data());
+    filter.loadState(reader);
+    assert(reader.remaining() == 0);
+    for (int i = 0; i < 1000; ++i) {
+        const auto actual = filter.process(i % 2 ? 4096 : -4096, i * 3, -i * 3);
+        assert(actual.left == expected[i].left && actual.right == expected[i].right);
+    }
+    filter.reset();
+    assert(filter.model() == SpeakerModel::TV);
+    for (int i = 0; i < 20000; ++i) {
+        const auto quiet = filter.process(1000, 500, 500);
+        assert(quiet.left == 0 && quiet.right == 0); // constant DC never excites a reset filter
+    }
+    filter.setModel(SpeakerModel::Unfiltered);
+    StateReader differentPreference(state.data());
+    filter.loadState(differentPreference);
+    assert(filter.model() == SpeakerModel::Unfiltered && filter.bypassed());
+}
+
+void testSpeakerRoutingAndMixerState()
+{
+    for (auto model : {SpeakerModel::Unfiltered, SpeakerModel::TV, SpeakerModel::Beeper}) {
+        AudioMixer split, joined;
+        for (auto *mixer : {&split, &joined}) {
+            mixer->setAyChipCount(0);
+            mixer->setSpeakerModel(model);
+            mixer->reset();
+            mixer->writeBeeper(0, true, false);
+            mixer->writeBeeper(50000, false, false);
+            mixer->writeTapeEar(69950, true);
+        }
+        std::vector<int16_t> actual;
+        for (uint32_t length : {69888u, 1000u}) {
+            const auto pcm = split.endFrame(length);
+            actual.insert(actual.end(), pcm.begin(), pcm.end());
+        }
+        assert(std::ranges::equal(actual, joined.endFrame(70888)));
+    }
+    // External DACs stay direct for every speaker choice, including stereo.
+    std::vector<int16_t> reference;
+    for (auto model : {SpeakerModel::Unfiltered, SpeakerModel::TV, SpeakerModel::Beeper}) {
+        AudioMixer mixer;
+        mixer.setAyChipCount(0);
+        mixer.setSpeakerModel(model);
+        mixer.reset();
+        mixer.dac().writeChannel(0, 0, 200, mixer.leftBlip(), mixer.rightBlip());
+        mixer.dac().writeChannel(10000, 2, 40, mixer.leftBlip(), mixer.rightBlip());
+        const auto pcm = mixer.endFrame(69888);
+        if (reference.empty()) reference.assign(pcm.begin(), pcm.end());
+        else assert(std::ranges::equal(pcm, reference));
+    }
+    for (auto model : {SpeakerModel::Unfiltered, SpeakerModel::TV, SpeakerModel::Beeper}) {
+        AudioMixer mixer;
+        mixer.setSpeakerModel(model);
+        mixer.reset();
+        tone(mixer.activeAy(), 113);
+        mixer.writeBeeper(0, true, false);
+        mixer.writeBeeper(12345, false, true);
+        mixer.writeTapeEar(45678, true);
+        mixer.dac().writeMono(50000, 180, mixer.leftBlip(), mixer.rightBlip());
+        // AY and ULA writes straddling the video boundary leave pending samples.
+        mixer.activeAy().selectRegister(8);
+        mixer.writeAyRegister(69950, 13);
+        mixer.writeBeeper(69950, true, true);
+        mixer.endFrame(69888);
+        StateWriter state;
+        mixer.saveState(state);
+        const auto continuation = mixer.endFrame(69888);
+        std::vector<int16_t> expected(continuation.begin(), continuation.end());
+        StateReader reader(state.data());
+        mixer.loadState(reader);
+        assert(reader.remaining() == 0);
+        assert(std::ranges::equal(mixer.endFrame(69888), expected));
+        mixer.reset();
+        assert(mixer.speakerModel() == model);
+        for (const auto sample : mixer.endFrame(69888)) assert(sample == 0);
+    }
+    // An inactive AY cannot leak through a selected speaker route.
+    AudioMixer disabled;
+    disabled.setAyChipCount(0);
+    write(disabled.activeAy(), 7, 0x3f);
+    disabled.activeAy().selectRegister(8);
+    disabled.writeAyRegister(30000, 15);
+    for (auto sample : disabled.endFrame(69888)) assert(sample == 0);
+}
+
 void testWritesAndHeadroom()
 {
     AudioMixer mixer;
@@ -354,5 +500,8 @@ int main()
     testUltrasonicEnvelopeModulation();
     testSilentAdvancement();
     testWritesAndHeadroom();
+    testSpeakerResponses();
+    testSpeakerTransitionsAndState();
+    testSpeakerRoutingAndMixerState();
     std::puts("AY synthesis regressions passed");
 }

@@ -31,13 +31,30 @@ void Beeper::setPortFeBits(uint32_t frameTstate, bool ear, bool mic, BlipBuffer 
 {
     m_earBit = ear;
     m_micBit = mic;
-    updateAmplitude(frameTstate, left, right);
+    const auto delta = amplitudeDelta();
+    left.addDelta(frameTstate, delta);
+    right.addDelta(frameTstate, delta);
 }
 
 void Beeper::setTapeEar(uint32_t frameTstate, bool tapeEar, BlipBuffer &left, BlipBuffer &right) noexcept
 {
     m_tapeEarBit = tapeEar;
-    updateAmplitude(frameTstate, left, right);
+    const auto delta = amplitudeDelta();
+    left.addDelta(frameTstate, delta);
+    right.addDelta(frameTstate, delta);
+}
+
+void Beeper::setPortFeBits(uint32_t frameTstate, bool ear, bool mic, BlipBuffer &mono) noexcept
+{
+    m_earBit = ear;
+    m_micBit = mic;
+    mono.addDelta(frameTstate, amplitudeDelta());
+}
+
+void Beeper::setTapeEar(uint32_t frameTstate, bool tapeEar, BlipBuffer &mono) noexcept
+{
+    m_tapeEarBit = tapeEar;
+    mono.addDelta(frameTstate, amplitudeDelta());
 }
 
 void Beeper::saveState(StateWriter &w) const
@@ -56,7 +73,7 @@ void Beeper::loadState(StateReader &r)
     m_lastAmplitude = r.read<int32_t>();
 }
 
-void Beeper::updateAmplitude(uint32_t frameTstate, BlipBuffer &left, BlipBuffer &right) noexcept
+int32_t Beeper::amplitudeDelta() noexcept
 {
     int32_t amp = 0;
     if (m_earBit || m_tapeEarBit)
@@ -65,11 +82,8 @@ void Beeper::updateAmplitude(uint32_t frameTstate, BlipBuffer &left, BlipBuffer 
         amp += kMicVolume;
 
     const int32_t delta = amp - m_lastAmplitude;
-    if (delta != 0) {
-        left.addDelta(frameTstate, delta);
-        right.addDelta(frameTstate, delta);
-        m_lastAmplitude = amp;
-    }
+    m_lastAmplitude = amp;
+    return delta;
 }
 
 } // namespace zxkit
