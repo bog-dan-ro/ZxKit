@@ -43,6 +43,26 @@ enum class ZxKey : uint8_t {
     Ctrl = 0x05, NoScroll = 0x15, LineFeed = 0x25, Esc = 0x35, F1 = 0x45, F2 = 0x55, F3 = 0x65, F4 = 0x75
 };
 
+/// Bit positions of NextREG B0/B1, active high and independent of the 8x5 matrix.
+enum class NextKey : uint8_t {
+    Right,
+    Left,
+    Down,
+    Up,
+    Period,
+    Comma,
+    Quote,
+    Semicolon,
+    Extend,
+    CapsLock,
+    Graph,
+    TrueVideo,
+    InvVideo,
+    Break,
+    Edit,
+    Delete
+};
+
 class KeyboardMatrix {
 public:
     KeyboardMatrix();

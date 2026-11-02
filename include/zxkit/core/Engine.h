@@ -44,6 +44,15 @@ struct EngineConfig {
     /// Runs as fast as possible (fast forward), whatever the speed.
     bool turbo = false;
     EngineCallbacks callbacks;
+    /// Optional host services owned by the emulation thread. Called with the
+    /// emulator locked; use the supplied reference, never acquire its lock again.
+    /// Construct thread-affine objects in started, destroy them in stopped.
+    /// poll runs once per frame (also on refresh while paused), never per opcode.
+    struct ThreadHooks {
+        std::function<void(Emulator &)> started;
+        std::function<void(Emulator &)> poll;
+        std::function<void(Emulator &)> stopped;
+    } threadHooks;
 };
 
 /// Runs an `Emulator` in real time on its own thread.
@@ -113,6 +122,7 @@ private:
 
     Shared<Emulator> m_emulator;
     Shared<EngineCallbacks> m_callbacks;
+    EngineConfig::ThreadHooks m_threadHooks;
     std::atomic<uint32_t> m_state{0};
     std::atomic<uint32_t> m_speedPercent{100};
     std::jthread m_thread; // last: it starts after everything else is ready

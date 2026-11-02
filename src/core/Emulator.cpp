@@ -16,6 +16,7 @@
 */
 
 #include "zxkit/core/Emulator.h"
+#include "zxkit/machines/ZxNextMachine.h"
 
 #include "zxkit/core/Exception.h"
 #include "zxkit/debug/Assembler.h"
@@ -331,6 +332,17 @@ void Emulator::reset(ResetKind kind)
 void Emulator::triggerNmi() noexcept
 {
     m_cpu.requestNmi();
+}
+
+void Emulator::setNextKeyState(NextKey key, bool pressed) noexcept
+{
+    if (m_machine->id() == "next")
+        static_cast<ZxNextMachine &>(*m_machine).setExtendedKey(key, pressed);
+}
+
+bool Emulator::triggerNextNmi(bool multiface)
+{
+    return m_machine->id() == "next" && static_cast<ZxNextMachine &>(*m_machine).requestNmi(m_context, multiface);
 }
 
 void Emulator::setKeyState(ZxKey key, bool pressed) noexcept

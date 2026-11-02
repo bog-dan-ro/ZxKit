@@ -124,6 +124,8 @@ public:
     void reset(ResetKind kind = ResetKind::Soft);
     void triggerNmi() noexcept;
     void setKeyState(ZxKey key, bool pressed) noexcept;
+    void setNextKeyState(NextKey key, bool pressed) noexcept;
+    bool triggerNextNmi(bool multiface);
 
     // ── Running ───────────────────────────────────────────────────────────
     /// Runs the CPU to the end of the current scanline. Frames are resumable: after a

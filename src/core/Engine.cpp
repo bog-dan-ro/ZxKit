@@ -34,10 +34,10 @@ Engine::Engine(EmulatorConfig emulatorConfig, EngineConfig config)
 {}
 
 Engine::Engine(Shared<Emulator> emulator, EngineConfig config)
-    : m_emulator(std::move(emulator))
-    , m_callbacks(makeShared<EngineCallbacks>(std::move(config.callbacks)))
-    , m_state((config.startPaused ? kPaused : 0u) | (config.turbo ? kTurbo : 0u))
-    , m_speedPercent(std::max(config.speedPercent, 1u))
+    : m_emulator(std::move(emulator)), m_callbacks(makeShared<EngineCallbacks>(std::move(config.callbacks))),
+      m_threadHooks(std::move(config.threadHooks)),
+      m_state((config.startPaused ? kPaused : 0u) | (config.turbo ? kTurbo : 0u)),
+      m_speedPercent(std::max(config.speedPercent, 1u))
 {
     if (!m_emulator)
         throw InvalidArgumentException("An Engine needs an Emulator");
@@ -156,10 +156,25 @@ void Engine::run()
     std::vector<int16_t> audio;
     MediaActivity lastActivity;
 
+    const auto service = [this](const std::function<void(Emulator &)> &hook) {
+        if (!hook)
+            return;
+        try {
+            hook(*m_emulator.writeLock());
+        } catch (const std::exception &e) {
+            notify(&EngineCallbacks::log, LogLevel::Error, std::string_view(e.what()));
+        } catch (...) {
+            notify(&EngineCallbacks::log, LogLevel::Error, std::string_view("Host service failed"));
+        }
+    };
+    service(m_threadHooks.started);
+
     for (;;) {
         const uint32_t state = m_state.load(std::memory_order_acquire);
         if (state & kStop)
             break;
+
+        service(m_threadHooks.poll);
 
         if (state & kPaused) {
             if (!pauseReported) {
@@ -258,6 +273,7 @@ void Engine::run()
         else if (now - deadline > frameDuration * 4)
             deadline = now; // too far behind (e.g. the host held the lock): don't try to catch up
     }
+    service(m_threadHooks.stopped);
 }
 
 } // namespace zxkit

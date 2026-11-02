@@ -20,6 +20,7 @@
 #include "zxkit/audio/AudioMixer.h"
 #include "zxkit/cpu/Z80Cpu.h"
 #include "zxkit/machines/SinclairMachines.h"
+#include "zxkit/media/TapeDeck.h"
 #include "zxkit/peripherals/storage/FatVolume.h"
 #include "zxkit/peripherals/storage/SdCard.h"
 
@@ -77,16 +78,40 @@ void ZxNextMachine::initialize(MachineContext &ctx, UlaRenderer &ula)
     m_altRomBank = ctx.mmu.registerBank("altrom", 2 * 16 * 1024, true, true);
     m_divRomBank = ctx.mmu.registerBank("divmmc_rom", 8 * 1024, false, false);
     m_divRamBank = ctx.mmu.registerBank("divmmc_ram", 16 * 8 * 1024, true, true);
+    m_mfRomBank = ctx.mmu.registerBank("next_mf_rom", 8 * 1024, false, false);
+    m_mfRamBank = ctx.mmu.registerBank("next_mf_ram", 8 * 1024, true, true);
     loadRoms(ctx);
 
     ctx.cpu.setZ80nEnabled(true);
     ctx.audioMixer.setAyChipCount(3);
-    registerStandardUlaPort(ctx, ula);
+    // Keep the classic machine's hot keyboard path unchanged. Next extended
+    // keys add their cached matrix only when NR68 bit 4 allows it.
+    ctx.ioBus.registerHandler(
+        "next_ula", 1, 0,
+        [this, &ctx](uint16_t port) -> IoReadResult {
+            const auto row = uint8_t(port >> 8);
+            uint8_t keys = ctx.keyboard.readRows(row);
+            if (!(m_nextReg.peek(0x68) & 0x10) && m_extendedKeys) {
+                for (unsigned i = 0; i < 8; ++i)
+                    if (!(row & (1u << i)))
+                        keys &= m_extendedRows[i];
+            }
+            const bool tape = ctx.tape.readEar(ctx);
+            const uint8_t ear = ctx.audioMixer.beeper().earBit() != tape ? 0x40 : 0;
+            return {uint8_t(0xA0 | ear | (keys & 0x1F)), 0xFF};
+        },
+        [&ctx, &ula](uint16_t, uint8_t value) {
+            ctx.tape.update(ctx);
+            ula.setBorderColor(value & 7);
+            ctx.audioMixer.beeper().setPortFeBits(ctx.clock.frameBaseTstates(), value & 0x10, value & 8,
+                                                  ctx.audioMixer.leftBlip(), ctx.audioMixer.rightBlip());
+        });
     registerStandardAyPorts(ctx);
 
     wireNextRegs(ctx, ula);
     wirePorts(ctx, ula);
     wireDivMmc(ctx);
+    wireMultiface(ctx, ula);
 }
 
 void ZxNextMachine::loadRoms(MachineContext &ctx)
@@ -99,7 +124,7 @@ void ZxNextMachine::loadRoms(MachineContext &ctx)
             return ctx.sdCard.readBlock(lba, out);
         });
     }
-    const auto load = [&](std::string_view name, std::size_t size) -> std::vector<uint8_t> {
+    const auto load = [&](std::string_view name, std::size_t size, bool optional = false) -> std::vector<uint8_t> {
         if (fat) {
             if (auto data = fat->readFile(std::format("/machines/next/{}", name)); data && data->size() == size)
                 return std::move(*data);
@@ -108,7 +133,7 @@ void ZxNextMachine::loadRoms(MachineContext &ctx)
             if (auto data = ctx.romResolver(name, size); data.size() == size)
                 return data;
         }
-        if (fat || ctx.romResolver)
+        if (!optional && (fat || ctx.romResolver))
             throw RomMissingException(std::format("The ZX Spectrum Next needs '{}': insert a NextZXOS SD card image", name));
         return {};
     };
@@ -117,6 +142,8 @@ void ZxNextMachine::loadRoms(MachineContext &ctx)
         ctx.mmu.bank(m_romBank).loadData(0, rom);
     if (auto rom = load("enNxtmmc.rom", 8 * 1024); !rom.empty())
         ctx.mmu.bank(m_divRomBank).loadData(0, rom);
+    if (auto rom = load("enNextMf.rom", 8 * 1024, true); !rom.empty())
+        ctx.mmu.bank(m_mfRomBank).loadData(0, rom);
     // NextZXOS calls into the alt ROM while it boots
     if (auto rom = load("enAltZX.rom", 32 * 1024); !rom.empty())
         ctx.mmu.bank(m_altRomBank).loadData(0, rom);
@@ -155,7 +182,32 @@ void ZxNextMachine::wireNextRegs(MachineContext &ctx, UlaRenderer &ula)
             scheduleReset(ctx, ula, ResetKind::Hard);
         else if (val & 0x01)
             scheduleReset(ctx, ula, ResetKind::Soft);
+        else {
+            const auto old = m_resetType;
+            m_resetType = uint8_t((m_resetType & 3) | (val & 0x8C));
+            if ((val & 0x80) && !(old & 0x80))
+                m_uart.reset(false);
+            if ((val & 8) && !(old & 8))
+                requestNmi(ctx, true, false);
+            else if ((val & 4) && !(old & 4))
+                requestNmi(ctx, false, false);
+        }
     });
+
+    m_nextReg.setReadHandler(0xB0, [this](uint8_t, uint8_t) { return uint8_t(m_extendedKeys); });
+    m_nextReg.setReadHandler(0xB1, [this](uint8_t, uint8_t) { return uint8_t(m_extendedKeys >> 8); });
+    for (uint8_t reg : {0x2C, 0x2D, 0x2E}) {
+        // Reads are I2S from the Pi, silent when there is no I2S endpoint.
+        m_nextReg.setReadHandler(reg, [](uint8_t, uint8_t) -> uint8_t { return 0; });
+        m_nextReg.setWriteHandler(reg, [&ctx, reg](uint8_t, uint8_t value) {
+            auto &mixer = ctx.audioMixer;
+            const unsigned mask = reg == 0x2C ? 2 : reg == 0x2D ? 9 : 4;
+            for (unsigned ch = 0; ch < 4; ++ch)
+                if (mask & (1u << ch))
+                    mixer.dac().writeChannel(ctx.clock.frameBaseTstates(), ch, value, mixer.leftBlip(),
+                                             mixer.rightBlip());
+        });
+    }
 
     // NR 0x03: machine type (only changeable in config mode) and display timing
     m_nextReg.setReadHandler(0x03, [this](uint8_t, uint8_t) -> uint8_t {
@@ -197,7 +249,15 @@ void ZxNextMachine::wireNextRegs(MachineContext &ctx, UlaRenderer &ula)
 
     // DivMMC automap enable (NR 0x0A bit 4) and port enables (NR 0x83 bit 0)
     m_nextReg.setWriteHandler(0x0A, [this, &ctx](uint8_t, uint8_t) { updateDivMmc(ctx); });
-    m_nextReg.setWriteHandler(0x83, [this, &ctx](uint8_t, uint8_t) { updateDivMmc(ctx); });
+    m_nextReg.setWriteHandler(0x83, [this, &ctx](uint8_t, uint8_t value) {
+        updateDivMmc(ctx);
+        if (!(value & 2)) {
+            m_mfActive = m_mfMapped = m_mfAwaitingEntry = false;
+            m_mfInvisible = true;
+            ctx.romcs.setActive("next_multiface", false);
+            ctx.cpu.removeHooks("next_multiface_entry");
+        }
+    });
 
     // Raster line
     m_nextReg.setReadHandler(0x1E, [&ctx](uint8_t, uint8_t) -> uint8_t { return (ctx.clock.rasterPos().line >> 8) & 0x01; });
@@ -396,15 +456,59 @@ void ZxNextMachine::wirePorts(MachineContext &ctx, UlaRenderer &ula)
             [this, ch](uint16_t, uint8_t val) { m_ctc.writeChannel(ch, val); });
     }
 
-    // SpecDrum / Soundrive DAC ports (0xDF mono, 0x1F/0x0F/0x4F/0x5F)
+    // DAC aliases and decode precedence follow zxnext.vhd port_dac_A..D.
     ctx.ioBus.registerSimpleHandler(
-        "next_dac_df",
-        0x00FF,
-        0x00DF,
-        nullptr,
-        [&ctx](uint16_t, uint8_t val) {
-            ctx.audioMixer.dac().writeMono(ctx.clock.frameBaseTstates(), val,
-                                           ctx.audioMixer.leftBlip(), ctx.audioMixer.rightBlip());
+        "next_dacs", 1, 1, nullptr,
+        [this, &ctx](uint16_t address, uint8_t value) {
+            const uint8_t port = uint8_t(address);
+            const uint8_t en = m_nextReg.peek(0x84);
+            unsigned mask = 0;
+            if ((port == 0xDF && (en & 0x80)) || (port == 0xFB && (en & 0x20) && !(en & 4)))
+                mask = 9;
+            if (port == 0xB3 && (en & 0x40))
+                mask = 6;
+            if ((port == 0x1F && (en & 2)) || (port == 0xF1 && (en & 4)) || (port == 0x3F && (en & 8)))
+                mask |= 1;
+            if ((port == 0x0F && (en & 0x12)) || (port == 0xF3 && (en & 4)))
+                mask |= 2;
+            if ((port == 0x4F && (en & 0x12)) || (port == 0xF9 && (en & 4)))
+                mask |= 4;
+            if ((port == 0x5F && (en & 0x0A)) || (port == 0xFB && (en & 4)))
+                mask |= 8;
+            if (!mask) {
+                ctx.ioBus.declineWrite();
+                return;
+            }
+            if (m_nextReg.peek(0x08) & 8)
+                for (unsigned ch = 0; ch < 4; ++ch)
+                    if (mask & (1u << ch))
+                        ctx.audioMixer.dac().writeChannel(ctx.clock.frameBaseTstates(), ch, value,
+                                                          ctx.audioMixer.leftBlip(), ctx.audioMixer.rightBlip());
+            if (port != 0xF1 && port != 0xF9)
+                ctx.ioBus.declineWrite();
+        },
+        100, true);
+
+    // One decoded group avoids adding six entries to every guest I/O scan.
+    ctx.ioBus.registerHandler(
+        "next_serial", 0xF8FF, 0x103B,
+        [this, &ctx](uint16_t port) -> IoReadResult {
+            if (port == 0x103B || port == 0x113B) {
+                if (!(m_nextReg.peek(0x83) & 4))
+                    return {0xFF, 0};
+                return {uint8_t(0xFE | (port == 0x103B ? m_rtc.scl() : m_rtc.sda())), 0xFF};
+            }
+            if (port >= 0x133B && port <= 0x163B && (m_nextReg.peek(0x83) & 0x10))
+                return {m_uart.read(port, uartTime(ctx)), 0xFF};
+            return {0xFF, 0};
+        },
+        [this, &ctx](uint16_t port, uint8_t value) {
+            if ((port == 0x103B || port == 0x113B) && (m_nextReg.peek(0x83) & 4)) {
+                port == 0x103B ? m_rtc.setScl(value & 1) : m_rtc.setSda(value & 1);
+            } else if (port >= 0x133B && port <= 0x163B && (m_nextReg.peek(0x83) & 0x10)) {
+                m_uart.write(port, value, uartTime(ctx));
+            } else
+                ctx.ioBus.declineWrite();
         });
 
     // Built-in joystick ports (Kempston / Mega Drive 1 on 0x1F, 2 on 0x37):
@@ -449,6 +553,169 @@ bool ZxNextMachine::isSdCardSelected() const noexcept
     // SD0 is selected by bits 1:0 = 10 (NR 0x0A bit 5 swaps the two card slots)
     const uint8_t sd0 = (m_nextReg.peek(0x0A) & 0x20) ? 0x01 : 0x02;
     return (m_spiCs & 0x03) == sd0;
+}
+
+uint64_t ZxNextMachine::uartTime(const MachineContext &ctx) const noexcept
+{
+    return ctx.clock.frameCount() * uint64_t(ctx.clock.timings().tstatesPerFrame()) + ctx.clock.frameBaseTstates();
+}
+
+void ZxNextMachine::setExtendedKey(NextKey key, bool pressed) noexcept
+{
+    const unsigned bit = unsigned(key);
+    if (bit >= 16)
+        return;
+    if (pressed)
+        m_extendedKeys |= uint16_t(1u << bit);
+    else
+        m_extendedKeys &= uint16_t(~(1u << bit));
+    rebuildExtendedMatrix();
+}
+
+void ZxNextMachine::rebuildExtendedMatrix() noexcept
+{
+    m_extendedRows.fill(0x1F);
+    using K = ZxKey;
+    static constexpr std::array<std::pair<K, K>, 16> keys{{{K::CapsShift, K::Num8},
+                                                           {K::CapsShift, K::Num5},
+                                                           {K::CapsShift, K::Num6},
+                                                           {K::CapsShift, K::Num7},
+                                                           {K::SymbolShift, K::M},
+                                                           {K::SymbolShift, K::N},
+                                                           {K::SymbolShift, K::P},
+                                                           {K::SymbolShift, K::O},
+                                                           {K::CapsShift, K::SymbolShift},
+                                                           {K::CapsShift, K::Num2},
+                                                           {K::CapsShift, K::Num9},
+                                                           {K::CapsShift, K::Num3},
+                                                           {K::CapsShift, K::Num4},
+                                                           {K::CapsShift, K::Space},
+                                                           {K::CapsShift, K::Num1},
+                                                           {K::CapsShift, K::Num0}}};
+    for (unsigned bit = 0; bit < 16; ++bit)
+        if (m_extendedKeys & (1u << bit)) {
+            for (K key : {keys[bit].first, keys[bit].second})
+                m_extendedRows[unsigned(key) >> 4] &= uint8_t(~(1u << (unsigned(key) & 7)));
+        }
+}
+
+bool ZxNextMachine::requestNmi(MachineContext &ctx, bool multiface, bool button)
+{
+    const auto enable = multiface ? 8 : 0x10;
+    if (!(m_nextReg.peek(0x06) & enable) || m_mfActive || m_mfMapped || m_divNmiLatched || m_dma.isActive())
+        return false;
+    if (multiface) {
+        if (!(m_nextReg.peek(0x83) & 2) || (m_portE3 & 0x80))
+            return false;
+        m_mfActive = true;
+        m_mfInvisible = false;
+        armMultifaceEntry(ctx);
+    } else {
+        if (!(m_nextReg.peek(0x83) & 1))
+            return false;
+        m_divNmiLatched = true;
+    }
+    if (!button)
+        m_resetType |= multiface ? 8 : 4;
+    ctx.cpu.requestNmi();
+    return true;
+}
+
+void ZxNextMachine::armMultifaceEntry(MachineContext &ctx)
+{
+    ctx.cpu.removeHooks("next_multiface_entry");
+    m_mfAwaitingEntry = true;
+    // Install the entry watcher only while an NMI is pending. Even an empty
+    // hook would add a page-mask check to every instruction through DivMMC.
+    ctx.cpu.addPreM1Hook(
+        [this, &ctx](uint16_t pc) {
+            if (pc != 0x66 || !m_mfActive)
+                return;
+            m_mfMapped = true;
+            m_mfAwaitingEntry = false;
+            ctx.romcs.setActive("next_multiface", true);
+            ctx.cpu.setPreM1HookPages("next_multiface_entry", {});
+            // Defer vector erasure until the CPU has finished iterating its hooks.
+            ctx.scheduler.scheduleAt(ctx.clock.totalTstates() + 1, [this, &ctx](uint64_t) {
+                if (!m_mfAwaitingEntry)
+                    ctx.cpu.removeHooks("next_multiface_entry");
+            });
+        },
+        "next_multiface_entry", Z80Cpu::PcPages{}.set(0));
+}
+
+void ZxNextMachine::wireMultiface(MachineContext &ctx, UlaRenderer &ula)
+{
+    ctx.romcs.registerProvider("next_multiface", 100, [this](Mmu &mmu) {
+        mmu.mapOverlay1k(0, m_mfRomBank, 0, 8, false);
+        mmu.mapOverlay1k(0x2000, m_mfRamBank, 0, 8, true);
+    });
+    ctx.cpu.addRetnHook(
+        [this, &ctx](bool reti) {
+            if (reti)
+                return;
+            m_mfActive = m_mfMapped = false;
+            m_mfAwaitingEntry = false;
+            ctx.cpu.removeHooks("next_multiface_entry");
+            ctx.romcs.setActive("next_multiface", false);
+        },
+        "next_multiface_retn");
+    ctx.ioBus.registerHandler(
+        "next_multiface_io", 0x1F, 0x1F,
+        [this, &ctx, &ula](uint16_t port) -> IoReadResult {
+            const uint8_t low = uint8_t(port);
+            const auto type = (m_nextReg.peek(0x0A) >> 6) & 3;
+            const uint8_t on = type & 2 ? 0x9F : type & 1 ? 0xBF : 0x3F;
+            const uint8_t off = type & 2 ? 0x1F : type & 1 ? 0x3F : 0xBF;
+            if (!(m_nextReg.peek(0x83) & 2) || (low != on && low != off))
+                return {0xFF, 0};
+            if (low == off) {
+                m_mfMapped = false;
+                if (type == 0) {
+                    m_mfActive = false;
+                    m_mfAwaitingEntry = false;
+                    ctx.cpu.removeHooks("next_multiface_entry");
+                }
+            } else
+                m_mfMapped = type == 3 || !m_mfInvisible;
+            ctx.romcs.setActive("next_multiface", m_mfMapped);
+            if (low != on || (type != 3 && m_mfInvisible))
+                return {0xFF, 0};
+            uint8_t data = uint8_t(0x7F | (m_port7ffd & 8 ? 0x80 : 0));
+            if (type == 0) {
+                switch (port >> 12) {
+                case 1:
+                    data = m_port1ffd;
+                    break;
+                case 7:
+                    data = m_port7ffd;
+                    break;
+                case 13:
+                    data = m_portDffd;
+                    break;
+                default:
+                    data = ula.borderColor();
+                    break;
+                }
+            }
+            return {data, 0xFF, true};
+        },
+        [this, &ctx](uint16_t port, uint8_t) {
+            const uint8_t low = uint8_t(port);
+            const auto type = (m_nextReg.peek(0x0A) >> 6) & 3;
+            const uint8_t on = type & 2 ? 0x9F : type & 1 ? 0xBF : 0x3F;
+            const uint8_t off = type & 2 ? 0x1F : type & 1 ? 0x3F : 0xBF;
+            if (!(m_nextReg.peek(0x83) & 2) || (low != on && low != off)) {
+                ctx.ioBus.declineWrite();
+                return;
+            }
+            m_mfActive = false;
+            m_mfAwaitingEntry = false;
+            ctx.cpu.removeHooks("next_multiface_entry");
+            if (low == (type == 0 ? on : off))
+                m_mfInvisible = true;
+        },
+        200);
 }
 
 void ZxNextMachine::wireDivMmc(MachineContext &ctx)
@@ -758,6 +1025,15 @@ void ZxNextMachine::reset(MachineContext &ctx, UlaRenderer &ula, ResetKind kind)
     handOverState(hard);
     m_resetType = hard ? 0x02 : 0x01;
 
+    m_uart.reset(hard);
+    m_rtc.resetBus();
+    m_extendedKeys = 0;
+    rebuildExtendedMatrix();
+    m_mfActive = m_mfMapped = false;
+    m_mfInvisible = true;
+    ctx.romcs.setActive("next_multiface", false);
+    m_mfAwaitingEntry = false;
+    ctx.cpu.removeHooks("next_multiface_entry");
     m_copper.reset();
     m_dma.reset();
     m_ctc.reset();
@@ -793,6 +1069,8 @@ void ZxNextMachine::onFrameStart(MachineContext &ctx)
 
 void ZxNextMachine::onScanlineStart(uint16_t line, MachineContext &ctx)
 {
+    if (m_uart.active())
+        m_uart.tick(uartTime(ctx));
     if (m_dma.isActive())
         m_dma.tick(ctx.clock.frameBaseTstates(), ctx.mmu, ctx.ioBus);
 
@@ -914,6 +1192,11 @@ void ZxNextMachine::saveState(StateWriter &w) const
     w.writeBool(m_divNmiLatched);
     w.write(m_spiCs);
     w.write(m_spiLatch);
+    m_uart.saveState(w);
+    m_rtc.saveState(w);
+    w.writeBool(m_mfActive);
+    w.writeBool(m_mfMapped);
+    w.writeBool(m_mfInvisible);
 }
 
 void ZxNextMachine::loadState(StateReader &r, MachineContext &ctx, UlaRenderer &ula)
@@ -935,6 +1218,16 @@ void ZxNextMachine::loadState(StateReader &r, MachineContext &ctx, UlaRenderer &
     m_divNmiLatched = r.readBool();
     m_spiCs         = r.read<uint8_t>();
     m_spiLatch      = r.read<uint8_t>();
+    m_uart.loadState(r);
+    m_rtc.loadState(r);
+    m_mfActive = r.readBool();
+    m_mfMapped = r.readBool();
+    m_mfInvisible = r.readBool();
+    ctx.romcs.setActive("next_multiface", m_mfMapped);
+    m_mfAwaitingEntry = false;
+    ctx.cpu.removeHooks("next_multiface_entry");
+    if (m_mfActive && !m_mfMapped)
+        armMultifaceEntry(ctx);
 
     ctx.clock.setSpeed(static_cast<CpuSpeed>(m_nextReg.peek(0x07) & 0x03));
     ctx.im2.setHardwareIm2Enabled((m_nextReg.peek(0xC0) & 0x01) != 0);

@@ -73,6 +73,8 @@ set(ZXKIT_PUBLIC_HEADERS
     include/zxkit/peripherals/expansion/ExpansionPeripherals.h
     include/zxkit/peripherals/net/NetworkPeripherals.h
     include/zxkit/peripherals/next/Copper.h
+    include/zxkit/peripherals/next/NextUart.h
+    include/zxkit/peripherals/next/NextRtc.h
     include/zxkit/peripherals/next/NextReg.h
     include/zxkit/peripherals/next/ZxnCtc.h
     include/zxkit/peripherals/next/ZxnDma.h
@@ -135,6 +137,8 @@ set(ZXKIT_SOURCES
     src/peripherals/expansion/ExpansionPeripherals.cpp
     src/peripherals/net/NetworkPeripherals.cpp
     src/peripherals/next/Copper.cpp
+    src/peripherals/next/NextUart.cpp
+    src/peripherals/next/NextRtc.cpp
     src/peripherals/next/NextReg.cpp
     src/peripherals/next/ZxnCtc.cpp
     src/peripherals/next/ZxnDma.cpp

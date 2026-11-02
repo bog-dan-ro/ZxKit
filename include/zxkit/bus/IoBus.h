@@ -17,8 +17,10 @@
 
 #pragma once
 
+#include <array>
 #include <cstdint>
 #include <functional>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -34,14 +36,19 @@ struct IoReadResult {
 };
 
 class IoBus {
-public:
-    using ReadHandler      = std::function<IoReadResult(uint16_t port)>;
-    using SimpleReadFn     = std::function<uint8_t(uint16_t port)>;
-    using WriteHandler     = std::function<void(uint16_t port, uint8_t value)>;
-    using IoObserver       = std::function<void(uint16_t port, uint8_t value, bool isWrite)>;
-    using FloatingBusFn    = std::function<uint8_t(uint16_t port)>;
-    using WatchpointCb     = std::function<void(uint16_t port, uint8_t value, bool isWrite)>;
-    using NextRegOpcodeCb  = std::function<void(uint8_t reg, uint8_t value)>;
+  public:
+    IoBus() = default;
+    IoBus(const IoBus &other) { *this = other; }
+    IoBus &operator=(const IoBus &other);
+    IoBus(IoBus &&) noexcept = default;
+    IoBus &operator=(IoBus &&) noexcept = default;
+    using ReadHandler = std::function<IoReadResult(uint16_t port)>;
+    using SimpleReadFn = std::function<uint8_t(uint16_t port)>;
+    using WriteHandler = std::function<void(uint16_t port, uint8_t value)>;
+    using IoObserver = std::function<void(uint16_t port, uint8_t value, bool isWrite)>;
+    using FloatingBusFn = std::function<uint8_t(uint16_t port)>;
+    using WatchpointCb = std::function<void(uint16_t port, uint8_t value, bool isWrite)>;
+    using NextRegOpcodeCb = std::function<void(uint8_t reg, uint8_t value)>;
 
     struct HandlerEntry {
         uint64_t id = 0;
@@ -59,21 +66,11 @@ public:
     /// `priority` orders the handlers (0: by the number of decoded address bits).
     /// A negative priority makes a default read responder, used only when no
     /// other handler answers the port.
-    uint64_t registerHandler(std::string ownerId,
-                             uint16_t mask,
-                             uint16_t value,
-                             ReadHandler rd,
-                             WriteHandler wr,
-                             int priority = 0,
-                             bool exclusiveWrite = false);
+    uint64_t registerHandler(std::string ownerId, uint16_t mask, uint16_t value, ReadHandler rd, WriteHandler wr,
+                             int priority = 0, bool exclusiveWrite = false);
 
-    uint64_t registerSimpleHandler(std::string ownerId,
-                                   uint16_t mask,
-                                   uint16_t value,
-                                   SimpleReadFn rd,
-                                   WriteHandler wr,
-                                   int priority = 0,
-                                   bool exclusiveWrite = false);
+    uint64_t registerSimpleHandler(std::string ownerId, uint16_t mask, uint16_t value, SimpleReadFn rd, WriteHandler wr,
+                                   int priority = 0, bool exclusiveWrite = false);
 
     void unregisterOwner(std::string_view ownerId);
     void addObserver(IoObserver observer);
@@ -94,7 +91,15 @@ public:
     void write(uint16_t port, uint8_t value);
     void writeNextRegOpcode(uint8_t reg, uint8_t value);
 
-private:
+  private:
+    // Address decoding changes only when peripherals attach/detach. Index by
+    // low address byte so unrelated devices add no cost to a hot port.
+    void rebuildCandidates() const;
+    struct DispatchCache {
+        std::array<std::vector<const HandlerEntry *>, 256> reads, writes;
+    };
+    mutable std::unique_ptr<DispatchCache> m_dispatch;
+    mutable bool m_candidatesDirty = true;
     std::vector<HandlerEntry> m_handlers;
     std::vector<IoObserver> m_observers;
     FloatingBusFn m_floatingBusFn;

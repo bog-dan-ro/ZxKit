@@ -70,12 +70,16 @@ The tests include their media, reference images and ROMs under
 external test collection is needed. Missing required ROM fixtures fail the
 build configuration instead of silently skipping coverage.
 
-The 16 CTest entries cover the software video filters, CPU, machine, tape and storage tests,
+The 17 CTest entries cover the software video filters, CPU, machine, tape and storage tests,
 Sinclair timing boundaries, the Butler timing suites, incremental ULA raster
 rendering, full-border geometry and an exact BASIC Border image comparison. Five known 128K Butler
 failures remain excluded from the passing suite; their case numbers and the
 remaining visual ULA differences are documented in the
 [fixture README](tests/fixtures/spectrum/README.md).
+
+Next UART, RTC, extended keyboard, NMI and DAC interfaces are described in
+[Next devices and host integration](docs/next-devices.md). Host protocols and
+networking belong in the consumer; ZxKit remains a standalone library.
 
 The optional collection smoke audit uses Python's standard library and defaults
 to bundled fixtures, the built runner and bundled ROMs. It writes its report and
