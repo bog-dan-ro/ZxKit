@@ -50,8 +50,8 @@ void AudioMixer::reset() noexcept
     for (auto &ay : m_ayChips)
         ay.reset();
     m_activeAyIndex = 0;
-    m_leftBlip.clearFrame();
-    m_rightBlip.clearFrame();
+    m_leftBlip.reset();
+    m_rightBlip.reset();
     std::ranges::fill(m_ayInterleaved, 0);
     m_ayRendered.fill(0);
 }
@@ -80,7 +80,7 @@ void AudioMixer::renderAyUpTo(std::size_t chip, std::size_t sample) noexcept
 
 void AudioMixer::writeAyRegister(uint32_t frameTstate, uint8_t value) noexcept
 {
-    renderAyUpTo(m_activeAyIndex, static_cast<std::size_t>(static_cast<uint64_t>(frameTstate) * m_sampleRate / m_cpuClockHz));
+    renderAyUpTo(m_activeAyIndex, m_leftBlip.samplesUntil(frameTstate));
     m_ayChips[m_activeAyIndex].writeRegister(value);
 }
 
@@ -101,8 +101,14 @@ std::span<const int16_t> AudioMixer::endFrame(uint32_t frameTstates) noexcept
             m_rightAccum[s] += m_ayInterleaved[s * 2 + 1];
         }
     }
-    std::ranges::fill(m_ayInterleaved, 0);
-    m_ayRendered.fill(0);
+    // AY writes in the last CPU instruction may render beyond the nominal
+    // frame boundary. Carry those samples forward just like the delta buffers.
+    if (count * 2) {
+        std::move(m_ayInterleaved.begin() + count * 2, m_ayInterleaved.end(), m_ayInterleaved.begin());
+        std::fill(m_ayInterleaved.end() - count * 2, m_ayInterleaved.end(), 0);
+    }
+    for (auto &rendered : m_ayRendered)
+        rendered = rendered > count ? rendered - count : 0;
 
     for (std::size_t s = 0; s < count; ++s) {
         m_outputPcm[s * 2]     = static_cast<int16_t>(std::clamp(m_leftAccum[s], -32768, 32767));

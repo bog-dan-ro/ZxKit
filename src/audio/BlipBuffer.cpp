@@ -28,7 +28,19 @@ void BlipBuffer::configure(uint32_t clockHz, uint32_t sampleRate, uint32_t tstat
     m_tstatesPerFrame = (tstatesPerFrame > 0) ? tstatesPerFrame : 69'888;
     const std::size_t maxSamples = (static_cast<std::size_t>(m_sampleRate) * m_tstatesPerFrame / m_clockHz) + 64;
     m_deltas.assign(maxSamples, 0);
+    reset();
+}
+
+void BlipBuffer::reset() noexcept
+{
     m_integrator = 0;
+    m_sampleRemainder = 0;
+    clearFrame();
+}
+
+std::size_t BlipBuffer::samplesUntil(uint32_t frameTstate) const noexcept
+{
+    return (m_sampleRemainder + static_cast<uint64_t>(frameTstate) * m_sampleRate) / m_clockHz;
 }
 
 void BlipBuffer::clearFrame() noexcept
@@ -40,7 +52,7 @@ void BlipBuffer::addDelta(uint32_t frameTstate, int32_t delta) noexcept
 {
     if (delta == 0 || m_deltas.empty())
         return;
-    const std::size_t idx = (static_cast<uint64_t>(frameTstate) * m_sampleRate) / m_clockHz;
+    const std::size_t idx = samplesUntil(frameTstate);
     if (idx < m_deltas.size())
         m_deltas[idx] += delta;
     else
@@ -50,7 +62,7 @@ void BlipBuffer::addDelta(uint32_t frameTstate, int32_t delta) noexcept
 std::size_t BlipBuffer::endFrame(uint32_t frameTstates, std::span<int32_t> accumOut) noexcept
 {
     const std::size_t sampleCount = std::min<std::size_t>(
-        (static_cast<uint64_t>(frameTstates) * m_sampleRate) / m_clockHz,
+        samplesUntil(frameTstates),
         std::min(m_deltas.size(), accumOut.size()));
 
     int32_t level = m_integrator;
@@ -61,7 +73,13 @@ std::size_t BlipBuffer::endFrame(uint32_t frameTstates, std::span<int32_t> accum
         accumOut[i] += level;
     }
     m_integrator = level;
-    clearFrame();
+    m_sampleRemainder = (m_sampleRemainder + static_cast<uint64_t>(frameTstates) * m_sampleRate) % m_clockHz;
+    // A write in an instruction that straddles the frame boundary belongs to
+    // the next frame. Do not discard its delta or the fractional sample clock.
+    if (sampleCount) {
+        std::move(m_deltas.begin() + sampleCount, m_deltas.end(), m_deltas.begin());
+        std::fill(m_deltas.end() - sampleCount, m_deltas.end(), 0);
+    }
     return sampleCount;
 }
 

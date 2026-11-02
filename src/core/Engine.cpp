@@ -244,9 +244,10 @@ void Engine::run()
             notify(&EngineCallbacks::mediaActivity, activity);
         }
         if (frame) {
-            notify(&EngineCallbacks::videoFrame, frame);
+            m_tapeTurbo.store(tapeTurbo, std::memory_order_relaxed);
             if (!audio.empty())
                 notify(&EngineCallbacks::audio, std::span<const int16_t>(audio), sampleRate, uint8_t{2});
+            notify(&EngineCallbacks::videoFrame, frame);
         }
 
         if (pause) {

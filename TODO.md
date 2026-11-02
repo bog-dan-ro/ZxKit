@@ -8,12 +8,14 @@ less disruptive than a crackle or gap in the sound. Clone and extension work sta
 
 ## Audio
 
-- [ ] **Crackle-free audio delivery.** Measure underruns, sample continuity and buffer drift under host load.
-      Keep audio flowing when video presentation falls behind; cover long runs, pause/resume and speed changes.
+- [x] **Continuous audio delivery.** Carry fractional samples and boundary-crossing beeper/AY writes between
+      video frames; do not count CPU instruction overshoot twice. Publish audio before video callbacks and expose
+      automatic tape turbo to hosts. Regressions cover exact long-run sample counts, waveform partitioning,
+      actual CPU frame boundaries and callback ordering. Spectacol's output now bypasses GUI event delivery.
 - [ ] AY: band-limited synthesis (it is point sampled at the output rate: high tones alias); AY vs YM volume tables.
 - [ ] Speaker models (TV speaker, beeper, unfiltered): Spectacol has a "speaker type" setting waiting for them.
-- [ ] Engine: optional audio clock pacing or adaptive resampling, so a host's audio buffer can't drift; sound at
-      speeds other than 100% (resample instead of muting).
+- [ ] Engine: an optional host audio-clock pacing API. Spectacol now corrects device-clock drift with adaptive
+      output resampling and plays at other speeds, including turbo; the standalone Engine still uses wall-clock pacing.
 
 ## RZX compatibility and progress
 

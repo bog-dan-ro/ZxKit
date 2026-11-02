@@ -169,6 +169,112 @@ void testAyWritesKeepTheirTiming()
     assert(next[2 * (next.size() / 2 * 3 / 4)] > 0);
 }
 
+void testContinuousAudioClock()
+{
+    // A frame is not an integral number of output samples. The remainder must
+    // survive thousands of frames instead of shortening the stream every 20 ms.
+    for (const auto [clock, frame] : {std::pair{3'500'000u, 69'888u},
+                                     std::pair{3'546'900u, 70'908u}}) {
+        AudioMixer mixer;
+        mixer.configure(clock, 48'000, frame);
+        mixer.setAyChipCount(0);
+        uint64_t samples = 0;
+        for (unsigned n = 1; n <= 1'000; ++n) {
+            samples += mixer.endFrame(frame).size() / 2;
+            assert(samples == uint64_t(n) * frame * 48'000 / clock);
+        }
+        mixer.beeper().setPortFeBits(0, true, false, mixer.leftBlip(), mixer.rightBlip());
+        mixer.endFrame(frame);
+        mixer.reset();
+        for (const auto sample : mixer.endFrame(frame))
+            assert(sample == 0);
+    }
+
+    // Splitting the same timeline at arbitrary video boundaries must leave the
+    // waveform intact, including writes from a CPU instruction across a boundary.
+    BlipBuffer whole, split;
+    whole.configure(1'001, 97, 339);
+    split.configure(1'001, 97, 113);
+    whole.addDelta(112, 4'000);
+    whole.addDelta(114, -4'000);
+    whole.addDelta(230, 2'000);
+    std::vector<int32_t> expected(64, 0);
+    expected.resize(whole.endFrame(339, expected));
+    std::vector<int32_t> actual;
+    for (unsigned n = 0; n < 3; ++n) {
+        if (n == 0) {
+            split.addDelta(112, 4'000);
+            split.addDelta(114, -4'000);
+        } else if (n == 1) {
+            split.addDelta(117, 2'000);
+        }
+        std::array<int32_t, 64> block{};
+        const auto count = split.endFrame(113, block);
+        actual.insert(actual.end(), block.begin(), block.begin() + count);
+    }
+    assert(actual == expected);
+}
+
+void testEmulatorAudioFrameBoundaries()
+{
+    EmulatorConfig config;
+    config.romResolver = [](std::string_view, std::size_t expected) {
+        std::vector<uint8_t> rom(expected, 0);
+        // DI; JP 1. The 10-cycle loop repeatedly overshoots the 69888-cycle
+        // frame boundary, and Clock carries that overshoot into the next frame.
+        rom[0] = 0xF3;
+        rom[1] = 0xC3;
+        rom[2] = 1;
+        return rom;
+    };
+    Emulator emulator(config);
+    uint64_t count = 0;
+    for (unsigned n = 1; n <= 101; ++n) {
+        emulator.runFrame();
+        count += emulator.audioSamples().size() / 2;
+        assert(count == uint64_t(n) * 69'888 * 48'000 / 3'500'000);
+    }
+
+    // Audio must be published before presentation, and the host must be able
+    // to identify automatic tape turbo rather than flooding a normal-rate sink.
+    std::atomic<unsigned> frames{0};
+    bool audioReady = false;
+    unsigned orderErrors = 0;
+    CallbackHandle<AudioCallback> audio([&](std::span<const int16_t>, uint32_t, uint8_t) { audioReady = true; });
+    CallbackHandle<VideoFrameCallback> video([&](const VideoFramePtr &) {
+        if (!audioReady) ++orderErrors;
+        audioReady = false;
+        ++frames;
+    });
+    EngineConfig options;
+    options.startPaused = true;
+    options.callbacks.audio = audio.weak();
+    options.callbacks.videoFrame = video.weak();
+    Engine engine(config, options);
+    {
+        auto machine = engine.emulator().writeLock();
+        TapeBlock tone;
+        tone.type = TapeBlockType::PureTone;
+        tone.pilotPulse = 4'000;
+        tone.pilotPulses = 65'535;
+        machine->tapeDeck().load({tone});
+        auto tapeOptions = machine->tapeDeck().options();
+        tapeOptions.turboWhilePlaying = true;
+        machine->tapeDeck().setOptions(tapeOptions);
+        machine->tapeDeck().setPlaying(true);
+    }
+    engine.setPaused(false);
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(10);
+    while (frames.load() < 10) {
+        assert(std::chrono::steady_clock::now() < deadline);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+    assert(engine.isTurbo());
+    assert(!engine.isRealTime());
+    engine.stop();
+    assert(orderErrors == 0);
+}
+
 void testSchedulerAndStateStream()
 {
     Scheduler sched;
@@ -206,6 +312,8 @@ int main()
     testSpinSharedMutex();
     testCallbackHandle();
     testAyWritesKeepTheirTiming();
+    testContinuousAudioClock();
+    testEmulatorAudioFrameBoundaries();
     testSchedulerAndStateStream();
     std::println("test_foundation: ALL PASSED");
     return 0;

@@ -28,7 +28,10 @@ namespace zxkit {
 class BlipBuffer {
 public:
     void configure(uint32_t clockHz, uint32_t sampleRate, uint32_t tstatesPerFrame);
+    void reset() noexcept;
     void clearFrame() noexcept;
+    /// Samples before this point on the current frame's continuous audio timeline.
+    std::size_t samplesUntil(uint32_t frameTstate) const noexcept;
     void addDelta(uint32_t frameTstate, int32_t delta) noexcept;
     std::size_t endFrame(uint32_t frameTstates, std::span<int32_t> accumOut) noexcept;
 
@@ -37,6 +40,7 @@ private:
     uint32_t m_sampleRate = 48'000;
     uint32_t m_tstatesPerFrame = 69'888;
     int32_t m_integrator = 0;
+    uint32_t m_sampleRemainder = 0;
     std::vector<int32_t> m_deltas;
 };
 

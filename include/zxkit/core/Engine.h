@@ -86,7 +86,11 @@ public:
     uint32_t speed() const noexcept { return m_speedPercent.load(std::memory_order_relaxed); }
     /// Fast forward: runs as fast as possible, whatever the speed.
     void setTurbo(bool turbo) noexcept;
-    bool isTurbo() const noexcept { return m_state.load(std::memory_order_acquire) & kTurbo; }
+    bool isTurbo() const noexcept
+    {
+        return (m_state.load(std::memory_order_acquire) & kTurbo)
+               || m_tapeTurbo.load(std::memory_order_relaxed);
+    }
     /// Running in real time (100% speed, no turbo): only then the audio plays at its pitch.
     bool isRealTime() const noexcept { return speed() == 100 && !isTurbo(); }
 
@@ -125,6 +129,7 @@ private:
     EngineConfig::ThreadHooks m_threadHooks;
     std::atomic<uint32_t> m_state{0};
     std::atomic<uint32_t> m_speedPercent{100};
+    std::atomic_bool m_tapeTurbo{false};
     std::jthread m_thread; // last: it starts after everything else is ready
 };
 

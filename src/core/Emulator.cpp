@@ -436,7 +436,6 @@ RunStatus Emulator::runScanline()
 
 void Emulator::endFrame()
 {
-    const uint32_t executedFrameTs = m_clock.frameBaseTstates();
     m_machine->onFrameEnd(m_context, m_ula);
     for (auto &periph : m_peripherals)
         periph->onFrameEnd();
@@ -449,7 +448,9 @@ void Emulator::endFrame()
     else if (m_rzx.isPlaying())
         m_rzx.advancePlaybackFrame(m_ioBus);
 
-    m_audioSamples = m_audioMixer.endFrame(executedFrameTs);
+    // Clock carries the last instruction's overshoot into the next video frame.
+    // Audio must use the nominal boundary too, or those T-states are counted twice.
+    m_audioSamples = m_audioMixer.endFrame(m_clock.timings().tstatesPerFrame());
     m_ula.endRasterFrame();
     m_clock.beginNewFrame();
     updateMediaActivity();
