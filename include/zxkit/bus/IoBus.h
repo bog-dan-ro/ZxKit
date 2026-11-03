@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include <optional>
 #include <array>
 #include <cstdint>
 #include <functional>
@@ -77,7 +78,7 @@ class IoBus {
     void setFloatingBusCallback(FloatingBusFn fn);
     void setWatchpointCallback(WatchpointCb cb);
     void setNextRegOpcodeCallback(NextRegOpcodeCb cb);
-    void setRzxCallbacks(SimpleReadFn playbackOverride, std::function<void(uint8_t)> recordHook);
+    void setRzxCallbacks(std::function<std::optional<uint8_t>(uint16_t)> playbackOverride, std::function<void(uint8_t)> recordHook);
 
     /// Called by a write handler when its hardware decode gate is currently disabled.
     void declineWrite() noexcept;
@@ -105,7 +106,7 @@ class IoBus {
     FloatingBusFn m_floatingBusFn;
     WatchpointCb m_watchpointCb;
     NextRegOpcodeCb m_nextRegOpcodeCb;
-    SimpleReadFn m_rzxReadOverride;
+    std::function<std::optional<uint8_t>(uint16_t)> m_rzxReadOverride;
     std::function<void(uint8_t)> m_rzxReadRecord;
     uint64_t m_nextId = 0;
     bool m_writeDeclined = false;

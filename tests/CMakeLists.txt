@@ -27,6 +27,14 @@ target_link_libraries(test_audio PRIVATE ZX::Kit)
 target_compile_options(test_audio PRIVATE $<IF:$<CXX_COMPILER_ID:MSVC>,/UNDEBUG,-UNDEBUG>)
 add_test(NAME test_audio COMMAND test_audio)
 
+add_executable(test_rzx test_rzx.cpp)
+target_link_libraries(test_rzx PRIVATE ZX::Kit)
+target_compile_definitions(test_rzx PRIVATE
+    ZXKIT_RZX_FIXTURES="${CMAKE_CURRENT_SOURCE_DIR}/fixtures/rzx"
+    ZXKIT_TEST_ROMS="${ZXKIT_TEST_ROM_DIR}")
+target_compile_options(test_rzx PRIVATE $<IF:$<CXX_COMPILER_ID:MSVC>,/UNDEBUG,-UNDEBUG>)
+add_test(NAME test_rzx COMMAND test_rzx)
+
 add_executable(test_engine_pacing test_engine_pacing.cpp)
 target_link_libraries(test_engine_pacing PRIVATE ZX::Kit)
 target_compile_options(test_engine_pacing PRIVATE $<IF:$<CXX_COMPILER_ID:MSVC>,/UNDEBUG,-UNDEBUG>)

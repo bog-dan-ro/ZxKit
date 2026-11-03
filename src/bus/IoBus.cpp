@@ -92,7 +92,7 @@ void IoBus::setWatchpointCallback(WatchpointCb cb) { m_watchpointCb = std::move(
 
 void IoBus::setNextRegOpcodeCallback(NextRegOpcodeCb cb) { m_nextRegOpcodeCb = std::move(cb); }
 
-void IoBus::setRzxCallbacks(SimpleReadFn playbackOverride, std::function<void(uint8_t)> recordHook)
+void IoBus::setRzxCallbacks(std::function<std::optional<uint8_t>(uint16_t)> playbackOverride, std::function<void(uint8_t)> recordHook)
 {
     m_rzxReadOverride = std::move(playbackOverride);
     m_rzxReadRecord = std::move(recordHook);
@@ -103,10 +103,11 @@ void IoBus::declineWrite() noexcept { m_writeDeclined = true; }
 uint8_t IoBus::read(uint16_t port)
 {
     if (m_rzxReadOverride) {
-        const uint8_t val = m_rzxReadOverride(port);
-        if (m_watchpointCb)
-            m_watchpointCb(port, val, false);
-        return val;
+        if (const auto val = m_rzxReadOverride(port)) {
+            if (m_watchpointCb)
+                m_watchpointCb(port, *val, false);
+            return *val;
+        }
     }
 
     const uint8_t val = peekPort(port, true);

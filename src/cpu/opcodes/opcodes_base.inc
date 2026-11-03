@@ -838,6 +838,7 @@
 	contend_read( PC, 4 );
 	opcode2 = readbyte_internal( PC ); PC++;
 	R++;
+        RZX_FETCH(1);
 #ifdef HAVE_ENOUGH_MEMORY
 	switch(opcode2) {
 #include "z80_cb.inc"
@@ -964,6 +965,7 @@
 	contend_read( PC, 4 );
 	opcode2 = readbyte_internal( PC ); PC++;
 	R++;
+        RZX_FETCH(1);
 #ifdef HAVE_ENOUGH_MEMORY
 	switch(opcode2) {
 #define REGISTER  IX
@@ -1076,6 +1078,7 @@
 	contend_read( PC, 4 );
 	opcode2 = readbyte_internal( PC ); PC++;
 	R++;
+        RZX_FETCH(1);
 	if (m_z80nEnabled && isZ80nOpcode(opcode2)) {
 	  executeZ80n(opcode2);
 	  break;
@@ -1180,6 +1183,7 @@
 	contend_read( PC, 4 );
 	opcode2 = readbyte_internal( PC ); PC++;
 	R++;
+        RZX_FETCH(1);
 #ifdef HAVE_ENOUGH_MEMORY
 	switch(opcode2) {
 #define REGISTER  IY

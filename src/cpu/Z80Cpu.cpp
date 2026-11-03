@@ -692,15 +692,23 @@ void Z80Cpu::executeZ80n(uint8_t extOpcode)
     }
 }
 
-uint32_t Z80Cpu::stepInstruction()
+template<bool TrackFetches>
+uint32_t Z80Cpu::stepInstructionImpl()
 {
     const uint64_t startTs = m_clock.totalTstates();
 
     if (serviceNmi())
         return static_cast<uint32_t>(m_clock.totalTstates() - startTs);
 
-    if (serviceInterrupt())
-        return static_cast<uint32_t>(m_clock.totalTstates() - startTs);
+    if constexpr (TrackFetches) {
+        if (!m_playbackExecution && serviceInterrupt()) {
+            m_trackedInterrupt = true;
+            return static_cast<uint32_t>(m_clock.totalTstates() - startTs);
+        }
+    } else {
+        if (serviceInterrupt())
+            return static_cast<uint32_t>(m_clock.totalTstates() - startTs);
+    }
 
     if (m_activeHooksMask != 0) [[unlikely]] {
         if ((m_activeHooksMask & HookFlags::Debugger) && m_debuggerHook) {
@@ -715,6 +723,7 @@ uint32_t Z80Cpu::stepInstruction()
             if ((b0 == 0xED && b1 == 0xFF) || (b0 == 0xDD && b1 == 0x01)) {
                 m_regs.PC = static_cast<uint16_t>(m_regs.PC + 2);
                 m_regs.incrementR(2);
+                if constexpr (TrackFetches) m_trackedFetches += 2;
                 m_clock.advance(8);
                 m_trapped = true;
                 return 8;
@@ -1050,6 +1059,7 @@ uint32_t Z80Cpu::stepInstruction()
 }
 
 #define HAVE_ENOUGH_MEMORY 1
+#define RZX_FETCH(delta) do { if constexpr (TrackFetches) m_trackedFetches += (delta); } while (false)
 
     const uint16_t fetchPc = PC;
     contend_read(PC, 4);
@@ -1076,6 +1086,7 @@ uint32_t Z80Cpu::stepInstruction()
 end_opcode:
     PC++;
     R++;
+    RZX_FETCH(1);
     last_Q = Q;
     Q = 0;
 
@@ -1083,6 +1094,7 @@ end_opcode:
 #include "opcodes/opcodes_base.inc"
     }
 
+#undef RZX_FETCH
 #undef HAVE_ENOUGH_MEMORY
 #undef XOR
 #undef SUB
@@ -1136,11 +1148,39 @@ end_opcode:
     return static_cast<uint32_t>(m_clock.totalTstates() - startTs);
 }
 
+template uint32_t Z80Cpu::stepInstructionImpl<false>();
+template uint32_t Z80Cpu::stepInstructionImpl<true>();
+
+void Z80Cpu::acceptPlaybackInterrupt(bool retrigger, bool inhibit)
+{
+    // Playback boundaries supply INT; automatic pulses/retriggers are suppressed.
+    // Long frames follow the RZX forced-INT convention; short ones retain EI delay.
+    if (retrigger && inhibit) { m_intPending = false; return; }
+    if (!retrigger)
+        m_interruptsEnabledAt = -1;
+    requestInterrupt();
+    serviceInterrupt();
+    m_intPending = false;
+}
+
+bool Z80Cpu::runTrackedUntil(uint32_t targetFrameTstates, uint32_t fetchLimit, bool playback)
+{
+    m_trapped = false;
+    m_playbackExecution = playback;
+    while (m_clock.frameBaseTstates() < targetFrameTstates && m_trackedFetches < fetchLimit && !m_trapped) {
+        m_trackedInterrupt = false;
+        stepInstructionImpl<true>();
+        if (m_trackedInterrupt)
+            return true;
+    }
+    return false;
+}
+
 void Z80Cpu::runUntil(uint32_t targetFrameTstates)
 {
     m_trapped = false;
     while (m_clock.frameBaseTstates() < targetFrameTstates && !m_trapped) {
-        stepInstruction();
+        stepInstructionImpl<false>();
     }
 }
 

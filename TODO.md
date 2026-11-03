@@ -25,13 +25,16 @@ less disruptive than a crackle or gap in the sound. Clone and extension work sta
 
 ## RZX compatibility and progress
 
-- [ ] **RZX playback compatibility** ([Spectacol #48](https://github.com/bog-dan-ro/spectacol/issues/48)). Recheck
-      the reported recordings with the new core; old FUSE fixes don't establish ZxKit compatibility. Honor the
-      recorded instruction counts and interrupt boundaries (playback currently advances at the machine's normal
-      frame boundary), handle snapshot/input block sequences, and report input desynchronization. Add standalone
-      regression fixtures with provenance; a self-recorded round trip alone isn't enough.
-- [ ] RZX playback progress ([Spectacol #47](https://github.com/bog-dan-ro/spectacol/issues/47)): expose the current
-      playback frame alongside the total frame count so hosts can show a percentage, including completion/stop.
+- [x] **RZX playback compatibility** ([Spectacol #48](https://github.com/bog-dan-ro/spectacol/issues/48)):
+      recorded M1/interrupt boundaries, ordered embedded snapshots/input blocks and explicit desynchronization
+      errors. All five reported recordings reach completion in ZxKit and match independent reference states;
+      authored standalone fixtures cover prefixes, LD R,A, EI/HALT/retriggers and recording interoperability.
+      See `docs/rzx.md` for coverage and explicit format limits.
+- [x] RZX playback progress ([Spectacol #47](https://github.com/bog-dan-ro/spectacol/issues/47)): current/total
+      intervals, retained completion/stop positions and contextual errors through `RzxProgress`.
+- [x] RZX transport/editing: pause through Engine, seek backward/forward by interval or milliseconds,
+      retain the future during review, truncate on resume or finalise at the cursor. Sparse bounded checkpoints
+      avoid per-frame state copies; standalone branch/replay tests cover interrupts and independently playable output.
 
 ## Media formats and disk auto-boot
 

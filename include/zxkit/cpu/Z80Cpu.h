@@ -65,12 +65,21 @@ public:
 
     /// Executes a single Z80 / Z80N instruction (or services a pending NMI/INT)
     /// and returns the elapsed T-states.
-    uint32_t stepInstruction();
+    uint32_t stepInstruction() { return stepInstructionImpl<false>(); }
 
     /// Executes instructions until `m_clock.frameBaseTstates() >= targetFrameTstates`
     /// (the frame position in base 3.5MHz T-states, so turbo speeds run more instructions)
     /// or until the debugger traps (`m_trapped == true`).
     void runUntil(uint32_t targetFrameTstates);
+
+    /// RZX counts M1 opcode fetches, excluding interrupt acknowledge cycles.
+    /// The normal execution loop has no counter/recording checks.
+    bool runTrackedUntil(uint32_t targetFrameTstates, uint32_t fetchLimit, bool playback);
+    uint32_t trackedFetches() const noexcept { return m_trackedFetches; }
+    void resetTrackedFetches() noexcept { m_trackedFetches = 0; }
+    bool interruptJustEnabled() const noexcept { return m_interruptsEnabledAt == static_cast<int64_t>(m_clock.totalTstates()); }
+    void acceptPlaybackInterrupt(bool retrigger, bool inhibit = false);
+    bool acknowledgePendingInterrupt() { return serviceInterrupt(); }
 
     // ULA /INT is a level pulse. Interrupt generators which latch individual
     // events (e.g. Next legacy interrupts) consume the event on acknowledge.
@@ -194,6 +203,10 @@ public:
     void loadState(StateReader &r);
 
 private:
+    template<bool TrackFetches> uint32_t stepInstructionImpl();
+    uint32_t m_trackedFetches = 0;
+    bool m_playbackExecution = false;
+    bool m_trackedInterrupt = false;
     void updatePreM1Pages() noexcept
     {
         m_preM1Pages.reset();

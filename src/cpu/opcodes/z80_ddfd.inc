@@ -557,6 +557,7 @@
 			   one instruction and parse again */
       PC--;
       R--;
+      RZX_FETCH(-1);
       opcode = opcode2;
 #ifdef HAVE_ENOUGH_MEMORY
       goto end_opcode;

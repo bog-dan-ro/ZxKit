@@ -45,6 +45,7 @@
 #include <array>
 #include <cstdint>
 #include <filesystem>
+#include <deque>
 #include <initializer_list>
 #include <memory>
 #include <optional>
@@ -225,6 +226,19 @@ public:
     UlaRenderer &ula() noexcept { return m_ula; }
     TapeDeck &tapeDeck() noexcept { return m_tapeDeck; }
     const TapeDeck &tapeDeck() const noexcept { return m_tapeDeck; }
+    void startRzxRecording();
+    std::vector<uint8_t> stopRzxRecording();
+    void stopRzxPlayback() noexcept;
+    /// Host pauses the Engine before seeking. Advance in small batches to keep its UI responsive.
+    void beginRzxSeekFrame(std::size_t frame);
+    void beginRzxSeek(uint64_t milliseconds);
+    bool advanceRzxSeek(uint32_t maxVideoFrames = 2);
+    bool isRzxSeeking() const noexcept { return m_rzxSeekTarget.has_value(); }
+    void cancelRzxSeek() noexcept { m_rzxSeekTarget.reset(); }
+    void resumeRzxRecording();
+    uint64_t rzxPositionMilliseconds() const;
+    uint64_t rzxDurationMilliseconds() const;
+
     RzxStream &rzx() noexcept { return m_rzx; }
     const RzxStream &rzx() const noexcept { return m_rzx; }
     Debugger &debugger() noexcept { return m_debugger; }
@@ -236,6 +250,14 @@ public:
 private:
     void installMachine(std::unique_ptr<MachineProfile> machine);
     void beginFrame();
+    RunStatus runPlaybackScanline();
+    void applyRzxCommands();
+    void finishPlaybackPresentation();
+    void captureRzxCheckpoint(bool force = false);
+    void clearRzxCheckpoints();
+    bool m_applyingRzxSnapshot = false;
+    bool m_recordingBoundary = false;
+    bool m_snapshotStandardAy = false;
     void endFrame();
     void requestPause(PauseReason reason) noexcept;
     void updateMediaActivity();
@@ -260,6 +282,22 @@ private:
     UlaRenderer m_ula;
     TapeDeck m_tapeDeck;
     RzxStream m_rzx;
+    struct RzxCheckpoint {
+        std::size_t frame = 0, command = 0, bytes = 0;
+        std::string machine;
+        std::vector<std::string> peripherals;
+        std::vector<uint8_t> state;
+        TapeDeck tape;
+        Scheduler scheduler;
+        uint16_t line = 0;
+        bool frameStarted = false, lineStarted = false, recordingBoundary = false;
+        bool standardAy = false, beforeInterrupt = false, inhibitInterrupt = false;
+    };
+    std::deque<RzxCheckpoint> m_rzxCheckpoints;
+    std::size_t m_rzxCheckpointBytes = 0;
+    std::optional<std::size_t> m_rzxSeekTarget;
+    bool m_rzxSeekInterrupt = false, m_rzxSeekInhibit = false;
+    double m_rzxTimelineHz = 50.0;
     Debugger m_debugger;
     SdCard m_sdCard;
     MachineContext m_context;

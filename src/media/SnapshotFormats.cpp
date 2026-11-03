@@ -16,6 +16,7 @@
 */
 
 #include "zxkit/media/SnapshotFormats.h"
+#include "zxkit/audio/AudioMixer.h"
 
 #include "zxkit/core/Exception.h"
 #include "zxkit/core/StateStream.h"
@@ -179,9 +180,15 @@ void SnapshotFormats::loadZ80(std::span<const uint8_t> data, SnapshotMachineStat
     const uint8_t port7ffd = data[35];
     const bool is128kMode = (extLen == 23 && hwMode >= 3) || (extLen >= 54 && hwMode >= 4);
     if (is128kMode) {
-        state.machine.setPagingPorts(port7ffd, 0, state.ctx, state.ula);
+        state.machine.setPagingPorts(port7ffd, extLen >= 55 ? data[86] : 0, state.ctx, state.ula);
     }
 
+    if (extLen >= 23 && blocksStart >= 55 && (is128kMode || (data[37] & 4))) {
+        state.ctx.audioMixer.setAyChipCount(std::max<uint8_t>(1, state.ctx.audioMixer.ayChipCount()));
+        auto &ay = state.ctx.audioMixer.activeAy();
+        for (uint8_t i = 0; i < 16; ++i) { ay.selectRegister(i); ay.writeRegister(data[39 + i]); }
+        ay.selectRegister(data[38]);
+    }
     auto &ram = state.ctx.mmu.bank(state.machine.ramBankId());
     std::size_t pos = blocksStart;
     while (pos + 3 <= data.size()) {
@@ -265,6 +272,11 @@ void SnapshotFormats::loadSzx(std::span<const uint8_t> data, SnapshotMachineStat
             regs.halted = (chunk[34] & 0x02) != 0;
             if (chunk.size() >= 37)
                 regs.WZ = readLe16(chunk, 35);
+        } else if (std::strcmp(id, "AY") == 0 && chunk.size() >= 18) {
+            state.ctx.audioMixer.setAyChipCount(std::max<uint8_t>(1, state.ctx.audioMixer.ayChipCount()));
+            auto &ay = state.ctx.audioMixer.activeAy();
+            for (uint8_t i = 0; i < 16; ++i) { ay.selectRegister(i); ay.writeRegister(chunk[2 + i]); }
+            ay.selectRegister(chunk[1]);
         } else if (std::strcmp(id, "SPCR") == 0 && chunk.size() >= 8) {
             state.ula.setBorderColor(chunk[0] & 0x07);
             state.machine.setPagingPorts(chunk[1], chunk[2], state.ctx, state.ula);
@@ -337,10 +349,19 @@ std::vector<uint8_t> SnapshotFormats::saveSzx(const SnapshotMachineState &state)
     w.write<uint8_t>(0);
     w.write<uint32_t>(0);
 
+    if (state.ctx.audioMixer.ayChipCount()) {
+        w.writeTag(std::string_view("AY\0\0", 4));
+        w.write<uint32_t>(18);
+        w.write<uint8_t>(0);
+        const auto &ay = state.ctx.audioMixer.activeAy();
+        w.write(ay.selectedRegister());
+        w.writeBytes(ay.registers());
+    }
+
     // RAMP chunks (zlib compressed)
     const std::size_t pages = std::min<std::size_t>(ram.count16kPages(), 8);
     for (std::size_t p = 0; p < pages; ++p) {
-        const uint8_t pageNo = (pages == 3)
+        const uint8_t pageNo = (pages <= 3)
             ? static_cast<uint8_t>((p == 0) ? 5 : (p == 1 ? 2 : 0))
             : static_cast<uint8_t>(p);
         const auto compressed = zlibCompress(ram.span16k(p));

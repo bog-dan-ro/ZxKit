@@ -23,10 +23,14 @@
 #include "zxkit/media/Compression.h"
 #include "zxkit/media/ScreenshotFormat.h"
 #include "zxkit/media/SnapshotFormats.h"
+#include "zxkit/peripherals/expansion/ExpansionPeripherals.h"
 
 #include <algorithm>
+#include <limits>
 #include <array>
 #include <cctype>
+#include <cmath>
+#include <cstring>
 #include <format>
 #include <fstream>
 
@@ -139,6 +143,10 @@ void Emulator::selectMachine(std::string_view machineId)
 
 void Emulator::selectMachine(std::unique_ptr<MachineProfile> machine)
 {
+    if (!m_applyingRzxSnapshot) {
+        if (m_rzx.isRecording() || m_rzx.isReviewing()) throw FormatException("Stop RZX recording before changing machines");
+        stopRzxPlayback();
+    }
     if (!machine)
         throw InvalidArgumentException("Cannot install a null MachineProfile");
 
@@ -162,6 +170,7 @@ void Emulator::installMachine(std::unique_ptr<MachineProfile> machine)
 {
     m_scheduler.clear();
     m_ioBus.clear();
+    m_snapshotStandardAy = false;
     m_romcs.clear();
     m_cpu.clearPeripheralHooks();
     m_cpu.setZ80nEnabled(machine->supportsZ80n());
@@ -316,6 +325,8 @@ OptionalRef<DiskImage> Emulator::diskDrive(std::size_t drive) noexcept
 
 void Emulator::reset(ResetKind kind)
 {
+    if (m_rzx.isRecording() || m_rzx.isReviewing()) throw FormatException("Stop RZX recording before resetting the machine");
+    stopRzxPlayback();
     m_ula.endRasterFrame();
     m_clock.reset();
     m_cpu.reset(kind == ResetKind::Hard);
@@ -365,6 +376,332 @@ void Emulator::updateDebuggerHook() noexcept
                                  || m_stoppedAtBreakpoint.has_value());
 }
 
+void Emulator::startRzxRecording()
+{
+    if (m_rzx.isRecording() || m_rzx.isReviewing()) throw FormatException("RZX recording is already active");
+    const auto machineId = rzxMachineId(m_machine->id());
+    if (!machineId || m_clock.speedMultiplier() != 1)
+        throw FormatException("This machine/CPU turbo mode cannot be represented by an RZX snapshot");
+    stopRzxPlayback();
+    clearRzxCheckpoints();
+    if (!m_frameStarted) beginFrame();
+    m_cpu.acknowledgePendingInterrupt();
+    auto snapshot = saveSnapshot(".szx");
+    snapshot[6] = *machineId;
+    if (m_machine->id() == "16k" || m_machine->id() == "48k" || m_machine->id() == "48k_ntsc") {
+        // Preserve the external AY interface as well as its register contents.
+        StateReader chunks(std::span<const uint8_t>(snapshot).subspan(8));
+        while (!chunks.eof()) {
+            const auto tag = chunks.readSpan(4);
+            const auto size = chunks.read<uint32_t>();
+            const auto offset = 8 + chunks.position();
+            chunks.readSpan(size);
+            if (std::memcmp(tag.data(), "AY\0\0", 4) == 0 && size >= 18) {
+                const uint8_t flags = (findPeripheral("fuller") ? 1 : 0) | (m_snapshotStandardAy ? 2 : 0);
+                snapshot[offset] = flags ? flags : 2;
+            }
+        }
+    }
+    m_cpu.resetTrackedFetches();
+    m_recordingBoundary = false;
+    m_rzx.startRecording(std::move(snapshot), ".szx", m_ioBus, m_clock.frameBaseTstates());
+    m_tapeDeck.onFrameStart(m_machine->is48kMode(), true);
+    m_rzxTimelineHz = frameRateHz();
+    captureRzxCheckpoint(true);
+}
+
+std::vector<uint8_t> Emulator::stopRzxRecording()
+{
+    if (isRzxSeeking()) throw FormatException("Wait for the RZX seek to finish");
+    if (!m_rzx.isRecording() && !m_rzx.isReviewing()) throw FormatException("No active RZX recording");
+    if (m_rzx.isRecording() && m_cpu.trackedFetches()) {
+        // Finish the video interval so that a later replay has an actual INT boundary.
+        if (runFrame() != RunStatus::FrameDone)
+            throw FormatException("Cannot finish an RZX interval while the CPU is trapped");
+    }
+    auto bytes = m_rzx.stopRecording(m_ioBus);
+    while (!m_rzxCheckpoints.empty() && m_rzxCheckpoints.back().frame > m_rzx.frameCount()) {
+        m_rzxCheckpointBytes -= m_rzxCheckpoints.back().bytes;
+        m_rzxCheckpoints.pop_back();
+    }
+    return bytes;
+}
+
+void Emulator::stopRzxPlayback() noexcept
+{
+    if (m_rzx.isRecording() || m_rzx.isReviewing()) return;
+    m_rzx.stopPlayback();
+    m_ioBus.setRzxCallbacks(nullptr, nullptr);
+    m_cpu.resetTrackedFetches();
+    m_rzxSeekTarget.reset();
+}
+
+void Emulator::clearRzxCheckpoints()
+{
+    m_rzxCheckpoints.clear();
+    m_rzxCheckpointBytes = 0;
+    m_rzxSeekTarget.reset();
+}
+
+void Emulator::captureRzxCheckpoint(bool force)
+{
+    const auto frame = m_rzx.playbackFrame();
+    if (!m_rzxCheckpoints.empty()) {
+        const auto previous = m_rzxCheckpoints.back().frame;
+        if (frame <= previous || (!force && m_rzx.ticksAt(frame) - m_rzx.ticksAt(previous) < 50)) return;
+    }
+    RzxCheckpoint point;
+    point.frame = frame; point.command = m_rzx.commandPosition();
+    point.machine = m_machine->id(); point.state = serializeState();
+    for (const auto &peripheral : m_peripherals) point.peripherals.emplace_back(peripheral->id());
+    point.scheduler = m_scheduler;
+    point.line = m_line; point.frameStarted = m_frameStarted; point.lineStarted = m_lineStarted;
+    point.recordingBoundary = m_recordingBoundary; point.standardAy = m_snapshotStandardAy;
+    point.beforeInterrupt = m_rzx.isRecording() && m_recordingBoundary;
+    point.inhibitInterrupt = m_cpu.interruptJustEnabled();
+    point.bytes = point.state.size() + sizeof(point);
+    for (const auto &block : m_tapeDeck.blocks()) {
+        point.bytes += sizeof(block) + block.description.capacity() + block.data.capacity()
+            + block.pulses.capacity() * sizeof(uint32_t) + block.pilotStream.capacity() * sizeof(TapeSymbolRun)
+            + block.offsets.capacity() * sizeof(int16_t) + block.labels.capacity() * sizeof(std::string)
+            + (block.pilotSymbols.capacity() + block.dataSymbols.capacity()) * sizeof(TapeSymbol);
+        for (const auto *symbols : {&block.pilotSymbols, &block.dataSymbols})
+            for (const auto &symbol : *symbols) point.bytes += symbol.pulses.capacity() * sizeof(uint16_t);
+        for (const auto &label : block.labels) point.bytes += label.capacity();
+    }
+    // Keep the origin for arbitrary backward seeks; recent checkpoints bound replay work.
+    constexpr std::size_t budget = 64 * 1024 * 1024;
+    if (point.bytes > budget) {
+        if (m_rzxCheckpoints.empty()) m_rzx.fail("initial seek checkpoint exceeds the memory budget");
+        return;
+    }
+    if (!m_rzxCheckpoints.empty() && point.bytes + m_rzxCheckpoints.front().bytes > budget) return;
+    point.tape = m_tapeDeck;
+    m_rzxCheckpointBytes += point.bytes;
+    m_rzxCheckpoints.push_back(std::move(point));
+    while (m_rzxCheckpoints.size() > 2 && m_rzxCheckpointBytes > budget) {
+        m_rzxCheckpointBytes -= m_rzxCheckpoints[1].bytes;
+        m_rzxCheckpoints.erase(m_rzxCheckpoints.begin() + 1);
+    }
+}
+
+uint64_t Emulator::rzxPositionMilliseconds() const
+{
+    return static_cast<uint64_t>(std::llround(m_rzx.ticksAt(m_rzx.playbackFrame()) * 1000.0 / m_rzxTimelineHz));
+}
+
+uint64_t Emulator::rzxDurationMilliseconds() const
+{
+    return static_cast<uint64_t>(std::llround(m_rzx.ticksAt(m_rzx.frameCount()) * 1000.0 / m_rzxTimelineHz));
+}
+
+void Emulator::beginRzxSeek(uint64_t milliseconds)
+{
+    const auto tick = milliseconds >= rzxDurationMilliseconds() ? m_rzx.ticksAt(m_rzx.frameCount())
+        : static_cast<uint64_t>(std::llround(milliseconds * m_rzxTimelineHz / 1000.0));
+    beginRzxSeekFrame(m_rzx.frameAtTick(tick));
+}
+
+void Emulator::beginRzxSeekFrame(std::size_t frame)
+{
+    if (m_rzxCheckpoints.empty() || m_rzx.state() == RzxState::Error || m_rzx.state() == RzxState::Idle)
+        throw FormatException("No seekable RZX timeline");
+    const bool reviewing = m_rzx.isRecording() || m_rzx.isReviewing();
+    if (m_rzx.isRecording()) {
+        if (m_cpu.trackedFetches() && runFrame() != RunStatus::FrameDone)
+            throw FormatException("Cannot seek while the CPU is trapped");
+        captureRzxCheckpoint(true);
+    }
+    frame = std::min(frame, m_rzx.frameCount());
+    const auto it = std::find_if(m_rzxCheckpoints.rbegin(), m_rzxCheckpoints.rend(),
+                                 [frame](const auto &point) { return point.frame <= frame; });
+    const auto &point = *it;
+    m_applyingRzxSnapshot = true;
+    try {
+        // Fuller can be added automatically by later embedded snapshots.
+        const bool fuller = std::ranges::find(point.peripherals, "fuller") != point.peripherals.end();
+        std::vector<std::string> current, expected;
+        for (const auto &peripheral : m_peripherals)
+            if (peripheral->id() != "fuller") current.emplace_back(peripheral->id());
+        for (const auto &id : point.peripherals) if (id != "fuller") expected.push_back(id);
+        if (current != expected) throw FormatException("Cannot seek across peripheral configuration changes");
+        if (fuller && !findPeripheral("fuller")) attachPeripheral(std::make_unique<FullerBoxPeripheral>());
+        if (!fuller && findPeripheral("fuller")) detachPeripheral("fuller");
+        if (m_machine->id() != point.machine) selectMachine(point.machine);
+        if (m_snapshotStandardAy && !point.standardAy) {
+            m_ioBus.unregisterOwner(std::string(m_machine->id()) + "_ay_reg");
+            m_ioBus.unregisterOwner(std::string(m_machine->id()) + "_ay_data");
+        }
+        if (point.standardAy && !m_snapshotStandardAy) m_machine->registerStandardAyPorts(m_context);
+        m_snapshotStandardAy = point.standardAy;
+        deserializeState(point.state);
+        m_tapeDeck = point.tape; m_scheduler = point.scheduler;
+    } catch (...) { m_applyingRzxSnapshot = false; throw; }
+    m_applyingRzxSnapshot = false;
+    m_line = point.line; m_frameStarted = point.frameStarted; m_lineStarted = point.lineStarted;
+    m_recordingBoundary = point.recordingBoundary;
+    m_cpu.resetTrackedFetches(); m_audioSamples = {};
+    m_rzx.setPlaybackPosition(point.frame, point.command, reviewing, m_ioBus);
+    m_rzxSeekInterrupt = point.beforeInterrupt; m_rzxSeekInhibit = point.inhibitInterrupt;
+    m_rzxSeekTarget = frame;
+}
+
+bool Emulator::advanceRzxSeek(uint32_t maxVideoFrames)
+{
+    if (!m_rzxSeekTarget) return true;
+    const uint64_t budget = uint64_t(maxVideoFrames) * (m_clock.timings().linesPerFrame + 16);
+    for (uint64_t i = 0; i < budget && m_rzx.playbackFrame() < *m_rzxSeekTarget; ++i) {
+        if (m_rzxSeekInterrupt) {
+            m_cpu.acceptPlaybackInterrupt(m_rzx.playbackFetches() <= 4, m_rzxSeekInhibit);
+            m_rzxSeekInterrupt = false;
+        }
+        if (runScanline() == RunStatus::Stopped) throw FormatException("RZX seek stopped at a debugger trap");
+    }
+    if (m_rzx.playbackFrame() < *m_rzxSeekTarget) return false;
+    m_rzxSeekTarget.reset(); m_audioSamples = {};
+    refreshFrame();
+    return true;
+}
+
+void Emulator::resumeRzxRecording()
+{
+    if (isRzxSeeking()) throw FormatException("Wait for the RZX seek to finish");
+    if (m_rzx.isRecording()) return;
+    if (!m_rzx.isReviewing()) throw FormatException("No paused RZX recording");
+    const auto frame = m_rzx.playbackFrame();
+    while (!m_rzxCheckpoints.empty() && m_rzxCheckpoints.back().frame > frame) {
+        m_rzxCheckpointBytes -= m_rzxCheckpoints.back().bytes;
+        m_rzxCheckpoints.pop_back();
+    }
+    m_rzx.resumeRecording(m_ioBus);
+    m_recordingBoundary = !m_frameStarted;
+    m_rzxSeekInterrupt = false;
+}
+
+void Emulator::applyRzxCommands()
+{
+    const auto commands = m_rzx.pendingCommands();
+    if (commands.empty()) return;
+    try {
+        for (const auto &command : commands) {
+            if (command.type == RzxCommand::Type::Snapshot) {
+                m_applyingRzxSnapshot = true;
+                selectMachine(rzxSnapshotMachine(command.snapshot, command.extension));
+                loadSnapshot(command.snapshot, command.extension);
+                const auto id = m_machine->id();
+                if (id == "16k" || id == "48k" || id == "48k_ntsc") {
+                    const auto ayFlags = rzxSnapshotAyFlags(command.snapshot, command.extension);
+                    if ((ayFlags & 1) && !findPeripheral("fuller"))
+                        attachPeripheral(std::make_unique<FullerBoxPeripheral>());
+                    if (ayFlags & 2) {
+                        m_machine->registerStandardAyPorts(m_context);
+                        m_snapshotStandardAy = true;
+                    }
+                }
+                m_applyingRzxSnapshot = false;
+            } else {
+                if (command.tstates >= m_clock.timings().tstatesPerFrame())
+                    throw FormatException("RZX initial T-state position is outside the machine frame");
+                m_clock.setFrameTstates(command.tstates * m_clock.speedMultiplier());
+                m_line = static_cast<uint16_t>(command.tstates / m_clock.timings().tstatesPerLine);
+                m_frameStarted = command.tstates != 0;
+                m_lineStarted = false;
+            }
+        }
+    } catch (const std::exception &error) {
+        m_applyingRzxSnapshot = false;
+        m_rzx.fail(std::format("snapshot/position setup failed: {}", error.what()));
+    }
+    m_rzx.consumeCommands(commands.size());
+    m_rzx.connectPlayback(m_ioBus); // snapshot loading may have rebuilt the machine's bus
+}
+
+void Emulator::finishPlaybackPresentation()
+{
+    const auto &timings = m_clock.timings();
+    // Finish unexecuted raster time without running any unrecorded instructions.
+    if (m_clock.frameBaseTstates() < timings.tstatesPerFrame())
+        m_clock.advance((timings.tstatesPerFrame() - m_clock.frameBaseTstates()) * m_clock.speedMultiplier());
+    m_scheduler.processDue(m_clock.totalTstates());
+    m_tapeDeck.update(m_context);
+    if (m_machine->usesRasterUla()) m_ula.renderUntil(timings.tstatesPerFrame(), m_mmu);
+    for (; m_line < timings.linesPerFrame; ++m_line) {
+        const int32_t y = int32_t(m_line) - timings.topBorderLines + m_ula.borderMargins().top;
+        if (y >= 0 && y < int32_t(m_ula.outputHeight())) {
+            auto frame = m_frame.writeLock();
+            if (m_machine->usesRasterUla()) m_ula.copyRasterScanline(y, *frame);
+            else m_machine->renderScanline(y, m_context, m_ula, *frame);
+        }
+    }
+    endFrame();
+    // A recorded fetch boundary is not an instruction overshooting a raster
+    // boundary. Contention differences must not accumulate into the next frame.
+    m_clock.setFrameTstates(0);
+}
+
+RunStatus Emulator::runPlaybackScanline()
+{
+    // Fetch/INT boundaries are independent of the machine's raster timing.
+    // Short retrigger records share a video frame with the following interval.
+    for (unsigned boundaries = 0; boundaries < 1024; ++boundaries) {
+        if (!m_frameStarted) beginFrame();
+        const auto &timings = m_clock.timings();
+        const auto fetches = m_rzx.playbackFetches();
+        if (!m_lineStarted) {
+            m_lineStarted = true;
+            if (m_line < timings.linesPerFrame) m_machine->onScanlineStart(m_line, m_context);
+        }
+        const auto target = std::max<uint32_t>((uint32_t(m_line) + 1) * timings.tstatesPerLine,
+                                               m_clock.frameBaseTstates() + 1);
+        m_cpu.runTrackedUntil(target, fetches, true);
+        if (m_cpu.isTrapped()) {
+            if (!m_pendingPause) requestPause(PauseReason::MagicBreakpoint);
+            return RunStatus::Stopped;
+        }
+        if (m_cpu.trackedFetches() > fetches) m_rzx.fail("fetch boundary splits a CPU instruction");
+        if (m_clock.frameBaseTstates() > timings.tstatesPerFrame() * 16)
+            m_rzx.fail("recorded interval exceeds the playback timing limit");
+        if (m_cpu.trackedFetches() == fetches) {
+            const bool inhibitInterrupt = m_cpu.interruptJustEnabled();
+            m_rzx.advancePlaybackFrame(m_ioBus); // validates exact input consumption
+            m_cpu.resetTrackedFetches();
+            const bool present = fetches > 4 || !m_rzx.isPlaying();
+            if (present) finishPlaybackPresentation();
+            applyRzxCommands();
+            if (m_rzx.isPlaying()) {
+                m_cpu.acceptPlaybackInterrupt(m_rzx.playbackFetches() <= 4, inhibitInterrupt);
+                m_tapeDeck.onFrameStart(m_machine->is48kMode(), true);
+            } else {
+                m_cpu.acceptPlaybackInterrupt(false);
+                // Rejoin the machine's normal level pulse after the final RZX INT.
+                m_cpu.requestInterrupt(0xff, m_clock.frameTstates());
+            }
+            if (!present && m_rzxSeekTarget && m_rzx.playbackFrame() >= *m_rzxSeekTarget)
+                return RunStatus::LineDone;
+            if (present) {
+                captureRzxCheckpoint();
+                if (!m_rzx.isPlaying() && !m_rzx.isReviewing()) requestPause(PauseReason::UserRequest);
+                return RunStatus::FrameDone;
+            }
+            continue;
+        }
+        m_scheduler.processDue(m_clock.totalTstates());
+        m_tapeDeck.update(m_context);
+        const int32_t y = int32_t(m_line) - timings.topBorderLines + m_ula.borderMargins().top;
+        if (m_line < timings.linesPerFrame && y >= 0 && y < int32_t(m_ula.outputHeight())) {
+            auto frame = m_frame.writeLock();
+            if (m_machine->usesRasterUla()) {
+                m_ula.renderUntil(m_clock.frameBaseTstates(), m_mmu);
+                m_ula.copyRasterScanline(y, *frame);
+            } else m_machine->renderScanline(y, m_context, m_ula, *frame);
+        }
+        m_lineStarted = false;
+        ++m_line;
+        return m_pendingPause ? RunStatus::Stopped : RunStatus::LineDone;
+    }
+    return RunStatus::LineDone;
+}
+
 void Emulator::beginFrame()
 {
     m_frameStarted = true;
@@ -375,7 +712,8 @@ void Emulator::beginFrame()
     for (auto &periph : m_peripherals)
         periph->onFrameStart();
     // The ULA frame interrupt (machines may gate or redirect it)
-    m_machine->onFrameStart(m_context);
+    if (!m_rzx.isPlaying())
+        m_machine->onFrameStart(m_context);
     m_frame.writeLock()->setFrameNumber(m_clock.frameCount());
 }
 
@@ -383,6 +721,9 @@ RunStatus Emulator::runScanline()
 {
     m_pendingPause.reset();
     updateDebuggerHook();
+
+    if (m_rzx.isPlaying())
+        return runPlaybackScanline();
 
     if (!m_frameStarted)
         beginFrame();
@@ -393,7 +734,20 @@ RunStatus Emulator::runScanline()
         m_machine->onScanlineStart(m_line, m_context);
     }
 
-    m_cpu.runUntil((static_cast<uint32_t>(m_line) + 1) * timings.tstatesPerLine);
+    const uint32_t lineEnd = (static_cast<uint32_t>(m_line) + 1) * timings.tstatesPerLine;
+    if (m_rzx.isRecording()) {
+        while (m_clock.frameBaseTstates() < lineEnd) {
+            if (m_cpu.runTrackedUntil(lineEnd, std::numeric_limits<uint32_t>::max(), false)) {
+                if (!m_recordingBoundary || m_cpu.trackedFetches())
+                    m_rzx.endRecordedFrame(m_cpu.trackedFetches());
+                m_cpu.resetTrackedFetches();
+                m_recordingBoundary = false;
+            }
+            if (m_cpu.isTrapped()) break;
+        }
+    } else {
+        m_cpu.runUntil(lineEnd);
+    }
     if (m_cpu.isTrapped()) {
         // Not a breakpoint nor a watchpoint: a magic breakpoint (ED FF / DD 01)
         requestPause(PauseReason::MagicBreakpoint);
@@ -443,10 +797,11 @@ void Emulator::endFrame()
     if (m_rewindEnabled)
         m_debugger.rewindBuffer().pushSnapshot(serializeState());
 
-    if (m_rzx.isRecording())
-        m_rzx.endRecordedFrame();
-    else if (m_rzx.isPlaying())
-        m_rzx.advancePlaybackFrame(m_ioBus);
+    if (m_rzx.isRecording()) {
+        m_rzx.endRecordedFrame(m_cpu.trackedFetches());
+        m_cpu.resetTrackedFetches();
+        m_recordingBoundary = true;
+    }
 
     // Clock carries the last instruction's overshoot into the next video frame.
     // Audio must use the nominal boundary too, or those T-states are counted twice.
@@ -460,6 +815,7 @@ void Emulator::endFrame()
     m_lastFrame = std::exchange(m_frame, std::move(next));
     m_line = 0;
     m_frameStarted = false;
+    if (m_rzx.isRecording()) captureRzxCheckpoint();
 }
 
 RunStatus Emulator::runFrame()
@@ -537,6 +893,8 @@ void Emulator::setRewindEnabled(bool enabled, std::size_t maxFrames)
 
 void Emulator::rewind(std::size_t framesBack)
 {
+    if (m_rzx.isPlaying() || m_rzx.isRecording() || m_rzx.isReviewing())
+        throw FormatException("Use RZX seeking instead of debugger rewind during playback/recording");
     deserializeState(m_debugger.rewindBuffer().popStepsBack(framesBack));
     refreshFrame();
 }
@@ -581,6 +939,11 @@ void Emulator::deserializeState(std::span<const uint8_t> bytes)
 void Emulator::loadMedia(const MediaFile &file)
 {
     const std::string &ext = file.extension;
+    if (ext != ".rzx" && !m_rzx.isRecording() && !m_rzx.isReviewing()) {
+        stopRzxPlayback();
+        m_rzx.clear();
+        clearRzxCheckpoints();
+    }
     if (m_config.mediaFormats.hasLoader(ext)) {
         m_config.mediaFormats.invokeLoader(ext, *this, file.data);
         return;
@@ -595,9 +958,14 @@ void Emulator::loadMedia(const MediaFile &file)
             throw PeripheralException("This machine has no floppy drive");
         insertDisk(0, file.data, ext);
     } else if (ext == ".rzx") {
+        if (m_rzx.isRecording() || m_rzx.isReviewing()) throw FormatException("Stop recording before opening an RZX file");
         m_rzx.loadRzx(file.data, m_ioBus);
-        if (!m_rzx.embeddedSnapshot().empty())
-            loadSnapshot(m_rzx.embeddedSnapshot(), m_rzx.embeddedSnapshotExt());
+        applyRzxCommands();
+        m_cpu.resetTrackedFetches();
+        m_tapeDeck.onFrameStart(m_machine->is48kMode(), m_rzx.isPlaying());
+        clearRzxCheckpoints();
+        m_rzxTimelineHz = frameRateHz();
+        captureRzxCheckpoint(true);
     } else if (ext == ".scr") {
         if (file.data.size() < 6912)
             throw FormatException("SCR file must be at least 6912 bytes");
@@ -630,6 +998,10 @@ void Emulator::saveMediaFile(const std::filesystem::path &path)
 
 void Emulator::loadSnapshot(std::span<const uint8_t> data, std::string_view extension)
 {
+    if (!m_applyingRzxSnapshot) {
+        if (m_rzx.isRecording() || m_rzx.isReviewing()) throw FormatException("Stop recording before loading a snapshot");
+        stopRzxPlayback();
+    }
     m_ula.endRasterFrame();
     const std::string ext = normalizedExtension(extension);
     SnapshotMachineState state{m_context, *m_machine, m_ula};
