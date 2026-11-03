@@ -314,6 +314,7 @@ void CobraMachine::reset(MachineContext &ctx, UlaRenderer &ula, ResetKind kind)
     // NVS is high between the vertical sync pulses
     m_ctc.setTrigger(3, true);
     m_fdc.reset();
+    m_fdc.setClockHz(ctx.clock.timings().baseClockHz * ctx.clock.speedMultiplier());
     m_terminalCount = false;
 
     m_8255Ctrl = 0x9B;

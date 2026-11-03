@@ -94,8 +94,8 @@ void MemoryBank::loadState(StateReader &r)
 {
     m_writable = r.readBool();
     const auto len = r.read<uint32_t>();
-    m_data.resize(len);
-    r.readBytes(m_data);
+    const auto bytes = r.readSpan(len);
+    m_data.assign(bytes.begin(), bytes.end());
 }
 
 } // namespace zxkit

@@ -18,10 +18,12 @@
 #pragma once
 
 #include "zxkit/machines/MachineProfile.h"
+#include "zxkit/input/Joystick.h"
 #include "zxkit/video/UlaRenderer.h"
 
 #include <cstdint>
 #include <cstring>
+#include <optional>
 #include <span>
 #include <vector>
 
@@ -33,14 +35,32 @@ struct SnapshotMachineState {
     UlaRenderer &ula;
 };
 
+struct SnapshotJoystickInfo {
+    bool present = false;
+    // A single declared interface, including explicit None. Empty for missing,
+    // unsupported or conflicting declarations; never guess a programmable mapping.
+    std::optional<JoystickType> type;
+};
+
 /// Loads and saves .sna, .z80 (v1/v2/v3), .szx (ZX-State), and .nex (ZX Spectrum Next) snapshots.
 class SnapshotFormats {
 public:
+    /// Base machine declared by the interchange header (throws for unsupported hardware).
+    static std::string_view machineId(std::span<const uint8_t> data, std::string_view extension);
+    static SnapshotJoystickInfo joystickInfo(std::span<const uint8_t> data, std::string_view extension);
+    /// Write host input preferences without changing machine state. False if the
+    /// format cannot represent this interface (the existing bytes stay unchanged).
+    static bool setJoystickInfo(std::vector<uint8_t> &data, std::string_view extension, JoystickType type);
+
     // ── SNA Format (48K & 128K) ───────────────────────────────────────────
     static void loadSna(std::span<const uint8_t> data, SnapshotMachineState &state);
     static std::vector<uint8_t> saveSna48k(const SnapshotMachineState &state);
 
     // ── Z80 Format (v1, v2, v3) ───────────────────────────────────────────
+    static std::vector<uint8_t> saveSna128k(const SnapshotMachineState &state);
+    static std::vector<uint8_t> saveZ80(const SnapshotMachineState &state);
+    /// Program export: NEX stores RAM, PC/SP and a fixed entry map, not full CPU/device state.
+    static std::vector<uint8_t> saveNex(const SnapshotMachineState &state);
     static void loadZ80(std::span<const uint8_t> data, SnapshotMachineState &state);
 
     // ── SZX Format (ZX-State) ─────────────────────────────────────────────

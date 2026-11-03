@@ -45,7 +45,11 @@ public:
             m_emulator.ioBus().write(0x3FFD, b);
         }
     }
-    uint8_t read() { return m_emulator.ioBus().read(0x3FFD); }
+    void ready() {
+        for (unsigned i = 0; !(status() & 0x80) && i < 200000; ++i) wait(16);
+        assert(status() & 0x80);
+    }
+    uint8_t read() { ready(); return m_emulator.ioBus().read(0x3FFD); }
     std::vector<uint8_t> readBytes(std::size_t n)
     {
         std::vector<uint8_t> out;
@@ -56,7 +60,7 @@ public:
     std::vector<uint8_t> result()
     {
         // After the last data byte the controller reads the CRC: busy, not ready
-        for (int i = 0; i < 100 && (status() & 0x90) == 0x10; ++i)
+        for (int i = 0; i < 200000 && (status() & 0x90) == 0x10; ++i)
             wait(16);
         std::vector<uint8_t> out;
         while ((status() & 0xD0) == 0xD0) // RQM, DIO, busy: a result byte
@@ -127,6 +131,7 @@ void testPlus3Fdc()
                        .data = std::vector<uint8_t>(512, static_cast<uint8_t>(0x10 + i))});
     disk.replaceTrack(7, 0, odd);
     fdc.command({0x0F, 0x00, 7});
+    fdc.wait(700000);
     fdc.command({0x08});
     fdc.result();
     fdc.command({0x42, 0x00, 7, 0, 1, 2, 1, 0x2A, 0xFF});
@@ -141,6 +146,7 @@ void testPlus3Fdc()
         std::fill(weak.data.begin() + static_cast<std::ptrdiff_t>(i * 512),
                   weak.data.begin() + static_cast<std::ptrdiff_t>((i + 1) * 512), static_cast<uint8_t>(0xA0 + i));
     fdc.command({0x0F, 0x00, 0});
+    fdc.wait(700000);
     fdc.command({0x08});
     fdc.result();
     for (uint8_t copy = 0; copy < 4; ++copy) {
@@ -163,6 +169,16 @@ void testWd1793()
     fdc.selectDrive(0);
     fdc.selectSide(1);
     uint64_t now = 1'000'000;
+    const auto idle = [&] {
+        for (unsigned i = 0; fdc.busy() && i < 200000; ++i) fdc.update(now += 32);
+        assert(!fdc.busy());
+    };
+    const auto ready = [&] {
+        for (unsigned i = 0; !fdc.drq() && fdc.busy() && i < 200000; ++i) fdc.update(now += 16);
+        assert(fdc.drq());
+    };
+    const auto read = [&] { ready(); return fdc.readData(); };
+    const auto write = [&](uint8_t value) { ready(); fdc.writeData(value); };
 
     // RESTORE, then SEEK: type I status, INTRQ
     fdc.writeCommand(0x08, now);
@@ -171,38 +187,53 @@ void testWd1793()
     assert(!fdc.intrq());               // reading the status acknowledges it
     fdc.writeData(5);
     fdc.writeCommand(0x18, now);
+    assert(fdc.busy() && !fdc.intrq() && fdc.readTrack() == 0);
+    fdc.update(now + 5 * 21000 - 1);
+    assert(fdc.busy());
+    now += 5 * 21000;
+    fdc.update(now);
     assert(fdc.readTrack() == 5 && !(fdc.readStatus(now) & 0x04));
 
     // READ SECTOR
     fdc.writeSector(3);
     fdc.writeCommand(0x80, now);
-    assert(fdc.drq() && fdc.busy());
+    assert(!fdc.drq() && fdc.busy());
     std::vector<uint8_t> data;
     for (int i = 0; i < 256; ++i)
-        data.push_back(fdc.readData());
+        data.push_back(read());
     assert(data[0] == 0 && data[254] == 254);
     assert(fdc.intrq() && !fdc.busy() && (fdc.readStatus(now) & 0x7F) == 0);
 
     // A missing sector: Record Not Found
     fdc.writeSector(17);
     fdc.writeCommand(0x80, now);
+    assert(fdc.busy() && !fdc.intrq());
+    idle();
     assert(fdc.intrq() && (fdc.readStatus(now) & 0x10));
+
+    // Missing a presented byte must raise Lost Data; a busy controller ignores another read.
+    fdc.writeSector(3);
+    fdc.writeCommand(0x80, now);
+    ready();
+    assert(fdc.busy());
+    fdc.update(now += 112);
+    assert(fdc.intrq() && !fdc.busy() && (fdc.readStatus(now) & 4));
 
     // WRITE SECTOR
     fdc.writeSector(4);
     fdc.writeCommand(0xA0, now);
     for (int i = 0; i < 256; ++i)
-        fdc.writeData(0x5A);
+        write(0x5A);
     assert(fdc.intrq() && disk.findSector(5, 1, 4)->get().data[100] == 0x5A);
 
     // READ ADDRESS: the next id, and its track goes to the sector register
     fdc.writeCommand(0xC0, now);
-    const uint8_t c = fdc.readData();
-    fdc.readData();
-    const uint8_t r = fdc.readData();
-    assert(fdc.readData() == 1); // 256 bytes
-    fdc.readData();
-    fdc.readData();
+    const uint8_t c = read();
+    read();
+    const uint8_t r = read();
+    assert(read() == 1); // 256 bytes
+    read();
+    read();
     assert(c == 5 && r >= 1 && r <= 16 && fdc.readSector() == 5 && fdc.intrq());
 
     // FORCE INTERRUPT ends a transfer
@@ -214,8 +245,9 @@ void testWd1793()
     // WRITE TRACK without data ends at the index pulse with Lost Data (TR-DOS relies on it)
     fdc.writeCommand(0xF0, now);
     assert(fdc.busy() && !fdc.intrq());
-    fdc.update(now + 700'000);
-    assert(fdc.intrq() && (fdc.readStatus(now + 700'000) & 0x04));
+    now += 700'000;
+    fdc.update(now);
+    assert(fdc.intrq() && (fdc.readStatus(now) & 0x04));
 
     // WRITE TRACK with a TR-DOS style format: the sectors come back from the marks
     fdc.writeCommand(0xF0, now);
@@ -234,7 +266,7 @@ void testWd1793()
     }
     track.resize(6250, 0x4E);
     for (uint8_t b : track)
-        fdc.writeData(b);
+        write(b);
     assert(fdc.intrq());
     const auto sectors = disk.trackSectors(5, 1);
     assert(sectors.size() == 16 && sectors[15].get().sectorId == 16 && sectors[15].get().data[0] == 16);

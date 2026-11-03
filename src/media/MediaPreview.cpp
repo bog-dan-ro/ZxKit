@@ -186,8 +186,10 @@ VideoFrame extractMediaPreview(std::span<const uint8_t> fileBytes, std::string_v
         }
     }
 
-    if (ext == ".tap" || ext == ".tzx") {
-        const auto blocks = ext == ".tap" ? TapeFormats::parseTap(fileBytes) : TapeFormats::parseTzx(fileBytes);
+    if (ext == ".tap" || ext == ".tzx" || ext == ".pzx" || ext == ".csw") {
+        const auto blocks = ext == ".tap" ? TapeFormats::parseTap(fileBytes)
+                          : ext == ".tzx" ? TapeFormats::parseTzx(fileBytes)
+                          : ext == ".pzx" ? TapeFormats::parsePzx(fileBytes) : TapeFormats::parseCsw(fileBytes);
         for (const auto &blk : blocks) {
             // Standard 6912-byte SCREEN$ tape block has 1 flag byte + 6912 data bytes + 1 checksum = 6914 bytes
             if (blk.data.size() == 6914) {

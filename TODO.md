@@ -38,13 +38,19 @@ less disruptive than a crackle or gap in the sound. Clone and extension work sta
 
 ## Media formats and disk auto-boot
 
-- [ ] More tape formats: PZX and standalone CSW (the block model and `TapeCursor` already cover them); saving TZX
-      (only TAP today).
-- [ ] Snapshot saving: 128K `.sna`, `.z80` and `.nex` (only 48K SNA and SZX today).
-- [ ] Disk auto-load for hosts (FUSE resets into TR-DOS, or picks the +3 Loader, when a disk is opened): a
-      public API to agree on first.
-- [ ] The WD1793 and the uPD765 are sector level: commands complete at once (no head stepping, no rotation
-      delays). Enough for the loaders tried so far; protections that time the disk would need more.
+- [x] PZX 1.x and standalone CSW 1.x/2.x reading, with compact PZX pulse/data streams and bounded
+      CSW decompression. TZX export preserves signal, control destinations and original descriptive metadata;
+      TAP export rejects tapes it cannot represent. Authored waveform tests and the original PZX tools agree.
+- [x] Snapshot exports: 128K SNA (including duplicated bank 2/5 cases), Z80 v3 and Next NEX v1.2 programs.
+      SZX remains the default; classic machine IDs, frame position, CPU latches and paging round-trip.
+      ZxKit's versioned `ZKNX` SZX extension retains native Next state; NEX is explicitly a program export.
+- [x] Explicit `autoLoadTape(block)` / `autoBootDisk()` host APIs: selected-block reset/load, drive A TR-DOS
+      reset or +3 Loader. Key presses advance on emulated frames, without synchronous host-side frame loops.
+- [x] WD1793 and uPD765 timing: head steps/seeks, uniform 300 rpm sector arrival, head settling, byte
+      readiness and lost-data/overrun deadlines. Standalone controller and real ROM/CP/M boot tests pass.
+      These remain sector-image models; flux-level layouts and exact protection timing are outside their coverage.
+
+See [Media formats and host boot actions](docs/media.md) for API examples, interchange limits and specifications.
 
 ## Debugger
 
@@ -140,9 +146,12 @@ Keep these after all of the work above. Standalone DivMMC remains postponed.
 - [ ] Interface 1: a microdrive cartridge API (`.mdr` insert, eject, save) and RS232. The cartridge API is needed
       for the microdrive part of [Spectacol #152](https://github.com/bog-dan-ro/spectacol/issues/152).
 - [ ] Spectranet: Ethernet (W5100); only its paging is emulated.
-- [ ] TC2068 / TS2068: the AY (ports 0xF5/0xF6) and the two joysticks read through its I/O port (FUSE's
-      `joystick_timex_read`).
+- [x] TC2068 / TS2068: AY on 0xF5/0xF6 and both joystick inputs through register 14,
+      with A8/A9 player selection, active-low directions/fire and AY input/output gating.
 - [ ] ULAplus (64 colours) on the classic machines (only the Next has it): the Spectrum-compatible part of
       [Spectacol #2](https://github.com/bog-dan-ro/spectacol/issues/2), without taking on its other machine requests.
 - [ ] Twister (System 3) fails with the acceleration on, like in FUSE: find which pattern misfires.
 - [ ] Standalone DivMMC/esxDOS on classic machines: postponed. Keep it independent of the Next built-in device.
+
+- [ ] Revisit the experimental FlatBuffers [zx_format](https://github.com/bog-dan-ro/zx_format/tree/master)
+      container after the established formats and higher-priority compatibility work; no new dependency yet.

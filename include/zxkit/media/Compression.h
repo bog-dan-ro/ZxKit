@@ -29,6 +29,8 @@ namespace zxkit {
 
 std::vector<uint8_t> zlibCompress(std::span<const uint8_t> input, int level = -1);
 std::vector<uint8_t> zlibDecompress(std::span<const uint8_t> input, std::size_t expectedSize = 16384);
+/// Bounded variant for untrusted variable-length media payloads.
+std::vector<uint8_t> zlibDecompressBounded(std::span<const uint8_t> input, std::size_t maxSize);
 uint32_t computeCrc32(std::span<const uint8_t> data) noexcept;
 
 struct ZipExtractedEntry {

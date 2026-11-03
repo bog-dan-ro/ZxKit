@@ -62,7 +62,9 @@ void Clock::loadState(StateReader &r)
     m_frameBaseTstates = r.read<uint32_t>();
     m_baseRemainder = 0;
     m_frameCount   = r.read<uint64_t>();
-    m_speed        = static_cast<CpuSpeed>(r.read<uint8_t>());
+    const auto speed = r.read<uint8_t>();
+    if (speed > 3) throw FormatException("Invalid CPU speed in state");
+    m_speed = static_cast<CpuSpeed>(speed);
 }
 
 } // namespace zxkit

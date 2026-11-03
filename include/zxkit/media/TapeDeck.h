@@ -57,7 +57,10 @@ public:
     void load(std::vector<TapeBlock> blocks);
     void loadTap(std::span<const uint8_t> raw) { load(TapeFormats::parseTap(raw)); }
     void loadTzx(std::span<const uint8_t> raw) { load(TapeFormats::parseTzx(raw)); }
+    void loadPzx(std::span<const uint8_t> raw) { load(TapeFormats::parsePzx(raw)); }
+    void loadCsw(std::span<const uint8_t> raw) { load(TapeFormats::parseCsw(raw)); }
     std::vector<uint8_t> saveTap() const { return TapeFormats::writeTap(m_blocks); }
+    std::vector<uint8_t> saveTzx() const { return TapeFormats::writeTzx(m_blocks); }
 
     const std::vector<TapeBlock> &blocks() const noexcept { return m_blocks; }
     std::size_t currentBlockIndex() const noexcept { return m_cursor.blockIndex(); }

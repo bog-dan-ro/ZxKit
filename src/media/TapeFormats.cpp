@@ -18,6 +18,7 @@
 #include "zxkit/media/TapeFormats.h"
 
 #include "zxkit/core/Exception.h"
+#include "zxkit/core/StateStream.h"
 #include "zxkit/media/Compression.h"
 
 #include <algorithm>
@@ -50,6 +51,7 @@ public:
     {}
 
     std::size_t left() const noexcept { return m_data.size() - m_pos; }
+    std::size_t position() const noexcept { return m_pos; }
     bool atEnd() const noexcept { return m_pos >= m_data.size(); }
 
     uint8_t u8()
@@ -143,21 +145,26 @@ std::vector<uint32_t> cswPulses(std::span<const uint8_t> rle, uint32_t sampleRat
         throw FormatException("CSW recording with a zero sample rate");
     std::vector<uint32_t> pulses;
     pulses.reserve(rle.size());
-    uint64_t samples = 0;
-    uint64_t tstates = 0;
-    for (std::size_t i = 0; i < rle.size();) {
-        uint32_t length = rle[i++];
-        if (length == 0) {
-            if (i + 4 > rle.size())
-                break;
-            length = rle[i] | (rle[i + 1] << 8) | (static_cast<uint32_t>(rle[i + 2]) << 16)
-                     | (static_cast<uint32_t>(rle[i + 3]) << 24);
-            i += 4;
+    uint64_t remainder = 0;
+    Reader reader(rle);
+    while (!reader.atEnd()) {
+        uint32_t samples = reader.u8();
+        if (samples == 0)
+            samples = reader.u32();
+        if (samples == 0)
+            throw FormatException("Zero CSW pulse duration");
+        const uint64_t numerator = uint64_t{samples} * 3'500'000 + remainder;
+        uint64_t length = numerator / sampleRate;
+        remainder = numerator % sampleRate;
+        // Two extra transitions join adjacent pieces of an exceptionally long pulse.
+        while (length > kMaxStep) {
+            pulses.push_back(kMaxStep);
+            pulses.push_back(0);
+            length -= kMaxStep;
         }
-        samples += length;
-        const uint64_t end = samples * 3'500'000 / sampleRate;
-        pulses.push_back(static_cast<uint32_t>(std::min<uint64_t>(end - tstates, kMaxStep)));
-        tstates = end;
+        pulses.push_back(static_cast<uint32_t>(length));
+        if (pulses.size() > 16'000'000)
+            throw FormatException("Too many CSW pulses");
     }
     return pulses;
 }
@@ -242,12 +249,12 @@ TapeBlock parseTzxBlock(uint8_t id, Reader &r)
         blk.pauseAfterMs = b.u16();
         const uint32_t sampleRate = b.u24();
         const uint8_t compression = b.u8();
-        const uint32_t storedPulses = b.u32();
+        (void)b.u32(); // Number of encoded pulses (long pulses can expand when resampled).
         const auto payload = b.bytes(b.left());
         if (compression == 1)
             blk.pulses = cswPulses(payload, sampleRate);
         else if (compression == 2)
-            blk.pulses = cswPulses(zlibDecompress(payload, std::max<std::size_t>(storedPulses, 4096)), sampleRate);
+            blk.pulses = cswPulses(zlibDecompressBounded(payload, 64 * 1024 * 1024), sampleRate);
         else
             throw FormatException(std::format("Unknown CSW compression {}", compression));
         blk.description = std::format("CSW recording ({} pulses)", blk.pulses.size());
@@ -456,8 +463,12 @@ std::vector<TapeBlock> parseTzx(std::span<const uint8_t> raw)
     Reader r(raw.subspan(10));
     while (!r.atEnd()) {
         const uint8_t id = r.u8();
+        const auto bodyStart = r.position();
         try {
-            blocks.push_back(parseTzxBlock(id, r));
+            auto block = parseTzxBlock(id, r);
+            if ((block.isMetadata() || block.type == TapeBlockType::CswRecording) && static_cast<uint8_t>(block.type) == id)
+                block.metadata = toVector(raw.subspan(10 + bodyStart, r.position() - bodyStart));
+            blocks.push_back(std::move(block));
         } catch (const FormatException &) {
             // A truncated last block: keep what came before it, like a damaged tape
             if (blocks.empty())
@@ -468,19 +479,353 @@ std::vector<TapeBlock> parseTzx(std::span<const uint8_t> raw)
     return blocks;
 }
 
+std::vector<TapeBlock> parsePzx(std::span<const uint8_t> raw)
+{
+    if (raw.size() < 10 || !std::ranges::equal(raw.first(4), std::string_view("PZXT")))
+        throw FormatException("Invalid PZX header");
+    Reader r(raw);
+    std::vector<TapeBlock> blocks;
+    while (!r.atEnd()) {
+        const auto tagBytes = r.bytes(4);
+        const std::string_view tag(reinterpret_cast<const char *>(tagBytes.data()), 4);
+        Reader body = r.sub(r.u32());
+        TapeBlock block;
+        block.pauseAfterMs = 0;
+        if (tag == "PZXT") {
+            if (body.u8() != 1)
+                throw FormatException("Unsupported PZX major version");
+            (void)body.u8();
+            block.type = TapeBlockType::TextDesc;
+            const auto info = body.bytes(body.left());
+            const auto end = std::ranges::find(info, uint8_t{0});
+            block.description.assign(info.begin(), end);
+            if (block.description.empty()) block.description = "Tape start";
+        } else if (tag == "PULS") {
+            block.type = TapeBlockType::PzxPulses;
+            while (!body.atEnd()) {
+                uint32_t duration = body.u16();
+                uint32_t count = 1;
+                if (duration > 0x8000) {
+                    count = duration & 0x7FFF;
+                    duration = body.u16();
+                }
+                if (duration >= 0x8000)
+                    duration = ((duration & 0x7FFF) << 16) | body.u16();
+                // Even zero-pulse repeats cancel; odd repeats are one edge.
+                if (duration == 0) count &= 1;
+                if (count) {
+                    block.pulses.push_back(duration);
+                    block.pulses.push_back(count);
+                }
+            }
+            block.description = "PZX pulse sequence";
+        } else if (tag == "DATA") {
+            block.type = TapeBlockType::PzxData;
+            const uint32_t count = body.u32();
+            block.dataSymbolCount = count & 0x7FFF'FFFF;
+            block.value = static_cast<int32_t>(count >> 31);
+            block.pilotPulse = body.u16(); // Optional tail pulse.
+            const uint8_t p0 = body.u8();
+            const uint8_t p1 = body.u8();
+            for (const uint8_t pulses : {p0, p1}) {
+                TapeSymbol symbol;
+                for (uint16_t i = 0; i < pulses; ++i) symbol.pulses.push_back(body.u16());
+                block.dataSymbols.push_back(std::move(symbol));
+            }
+            block.data = toVector(body.bytes((uint64_t{block.dataSymbolCount} + 7) / 8));
+            block.usedBits = block.dataSymbolCount % 8 ? block.dataSymbolCount % 8 : 8;
+            block.description = "PZX " + describeStandardBlock(block.data);
+        } else if (tag == "PAUS") {
+            block.type = TapeBlockType::PzxPause;
+            const auto duration = body.u32();
+            block.value = static_cast<int32_t>(duration >> 31);
+            block.pulses = {duration & 0x7FFF'FFFF};
+            block.description = "PZX pause";
+        } else if (tag == "STOP") {
+            block.type = body.u16() == 1 ? TapeBlockType::StopIf48k : TapeBlockType::Pause;
+            block.description = "Stop the tape";
+        } else if (tag == "BRWS") {
+            block.type = TapeBlockType::TextDesc;
+            block.description = body.text(body.left());
+        } else {
+            continue; // Unknown PZX tags must be ignored.
+        }
+        blocks.push_back(std::move(block));
+    }
+    return blocks;
+}
+
+std::vector<TapeBlock> parseCsw(std::span<const uint8_t> raw)
+{
+    constexpr std::string_view signature("Compressed Square Wave\x1A", 23);
+    if (raw.size() < 32 || !std::ranges::equal(raw.first(23), signature))
+        throw FormatException("Invalid CSW header");
+    Reader r(raw.subspan(23));
+    const auto major = r.u8();
+    (void)r.u8();
+    uint32_t rate, expectedCount = 0;
+    uint8_t compression, flags;
+    if (major == 1) {
+        rate = r.u16();
+        compression = r.u8();
+        flags = r.u8();
+        r.skip(3);
+    } else if (major == 2) {
+        rate = r.u32();
+        expectedCount = r.u32();
+        compression = r.u8();
+        flags = r.u8();
+        const auto extra = r.u8();
+        r.skip(16 + extra);
+    } else {
+        throw FormatException("Unsupported CSW major version");
+    }
+    const auto payload = r.bytes(r.left());
+    std::vector<uint8_t> decompressed;
+    std::span<const uint8_t> rle = payload;
+    if (compression == 2) {
+        decompressed = zlibDecompressBounded(payload, 64 * 1024 * 1024);
+        rle = decompressed;
+    } else if (compression != 1) {
+        throw FormatException("Unsupported CSW compression");
+    }
+    // Count the encoded pulses, before resampling can split long ones.
+    Reader check(rle);
+    uint64_t count = 0;
+    while (!check.atEnd()) {
+        if (check.u8() == 0 && check.u32() == 0)
+            throw FormatException("Zero CSW pulse duration");
+        ++count;
+    }
+    if (major == 2 && count != expectedCount)
+        throw FormatException("CSW pulse count does not match its header");
+    TapeBlock level;
+    level.type = TapeBlockType::SetSignalLevel;
+    level.value = flags & 1;
+    level.pauseAfterMs = 0;
+    level.description = level.value ? "Signal level: high" : "Signal level: low";
+    TapeBlock signal;
+    signal.type = TapeBlockType::CswRecording;
+    signal.pauseAfterMs = 0;
+    signal.pulses = cswPulses(rle, rate);
+    signal.description = std::format("CSW recording ({} pulses)", count);
+    if (rate <= 0xFF'FFFF && count <= UINT32_MAX) {
+        StateWriter body;
+        body.write<uint32_t>(static_cast<uint32_t>(10 + payload.size()));
+        body.write<uint16_t>(0);
+        body.write<uint16_t>(static_cast<uint16_t>(rate));
+        body.write<uint8_t>(static_cast<uint8_t>(rate >> 16));
+        body.write(compression);
+        body.write<uint32_t>(static_cast<uint32_t>(count));
+        body.writeBytes(payload);
+        signal.metadata = body.takeBuffer();
+    }
+    return {std::move(level), std::move(signal)};
+}
+
 std::vector<uint8_t> writeTap(std::span<const TapeBlock> blocks)
 {
     std::vector<uint8_t> out;
     for (const auto &blk : blocks) {
         // Only the blocks the ROM can load fit in a TAP file
-        if (!blk.isRomBlock() || blk.data.size() > 0xFFFF)
+        if (blk.isMetadata())
             continue;
+        if (!blk.isRomBlock() || blk.data.size() > 0xFFFF)
+            throw FormatException("This tape needs TZX export to preserve its signal and control blocks");
         const auto length = static_cast<uint16_t>(blk.data.size());
         out.push_back(static_cast<uint8_t>(length & 0xFF));
         out.push_back(static_cast<uint8_t>(length >> 8));
         out.insert(out.end(), blk.data.begin(), blk.data.end());
     }
     return out;
+}
+
+std::vector<uint8_t> writeTzx(std::span<const TapeBlock> blocks)
+{
+    constexpr std::size_t limit = 64 * 1024 * 1024;
+    StateWriter out;
+    out.writeTag(std::string_view("ZXTape!\x1A\x01\x14", 10));
+    const auto pzx = [](const TapeBlock &b) {
+        return b.type == TapeBlockType::PzxPulses || b.type == TapeBlockType::PzxData || b.type == TapeBlockType::PzxPause;
+    };
+    // PZX's absolute polarity needs two extra level blocks in TZX. Remap every control target.
+    std::vector<int64_t> indices{0};
+    for (const auto &b : blocks) indices.push_back(indices.back() + (pzx(b) ? 3 : 1));
+    const auto offset = [&](std::size_t from, int32_t delta) -> int16_t {
+        const int64_t target = static_cast<int64_t>(from) + delta;
+        if (target < 0 || target > static_cast<int64_t>(blocks.size()))
+            throw FormatException("TZX control target is outside the tape");
+        const int64_t value = indices[target] - indices[from];
+        if (value < -32768 || value > 32767) throw FormatException("TZX control target exceeds 16 bits");
+        return static_cast<int16_t>(value);
+    };
+    const auto text = [](StateWriter &w, std::string_view s) {
+        if (s.size() > 255) throw FormatException("TZX text exceeds 255 bytes");
+        w.write<uint8_t>(static_cast<uint8_t>(s.size())); w.writeTag(s);
+    };
+    const auto u24 = [](StateWriter &w, std::size_t n) {
+        if (n > 0xFF'FFFF) throw FormatException("TZX data block exceeds 24 bits");
+        w.write<uint16_t>(static_cast<uint16_t>(n)); w.write<uint8_t>(static_cast<uint8_t>(n >> 16));
+    };
+    const auto csw = [&](std::span<const uint32_t> pulses, uint16_t pause) {
+        StateWriter rle;
+        for (const auto duration : pulses) {
+            if (duration == 0) throw FormatException("TZX CSW cannot encode a zero-duration pulse");
+            if (duration <= 255) rle.write<uint8_t>(static_cast<uint8_t>(duration));
+            else { rle.write<uint8_t>(0); rle.write(duration); }
+            if (rle.size() > limit) throw FormatException("TZX waveform exceeds the export size limit");
+        }
+        const auto compressed = zlibCompress(rle.data());
+        out.write<uint8_t>(0x18); out.write<uint32_t>(10 + static_cast<uint32_t>(compressed.size()));
+        out.write(pause); u24(out, 3'500'000); out.write<uint8_t>(2);
+        out.write<uint32_t>(static_cast<uint32_t>(pulses.size())); out.writeBytes(compressed);
+    };
+    const auto setLevel = [&](bool high) {
+        out.write<uint8_t>(0x2B); out.write<uint32_t>(1); out.write<uint8_t>(high);
+    };
+    for (std::size_t index = 0; index < blocks.size(); ++index) {
+        const auto &b = blocks[index];
+        if (pzx(b)) {
+            TapeCursor cursor;
+            const std::span<const TapeBlock> one(&b, 1);
+            std::vector<uint32_t> pulses;
+            bool initial = b.value != 0, level = initial, havePulse = false;
+            bool final = initial;
+            uint64_t duration = 0;
+            const auto flush = [&] {
+                if (duration > UINT32_MAX) throw FormatException("TZX CSW pulse exceeds 32 bits");
+                if (duration) pulses.push_back(static_cast<uint32_t>(duration));
+                duration = 0;
+            };
+            for (uint64_t steps = 0;; ++steps) {
+                if (steps > limit) throw FormatException("TZX waveform exceeds the export step limit");
+                const auto edge = cursor.next(one);
+                if (edge.length) {
+                    if (!havePulse) { initial = edge.level; level = edge.level; havePulse = true; }
+                    if (edge.level != level) { flush(); level = edge.level; }
+                    duration += edge.length;
+                }
+                final = edge.level;
+                if (edge.flags & TapeEdge::Flags::TapeEnd) break;
+            }
+            flush();
+            setLevel(initial); csw(pulses, 0); setLevel(final);
+            continue;
+        }
+        if (!b.metadata.empty() && (b.isMetadata() || b.type == TapeBlockType::CswRecording) && b.type != TapeBlockType::SelectBlock) {
+            out.write<uint8_t>(static_cast<uint8_t>(b.type)); out.writeBytes(b.metadata);
+            continue;
+        }
+        out.write<uint8_t>(static_cast<uint8_t>(b.type));
+        switch (b.type) {
+        case TapeBlockType::StandardData:
+            if (b.data.size() > 65535) throw FormatException("Standard TZX data exceeds 16 bits");
+            out.write(b.pauseAfterMs); out.write<uint16_t>(static_cast<uint16_t>(b.data.size())); out.writeBytes(b.data); break;
+        case TapeBlockType::TurboData:
+            out.write(b.pilotPulse); out.write(b.sync1Pulse); out.write(b.sync2Pulse);
+            out.write(b.zeroPulse); out.write(b.onePulse); out.write(b.pilotPulses);
+            out.write(b.usedBits); out.write(b.pauseAfterMs); u24(out, b.data.size()); out.writeBytes(b.data); break;
+        case TapeBlockType::PureTone: out.write(b.pilotPulse); out.write(b.pilotPulses); break;
+        case TapeBlockType::PulseSeq:
+            if (b.pulses.size() > 255) throw FormatException("TZX pulse sequence exceeds 255 entries");
+            out.write<uint8_t>(static_cast<uint8_t>(b.pulses.size()));
+            for (auto pulse : b.pulses) {
+                if (pulse > 65535) throw FormatException("TZX pulse sequence duration exceeds 16 bits");
+                out.write<uint16_t>(static_cast<uint16_t>(pulse));
+            }
+            break;
+        case TapeBlockType::PureData:
+            out.write(b.zeroPulse); out.write(b.onePulse); out.write(b.usedBits);
+            out.write(b.pauseAfterMs); u24(out, b.data.size()); out.writeBytes(b.data); break;
+        case TapeBlockType::DirectRecording:
+            out.write(b.sampleTstates); out.write(b.pauseAfterMs); out.write(b.usedBits);
+            u24(out, b.data.size()); out.writeBytes(b.data); break;
+        case TapeBlockType::CswRecording: {
+            // Zero pulses (resampling/long pulses) join runs without changing the signal.
+            StateWriter rle;
+            std::vector<uint32_t> runs;
+            uint64_t duration = 0;
+            bool level = false, current = false;
+            for (std::size_t i = 0; i < b.pulses.size(); ++i) {
+                current = i % 2 != 0;
+                if (!b.pulses[i]) continue;
+                if (current != level && duration) {
+                    if (duration > UINT32_MAX) throw FormatException("CSW pulse exceeds 32 bits");
+                    runs.push_back(static_cast<uint32_t>(duration)); duration = 0;
+                }
+                if (runs.empty() && duration == 0 && current)
+                    throw FormatException("CSW starts with a zero pulse; export its original format");
+                level = current; duration += b.pulses[i];
+            }
+            if (duration) {
+                if (duration > UINT32_MAX) throw FormatException("CSW pulse exceeds 32 bits");
+                runs.push_back(static_cast<uint32_t>(duration));
+            }
+            for (const auto pulse : runs) {
+                if (pulse <= 255) rle.write<uint8_t>(static_cast<uint8_t>(pulse));
+                else { rle.write<uint8_t>(0); rle.write(pulse); }
+            }
+            const auto compressed = zlibCompress(rle.data());
+            out.write<uint32_t>(10 + static_cast<uint32_t>(compressed.size())); out.write(b.pauseAfterMs);
+            u24(out, 3'500'000); out.write<uint8_t>(2); out.write<uint32_t>(static_cast<uint32_t>(runs.size()));
+            out.writeBytes(compressed); break;
+        }
+        case TapeBlockType::GeneralizedData: {
+            StateWriter body;
+            body.write(b.pauseAfterMs); body.write<uint32_t>(static_cast<uint32_t>(b.pilotStream.size()));
+            const auto maxPulses = [](const auto &symbols) {
+                std::size_t count = 0;
+                for (const auto &s : symbols) count = std::max(count, s.pulses.size());
+                if (count > 255 || symbols.size() > 256) throw FormatException("TZX symbol alphabet is too large");
+                return static_cast<uint8_t>(count);
+            };
+            const auto pilotMax = maxPulses(b.pilotSymbols), dataMax = maxPulses(b.dataSymbols);
+            body.write(pilotMax); body.write<uint8_t>(static_cast<uint8_t>(b.pilotSymbols.size()));
+            body.write(b.dataSymbolCount); body.write(dataMax); body.write<uint8_t>(static_cast<uint8_t>(b.dataSymbols.size()));
+            const auto symbols = [&](const auto &alphabet, uint8_t count) {
+                for (const auto &symbol : alphabet) {
+                    body.write<uint8_t>(static_cast<uint8_t>(symbol.start));
+                    for (std::size_t p = 0; p < count; ++p) body.write<uint16_t>(p < symbol.pulses.size() ? symbol.pulses[p] : 0);
+                }
+            };
+            if (!b.pilotStream.empty()) {
+                if (b.pilotSymbols.empty()) throw FormatException("Missing TZX pilot alphabet");
+                symbols(b.pilotSymbols, pilotMax);
+                for (const auto &run : b.pilotStream) { body.write(run.symbol); body.write(run.repeat); }
+            }
+            if (b.dataSymbolCount) {
+                if (b.dataSymbols.empty()) throw FormatException("Missing TZX data alphabet");
+                symbols(b.dataSymbols, dataMax);
+                body.writeBytes(b.data);
+            }
+            out.write<uint32_t>(static_cast<uint32_t>(body.size())); out.writeBytes(body.data()); break;
+        }
+        case TapeBlockType::Pause: out.write(b.pauseAfterMs); break;
+        case TapeBlockType::JumpTo: out.write(offset(index, b.value)); break;
+        case TapeBlockType::LoopStart: out.write<uint16_t>(static_cast<uint16_t>(b.value)); break;
+        case TapeBlockType::CallSequence:
+            if (b.offsets.size() > 65535) throw FormatException("Too many TZX calls");
+            out.write<uint16_t>(static_cast<uint16_t>(b.offsets.size()));
+            for (auto delta : b.offsets) out.write(offset(index, delta));
+            break;
+        case TapeBlockType::SelectBlock: {
+            if (b.offsets.size() > 255 || b.offsets.size() != b.labels.size()) throw FormatException("Invalid TZX selection");
+            StateWriter body; body.write<uint8_t>(static_cast<uint8_t>(b.offsets.size()));
+            for (std::size_t i = 0; i < b.offsets.size(); ++i) { body.write(offset(index, b.offsets[i])); text(body, b.labels[i]); }
+            if (body.size() > 65535) throw FormatException("TZX selection exceeds 16 bits");
+            out.write<uint16_t>(static_cast<uint16_t>(body.size())); out.writeBytes(body.data()); break;
+        }
+        case TapeBlockType::StopIf48k: out.write<uint32_t>(0); break;
+        case TapeBlockType::SetSignalLevel: out.write<uint32_t>(1); out.write<uint8_t>(b.value != 0); break;
+        case TapeBlockType::Message: out.write<uint8_t>(0); text(out, b.description); break;
+        case TapeBlockType::GroupStart: case TapeBlockType::TextDesc: text(out, b.description); break;
+        case TapeBlockType::GroupEnd: case TapeBlockType::LoopEnd: case TapeBlockType::ReturnFromSequence: break;
+        default: throw FormatException("Cannot export this tape block without its original metadata");
+        }
+        if (out.size() > limit) throw FormatException("TZX exceeds the export size limit");
+    }
+    if (out.size() > limit) throw FormatException("TZX exceeds the export size limit");
+    return out.takeBuffer();
 }
 
 std::string describeStandardBlock(std::span<const uint8_t> data)
@@ -570,6 +915,11 @@ TapeEdge TapeCursor::next(std::span<const TapeBlock> blocks)
             break;
         case TapeBlockType::GeneralizedData:
             step = symbolsStep(block);
+            break;
+        case TapeBlockType::PzxPulses:
+        case TapeBlockType::PzxData:
+        case TapeBlockType::PzxPause:
+            step = pzxStep(block);
             break;
         case TapeBlockType::Pause:
             // A pause block is a low level (libspectrum); a 0 ms one stops the tape
@@ -824,6 +1174,43 @@ TapeCursor::Step TapeCursor::samplesStep(const TapeBlock &block)
         m_phase = Phase::Tail;
     return {.length = static_cast<uint32_t>(run * block.sampleTstates),
             .transition = level ? TapeEdge::Transition::High : TapeEdge::Transition::Low};
+}
+
+TapeCursor::Step TapeCursor::pzxStep(const TapeBlock &block)
+{
+    using T = TapeEdge::Transition;
+    const bool first = m_phase == Phase::Start;
+    if (first) m_phase = Phase::Pulses;
+    const T transition = m_byte++ == 0 ? (block.value ? T::High : T::Low) : T::Toggle;
+    if (block.type == TapeBlockType::PzxPause) {
+        if (first)
+            return {.length = block.pulses.empty() ? 0 : block.pulses[0], .transition = transition};
+    } else if (block.type == TapeBlockType::PzxPulses) {
+        while (m_run + 1 < block.pulses.size()) {
+            if (m_repeat++ < block.pulses[m_run + 1])
+                return {.length = block.pulses[m_run], .transition = transition};
+            m_run += 2;
+            m_repeat = 0;
+        }
+    } else {
+        // Each data symbol is kept compact, including its zero-duration transitions.
+        if (block.dataSymbols[0].pulses.empty() && block.dataSymbols[1].pulses.empty())
+            m_symbol = block.dataSymbolCount;
+        while (m_symbol < block.dataSymbolCount) {
+            const auto bit = (block.data[m_symbol / 8] >> (7 - m_symbol % 8)) & 1;
+            const auto &pulses = block.dataSymbols[bit].pulses;
+            if (m_symbolPulse < pulses.size())
+                return {.length = pulses[m_symbolPulse++], .transition = transition};
+            ++m_symbol;
+            m_symbolPulse = 0;
+        }
+        if (m_phase != Phase::Tail && block.pilotPulse) {
+            m_phase = Phase::Tail;
+            return {.length = block.pilotPulse, .transition = transition};
+        }
+    }
+    // End the last pulse. An empty block still defines its initial level.
+    return {.transition = transition, .blockDone = true};
 }
 
 TapeCursor::Step TapeCursor::symbolsStep(const TapeBlock &block)

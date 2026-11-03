@@ -22,6 +22,7 @@
 #include "zxkit/peripherals/storage/Beta128.h"
 
 #include <memory>
+#include <array>
 
 namespace zxkit {
 
@@ -98,6 +99,11 @@ public:
 
     explicit TimexMachine(Variant variant = Variant::Tc2048) noexcept;
 
+    bool hasTimexJoysticks() const noexcept { return m_variant == Variant::Tc2068 || m_variant == Variant::Ts2068; }
+    /// Host input, in JoystickButtons bits; player is 0 (left) or 1 (right).
+    /// Like the keyboard, these live inputs are not part of serialized state.
+    void setJoystickButtons(unsigned player, uint8_t buttons) noexcept;
+
     std::string_view id() const noexcept override;
     std::string_view name() const noexcept override;
     FrameTimings timings() const noexcept override;
@@ -122,6 +128,7 @@ private:
     uint8_t m_portF4 = 0;   // the horizontal select
     uint8_t m_portFf = 0;   // the SCLD's mode register (the ULA renders its screen modes)
     uint8_t m_port7ffd = 0; // the SE's paging
+    std::array<uint8_t, 2> m_joysticks{0xFF, 0xFF}; // active-low AY port A
 };
 
 /// Pentagon 128K / 512K / 1024K
@@ -141,6 +148,7 @@ public:
     void reset(MachineContext &ctx, UlaRenderer &ula, ResetKind kind) override;
 
     uint8_t lastPort7ffd() const noexcept override;
+    void setPagingPorts(uint8_t port7ffd, uint8_t port1ffd, MachineContext &ctx, UlaRenderer &ula) override;
     bool is48kMode() const noexcept override { return m_locked; }
 
     /// The built-in Beta 128: four drives and TR-DOS (the Pentagon starts in it)

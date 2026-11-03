@@ -19,6 +19,7 @@
 
 #include "zxkit/audio/AudioMixer.h"
 #include "zxkit/cpu/Z80Cpu.h"
+#include "zxkit/input/Joystick.h"
 #include "zxkit/machines/SinclairMachines.h"
 
 namespace zxkit {
@@ -96,7 +97,7 @@ void TimexMachine::initialize(MachineContext &ctx, UlaRenderer &ula)
     }
     if (m_variant != Variant::Tc2048) {
         // The Timex AY: register 0xF5, data 0xF6. On the 2068 register 14 is the joystick port:
-        // 0xFF when its I/O port is an input (no joystick read yet)
+        // Address bits A8/A9 enable the left/right joystick's active-low lines.
         if (!isSe())
             ctx.audioMixer.setAyChipCount(1);
         const bool joystickPort = !isSe();
@@ -113,11 +114,16 @@ void TimexMachine::initialize(MachineContext &ctx, UlaRenderer &ula)
             std::string(id()) + "_ay_f6",
             0x00FF,
             0x00F6,
-            joystickPort ? IoBus::SimpleReadFn([&ctx](uint16_t) -> uint8_t {
+            joystickPort ? IoBus::SimpleReadFn([this, &ctx](uint16_t port) -> uint8_t {
                 const auto &ay = ctx.audioMixer.activeAy();
                 if (ay.selectedRegister() != 14)
                     return ay.readRegister();
-                return (ay.registers()[7] & 0x40) ? ay.registers()[14] : 0xFF;
+                if (ay.registers()[7] & 0x40)
+                    return ay.registers()[14];
+                uint8_t input = 0xFF;
+                if (port & 0x0100) input &= m_joysticks[0];
+                if (port & 0x0200) input &= m_joysticks[1];
+                return input;
             }) : IoBus::SimpleReadFn{},
             [&ctx](uint16_t, uint8_t val) { ctx.audioMixer.writeAyRegister(ctx.clock.frameBaseTstates(), val); });
     }
@@ -163,6 +169,7 @@ void TimexMachine::initialize(MachineContext &ctx, UlaRenderer &ula)
 
 void TimexMachine::reset(MachineContext &ctx, UlaRenderer &ula, ResetKind kind)
 {
+    m_joysticks.fill(0xFF);
     if (kind == ResetKind::Hard) {
         ctx.mmu.bank(m_ramBank).fill(0x00);
         if (isSe()) {
@@ -222,10 +229,25 @@ void TimexMachine::saveState(StateWriter &w) const
 
 void TimexMachine::loadState(StateReader &r, MachineContext &ctx, UlaRenderer &ula)
 {
+    m_joysticks.fill(0xFF);
     m_portF4 = r.read<uint8_t>();
     m_portFf = r.read<uint8_t>();
     m_port7ffd = r.read<uint8_t>();
     updateMemoryMap(ctx, ula);
+}
+
+void TimexMachine::setJoystickButtons(unsigned player, uint8_t buttons) noexcept
+{
+    if (!hasTimexJoysticks() || player >= m_joysticks.size())
+        return;
+    using B = JoystickButtons;
+    uint8_t pressed = 0;
+    if (buttons & B::Up) pressed |= 0x01;
+    if (buttons & B::Down) pressed |= 0x02;
+    if (buttons & B::Left) pressed |= 0x04;
+    if (buttons & B::Right) pressed |= 0x08;
+    if (buttons & B::Fire1) pressed |= 0x80;
+    m_joysticks[player] = static_cast<uint8_t>(~pressed);
 }
 
 void TimexMachine::updateMemoryMap(MachineContext &ctx, UlaRenderer &ula)
@@ -370,6 +392,13 @@ void PentagonMachine::reset(MachineContext &ctx, UlaRenderer &ula, ResetKind kin
 uint8_t PentagonMachine::lastPort7ffd() const noexcept
 {
     return m_port7ffd;
+}
+
+void PentagonMachine::setPagingPorts(uint8_t port7ffd, uint8_t, MachineContext &ctx, UlaRenderer &ula)
+{
+    m_port7ffd = port7ffd;
+    m_locked = (port7ffd & 0x20) != 0;
+    updateMemoryMap(ctx, ula);
 }
 
 void PentagonMachine::updateMemoryMap(MachineContext &ctx, UlaRenderer &ula)

@@ -302,6 +302,7 @@ void SpectrumPlus3Machine::reset(MachineContext &ctx, UlaRenderer &ula, ResetKin
     m_port1ffd = 0;
     m_locked = false;
     m_fdc.reset();
+    m_fdc.setClockHz(ctx.clock.timings().baseClockHz * ctx.clock.speedMultiplier());
     updateMemoryMap(ctx, ula);
 }
 

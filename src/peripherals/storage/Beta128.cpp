@@ -170,6 +170,7 @@ void Beta128Peripheral::onDetach(MachineContext &ctx)
 void Beta128Peripheral::reset(MachineContext &ctx, ResetKind /*kind*/)
 {
     m_fdc.reset();
+    m_fdc.setClockHz(ctx.clock.timings().baseClockHz * ctx.clock.speedMultiplier());
     writeSystem(0x3C);
     setPaged(ctx, m_options.pagedAtReset);
 }

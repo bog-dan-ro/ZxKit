@@ -159,13 +159,18 @@ public:
     /// Loads any supported media: snapshots, tapes, disks, RZX recordings, SCR screens.
     void loadMedia(const MediaFile &file);
     void loadMediaFile(const std::filesystem::path &path) { loadMedia(MediaFile::read(path)); }
-    /// Saves a snapshot (.sna, .szx), the tape (.tap) or a screenshot (.png).
+    /// Saves a snapshot (.sna, .z80, .szx), a Next program (.nex), the tape (.tap, .tzx) or a screenshot (.png).
     std::vector<uint8_t> saveMedia(std::string_view extension);
     void saveMediaFile(const std::filesystem::path &path);
 
     void loadSnapshot(std::span<const uint8_t> data, std::string_view extension);
     std::vector<uint8_t> saveSnapshot(std::string_view extension = ".szx");
     void loadTape(std::span<const uint8_t> data, std::string_view extension);
+    /// Explicit host actions: reset and schedule ROM key presses on emulated frames.
+    /// Return false for unsupported models. Never run frames synchronously on the caller's thread.
+    bool autoLoadTape(std::size_t block = 0);
+    /// Boots drive A using TR-DOS or the +3 Loader. Other drives/models are untouched.
+    bool autoBootDisk();
     /// Inserts a floppy image (.dsk, .trd, .scl, .img, ...) into `drive`, see `diskDrive()`.
     void insertDisk(std::size_t drive, std::span<const uint8_t> data, std::string_view extension);
     void ejectDisk(std::size_t drive);
@@ -251,6 +256,9 @@ private:
     void installMachine(std::unique_ptr<MachineProfile> machine);
     void beginFrame();
     RunStatus runPlaybackScanline();
+    void advanceMediaBoot() noexcept;
+    uint16_t m_mediaBootFrame = 0;
+    bool m_mediaBoot48k = false;
     void applyRzxCommands();
     void finishPlaybackPresentation();
     void captureRzxCheckpoint(bool force = false);

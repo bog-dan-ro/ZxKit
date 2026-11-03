@@ -24,8 +24,6 @@ namespace zxkit {
 namespace {
 
 // A rotation every 200 ms (300 rpm), with a 4 ms index pulse, in 3.5 MHz T-states
-constexpr uint64_t kRotationTstates = 700'000;
-constexpr uint64_t kIndexPulseTstates = 14'000;
 constexpr uint8_t kMaxCylinder = 85;
 // An MFM track: the bytes READ TRACK returns and WRITE TRACK takes
 constexpr std::size_t kTrackBytes = 6250;
@@ -67,14 +65,62 @@ void Wd1793::reset() noexcept
     m_transfer = Transfer::None;
     m_buffer.clear();
     m_bufferPos = 0;
+    m_now = m_deadline = m_nextDrqAt = 0;
+    m_finishing = m_seeking = false;
+    m_forceInterrupt = 0;
+    m_wasReady = !disk().empty();
+}
+
+uint64_t Wd1793::sectorArrival(uint8_t id) const noexcept
+{
+    const auto sectors = m_drives[m_drive].trackSectors(m_cylinder[m_drive], m_side);
+    const auto found = std::ranges::find_if(sectors, [id](const auto &s) { return s.get().sectorId == id; });
+    const auto position = found == sectors.end() ? 0 : std::distance(sectors.begin(), found);
+    const uint64_t settle = (m_command & 4) ? uint64_t{m_clockHz} * 30 / 1000 : 0;
+    const uint64_t start = m_now + settle;
+    const uint64_t phase = sectors.empty() ? 0 : (rotation() * position / sectors.size() + 1000) % rotation();
+    return start + (phase + rotation() - start % rotation()) % rotation();
+}
+
+void Wd1793::scheduleError(uint8_t status) noexcept
+{
+    m_finishing = true;
+    m_finishStatus = status;
+    m_status = kBusy;
+    m_drq = false;
+    m_deadline = m_now + 5 * rotation();
 }
 
 void Wd1793::update(uint64_t now) noexcept
 {
-    // WRITE TRACK starts writing at the index pulse: without data by then, nothing is written
-    // (TR-DOS issues it by mistake when it seeks with a sector count in B, and waits for INTRQ)
-    if (m_transfer == Transfer::WriteTrack && m_buffer.empty() && now >= m_deadline)
-        finish(kLostData);
+    const auto previous = m_now;
+    m_now = now;
+    const bool ready = !disk().empty();
+    if (((m_forceInterrupt & 1) && !m_wasReady && ready)
+        || ((m_forceInterrupt & 2) && m_wasReady && !ready)
+        || ((m_forceInterrupt & 4) && now / rotation() != previous / rotation())) m_intrq = true;
+    m_wasReady = ready;
+    if (m_seeking) {
+        while (m_nextStepAt <= now && m_cylinder[m_drive] != m_targetCylinder) {
+            const int direction = m_targetCylinder > m_cylinder[m_drive] ? 1 : -1;
+            m_cylinder[m_drive] = static_cast<uint8_t>(m_cylinder[m_drive] + direction);
+            if ((m_command & 0xF0) == 0x10 || (m_command & 0x10))
+                m_track = static_cast<uint8_t>(m_track + direction);
+            m_nextStepAt += m_stepInterval;
+        }
+    }
+    if ((m_finishing || m_seeking) && now >= m_deadline) {
+        if (m_seeking) { m_cylinder[m_drive] = m_targetCylinder; m_track = m_targetTrack; }
+        finish(m_finishStatus);
+        return;
+    }
+    if (m_finishing || m_seeking || m_transfer == Transfer::None) return;
+    if (m_drq && now >= m_deadline) { finish(kLostData); return; }
+    if (!m_drq && now >= m_nextDrqAt) {
+        m_drq = true;
+        m_deadline = m_nextDrqAt + byteTime();
+        if (now >= m_deadline) finish(kLostData);
+    }
 }
 
 uint8_t Wd1793::readStatus(uint64_t now) noexcept
@@ -91,7 +137,7 @@ uint8_t Wd1793::readStatus(uint64_t now) noexcept
             status |= kTrack0;
         if (d.isWriteProtected())
             status |= kWriteProtect;
-        if (!d.empty() && now % kRotationTstates < kIndexPulseTstates)
+        if (!d.empty() && now % rotation() < m_clockHz / 250)
             status |= kIndex;
     } else if (m_drq) {
         status |= kDrq;
@@ -101,6 +147,7 @@ uint8_t Wd1793::readStatus(uint64_t now) noexcept
 
 void Wd1793::finish(uint8_t status) noexcept
 {
+    m_finishing = m_seeking = false;
     m_status = static_cast<uint8_t>(status & ~kBusy);
     m_drq = false;
     m_intrq = true;
@@ -112,17 +159,20 @@ void Wd1793::writeCommand(uint8_t command, uint64_t now)
     update(now);
     // Force interrupt: ends whatever runs
     if ((command & 0xF0) == 0xD0) {
+        m_finishing = m_seeking = false;
+        m_forceInterrupt = command & 7;
         m_transfer = Transfer::None;
         m_drq = false;
         m_typeOneStatus = true;
         m_status &= static_cast<uint8_t>(~kBusy);
-        m_intrq = (command & 0x0F) != 0;
+        m_intrq = (command & 8) != 0;
         m_command = command;
         return;
     }
     if (m_status & kBusy)
         return; // a busy controller ignores the other commands
     m_intrq = false;
+    m_forceInterrupt = 0;
     m_command = command;
 
     if (!(command & 0x80)) {
@@ -158,7 +208,8 @@ void Wd1793::writeCommand(uint8_t command, uint64_t now)
             m_status = kBusy;
             m_drq = true;
             // The next index pulse
-            m_deadline = now + (kRotationTstates - now % kRotationTstates);
+            m_deadline = now + (rotation() - now % rotation());
+            m_nextDrqAt = m_deadline;
         }
         break;
     default:
@@ -172,6 +223,7 @@ void Wd1793::typeOne(uint8_t command)
     m_typeOneStatus = true;
     disk().noteAccess();
     uint8_t &cylinder = m_cylinder[m_drive];
+    const auto previousCylinder = cylinder, previousTrack = m_track;
     const auto stepBy = [&cylinder](int delta) {
         cylinder = static_cast<uint8_t>(std::clamp(int{cylinder} + delta, 0, int{kMaxCylinder}));
     };
@@ -207,7 +259,20 @@ void Wd1793::typeOne(uint8_t command)
         if (!found)
             status |= kSeekError;
     }
-    finish(status);
+    m_targetCylinder = cylinder;
+    m_targetTrack = m_track;
+    const unsigned steps = (command & 0xF0) == 0 ? previousCylinder
+        : (command & 0xF0) == 0x10 ? std::abs(int{m_data} - int{previousTrack}) : 1;
+    if (!steps && !(command & 4)) { finish(status); return; }
+    cylinder = previousCylinder;
+    m_track = previousTrack;
+    constexpr std::array<unsigned,4> rates{6,12,20,30}; // 1MHz WD1793 clock.
+    m_deadline = m_now + uint64_t{m_clockHz} * (steps * rates[command & 3] + ((command & 4) ? 30 : 0)) / 1000;
+    m_stepInterval = uint64_t{m_clockHz} * rates[command & 3] / 1000;
+    m_nextStepAt = m_now + m_stepInterval;
+    m_seeking = true;
+    m_finishStatus = status;
+    m_status = static_cast<uint8_t>(kBusy | (status & kHeadLoaded));
 }
 
 OptionalRef<DiskImage::Sector> Wd1793::findSector() noexcept
@@ -231,7 +296,7 @@ void Wd1793::startReadSector()
     disk().noteAccess();
     const auto sector = findSector();
     if (!sector) {
-        finish(kNotFound);
+        scheduleError(kNotFound);
         return;
     }
     const DiskImage::Sector &s = *sector;
@@ -240,7 +305,8 @@ void Wd1793::startReadSector()
     m_bufferPos = 0;
     m_transfer = Transfer::ReadSector;
     m_status = static_cast<uint8_t>(kBusy | ((s.st2 & 0x40) ? kDeleted : 0));
-    m_drq = true;
+    m_drq = false;
+    m_nextDrqAt = sectorArrival(m_sector);
 }
 
 void Wd1793::startWriteSector()
@@ -256,14 +322,15 @@ void Wd1793::startWriteSector()
     disk().noteAccess();
     const auto sector = findSector();
     if (!sector) {
-        finish(kNotFound);
+        scheduleError(kNotFound);
         return;
     }
     m_buffer.assign(sectorBytes(sector->get().sizeCode), 0);
     m_bufferPos = 0;
     m_transfer = Transfer::WriteSector;
     m_status = kBusy;
-    m_drq = true;
+    m_drq = false;
+    m_nextDrqAt = sectorArrival(m_sector);
 }
 
 void Wd1793::readAddress()
@@ -275,11 +342,12 @@ void Wd1793::readAddress()
     disk().noteAccess();
     const auto sectors = disk().trackSectors(m_cylinder[m_drive], m_side);
     if (sectors.empty()) {
-        finish(kNotFound);
+        scheduleError(kNotFound);
         return;
     }
     // The next id passing under the head
-    const DiskImage::Sector &s = sectors[m_readAddressIndex++ % sectors.size()];
+    const auto index = ((m_now % rotation() > 1000 ? m_now % rotation() - 1000 : 0) * sectors.size() + rotation() - 1) / rotation();
+    const DiskImage::Sector &s = sectors[index % sectors.size()];
     const std::array<uint8_t, 8> id{0xA1, 0xA1, 0xA1, 0xFE, s.track, s.side, s.sectorId, s.sizeCode};
     const uint16_t crc = crc16(id);
     m_buffer = {s.track, s.side, s.sectorId, s.sizeCode, static_cast<uint8_t>(crc >> 8), static_cast<uint8_t>(crc)};
@@ -287,7 +355,8 @@ void Wd1793::readAddress()
     m_sector = s.track; // the WD1793 puts the id's track in the sector register
     m_transfer = Transfer::ReadAddress;
     m_status = kBusy;
-    m_drq = true;
+    m_drq = false;
+    m_nextDrqAt = sectorArrival(s.sectorId);
 }
 
 void Wd1793::readWholeTrack()
@@ -329,13 +398,16 @@ void Wd1793::readWholeTrack()
     m_bufferPos = 0;
     m_transfer = Transfer::ReadTrack;
     m_status = kBusy;
-    m_drq = true;
+    m_drq = false;
+    m_nextDrqAt = m_now + rotation() - m_now % rotation();
 }
 
 uint8_t Wd1793::readData() noexcept
 {
-    if (m_transfer != Transfer::ReadSector && m_transfer != Transfer::ReadAddress && m_transfer != Transfer::ReadTrack)
+    if (!m_drq || (m_transfer != Transfer::ReadSector && m_transfer != Transfer::ReadAddress && m_transfer != Transfer::ReadTrack))
         return m_data;
+    m_drq = false;
+    m_nextDrqAt += byteTime();
     m_data = m_buffer[m_bufferPos++];
     if (m_bufferPos < m_buffer.size())
         return m_data;
@@ -364,13 +436,17 @@ uint8_t Wd1793::readData() noexcept
 void Wd1793::writeData(uint8_t value)
 {
     m_data = value;
+    if (m_transfer != Transfer::None && !m_drq) return;
+    m_drq = false;
+    if (m_transfer == Transfer::WriteTrack && m_buffer.empty()) m_nextDrqAt = m_deadline;
+    else m_nextDrqAt += byteTime();
     if (m_transfer == Transfer::WriteSector) {
         m_buffer[m_bufferPos++] = value;
         if (m_bufferPos < m_buffer.size())
             return;
         if (auto sector = findSector()) {
-            std::ranges::copy(m_buffer, sector->get().data.begin());
             sector->get().data.resize(m_buffer.size());
+            std::ranges::copy(m_buffer, sector->get().data.begin());
             sector->get().st1 &= static_cast<uint8_t>(~0x20);
             sector->get().st2 &= static_cast<uint8_t>(~0x60);
             if (m_command & 0x01)

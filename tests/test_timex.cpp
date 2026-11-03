@@ -88,6 +88,58 @@ void testScldInterruptDisable()
     }
 }
 
+void testTimexJoysticks()
+{
+    // TS2068 Technical Manual sections 2.1.7 and 4.3: F6, R14,
+    // A8/A9 select players, D0..3 are U/D/L/R, D7 is fire.
+    using B = JoystickButtons;
+    for (const char *id : {"tc2068", "ts2068"}) {
+        Emulator emulator({.machineId = id});
+        auto &machine = static_cast<TimexMachine &>(emulator.machine());
+        auto &io = emulator.ioBus();
+        assert(machine.hasTimexJoysticks());
+        io.write(0xF5, 14);
+        assert(io.read(0x01F6) == 0xFF && io.read(0x02F6) == 0xFF);
+        constexpr std::array<uint8_t, 5> buttons{B::Up, B::Down, B::Left, B::Right, B::Fire1};
+        constexpr std::array<uint8_t, 5> lines{0x01, 0x02, 0x04, 0x08, 0x80};
+        for (std::size_t i = 0; i < buttons.size(); ++i) {
+            machine.setJoystickButtons(0, buttons[i]);
+            assert(io.read(0x01F6) == uint8_t(~lines[i]));
+            assert(io.read(0x02F6) == 0xFF && io.read(0x00F6) == 0xFF);
+        }
+        machine.setJoystickButtons(0, B::Up | B::Left | B::Fire1);
+        machine.setJoystickButtons(1, B::Down | B::Right);
+        machine.setJoystickButtons(2, 0xFF); // invalid player cannot affect either port
+        assert(io.read(0x01F6) == 0x7A && io.read(0x02F6) == 0xF5);
+        assert(io.read(0x03F6) == 0x70 && io.read(0x00F5) == 0xFF);
+
+        // The CPU sees the same input, including independent high address bits.
+        emulator.writeMemory(0x8000, {0x01,0xF6,0x01,0xED,0x78,0x32,0x00,0x90,
+                                      0x01,0xF6,0x02,0xED,0x78,0x32,0x01,0x90,0x76});
+        auto regs = emulator.registers(); regs.PC = 0x8000; regs.IFF1 = regs.IFF2 = 0;
+        emulator.setRegisters(regs);
+        emulator.runFrames(1);
+        assert(emulator.mmu().read(0x9000) == 0x7A && emulator.mmu().read(0x9001) == 0xF5);
+        io.write(0xF5, 7); io.write(0xF6, 0x40); // output: joystick cannot override the latch
+        io.write(0xF5, 14); io.write(0xF6, 0x5A);
+        assert(io.read(0x01F6) == 0x5A && io.read(0x02F6) == 0x5A);
+        io.write(0xF5, 7); io.write(0xF6, 0); io.write(0xF5, 14);
+        StateWriter state;
+        machine.saveState(state);
+        StateReader reader(state.data());
+        machine.loadState(reader, emulator.context(), emulator.ula());
+        assert(io.read(0x01F6) == 0xFF && io.read(0x02F6) == 0xFF);
+        machine.setJoystickButtons(1, B::Fire1);
+        emulator.reset(ResetKind::Soft);
+        io.write(0xF5, 14);
+        assert(io.read(0x02F6) == 0xFF);
+    }
+    for (const char *id : {"tc2048", "se"}) {
+        Emulator emulator({.machineId = id});
+        assert(!static_cast<TimexMachine &>(emulator.machine()).hasTimexJoysticks());
+    }
+}
+
 void testSePaging()
 {
     Emulator emulator({.machineId = "se"});
@@ -175,6 +227,7 @@ int main(int argc, char **argv)
     const std::filesystem::path romDir = argc > 1 ? argv[1] : ZXKIT_TEST_ROM_DIR;
     testTc2068Scld();
     testScldInterruptDisable();
+    testTimexJoysticks();
     testSePaging();
     testTs2068Frame();
     testRomBoots(romDir);

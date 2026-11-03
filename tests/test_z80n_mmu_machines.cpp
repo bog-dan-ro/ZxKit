@@ -202,15 +202,23 @@ void testRomanianCpmBankingAndIf1Fdc()
         auto &io = eng.ioBus();
         io.write(0x0087, 0x07);
         io.write(0x0087, 0x00);
+        eng.clock().advance(1000);
         io.write(0x0087, 0x08);
         assert(io.read(0x0087) == 0x20);
         assert(io.read(0x0087) == 0x00);
         for (uint8_t b : {0x46, 0x00, 0x00, 0x00, 0x02, 0x02, 0x02, 0x2A, 0xFF})
             io.write(0x0087, b);
+        const auto ready = [&] {
+            for (unsigned i = 0; !(io.read(0x0085) & 0x80) && i < 200000; ++i) eng.clock().advance(16);
+            assert(io.read(0x0085) & 0x80);
+        };
+        ready();
         assert((io.read(0x0085) & 0xF0) == 0xF0); // execution phase, FDC -> CPU
         assert(io.read(0x0087) == 0x77);
-        for (int i = 1; i < 512; ++i)
+        for (int i = 1; i < 512; ++i) {
+            ready();
             io.read(0x0087);
+        }
         io.write(0x0007, 0x19); // Terminal Count, drive A selected
         // the controller reads the sector's CRC, then enters its result phase
         assert((io.read(0x0085) & 0x90) == 0x10);

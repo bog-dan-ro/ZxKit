@@ -17,6 +17,7 @@
 
 #include "zxkit/core/Emulator.h"
 #include "zxkit/machines/ZxNextMachine.h"
+#include "zxkit/machines/CloneMachines.h"
 
 #include "zxkit/core/Exception.h"
 #include "zxkit/debug/Assembler.h"
@@ -168,6 +169,7 @@ void Emulator::selectMachine(std::unique_ptr<MachineProfile> machine)
 
 void Emulator::installMachine(std::unique_ptr<MachineProfile> machine)
 {
+    m_mediaBootFrame = 0;
     m_scheduler.clear();
     m_ioBus.clear();
     m_snapshotStandardAy = false;
@@ -327,6 +329,8 @@ void Emulator::reset(ResetKind kind)
 {
     if (m_rzx.isRecording() || m_rzx.isReviewing()) throw FormatException("Stop RZX recording before resetting the machine");
     stopRzxPlayback();
+    m_mediaBootFrame = 0;
+    m_keyboard.reset();
     m_ula.endRasterFrame();
     m_clock.reset();
     m_cpu.reset(kind == ResetKind::Hard);
@@ -462,7 +466,7 @@ void Emulator::captureRzxCheckpoint(bool force)
     point.bytes = point.state.size() + sizeof(point);
     for (const auto &block : m_tapeDeck.blocks()) {
         point.bytes += sizeof(block) + block.description.capacity() + block.data.capacity()
-            + block.pulses.capacity() * sizeof(uint32_t) + block.pilotStream.capacity() * sizeof(TapeSymbolRun)
+            + block.metadata.capacity() + block.pulses.capacity() * sizeof(uint32_t) + block.pilotStream.capacity() * sizeof(TapeSymbolRun)
             + block.offsets.capacity() * sizeof(int16_t) + block.labels.capacity() * sizeof(std::string)
             + (block.pilotSymbols.capacity() + block.dataSymbols.capacity()) * sizeof(TapeSymbol);
         for (const auto *symbols : {&block.pilotSymbols, &block.dataSymbols})
@@ -704,6 +708,7 @@ RunStatus Emulator::runPlaybackScanline()
 
 void Emulator::beginFrame()
 {
+    if (m_mediaBootFrame) advanceMediaBoot();
     m_frameStarted = true;
     m_ula.setBorderMargins(effectiveBorderMargins());
     if (m_machine->usesRasterUla())
@@ -911,6 +916,7 @@ std::vector<uint8_t> Emulator::serializeState() const
     m_machine->saveState(w);
     for (const auto &p : m_peripherals)
         p->saveState(w);
+    w.write(m_mediaBootFrame); w.writeBool(m_mediaBoot48k);
     return w.takeBuffer();
 }
 
@@ -926,6 +932,8 @@ void Emulator::deserializeState(std::span<const uint8_t> bytes)
     m_machine->loadState(r, m_context, m_ula);
     for (auto &p : m_peripherals)
         p->loadState(r);
+    m_mediaBootFrame = r.read<uint16_t>(); m_mediaBoot48k = r.readBool();
+    if (!r.eof()) throw FormatException("Trailing native state data");
     // Rewind snapshots are taken at frame ends
     m_line = 0;
     m_frameStarted = false;
@@ -951,7 +959,7 @@ void Emulator::loadMedia(const MediaFile &file)
 
     if (std::ranges::contains(kSnapshotExtensions, ext)) {
         loadSnapshot(file.data, ext);
-    } else if (ext == ".tap" || ext == ".tzx") {
+    } else if (ext == ".tap" || ext == ".tzx" || ext == ".pzx" || ext == ".csw") {
         loadTape(file.data, ext);
     } else if (std::ranges::contains(kDiskExtensions, ext)) {
         if (!diskDrive(0))
@@ -982,10 +990,12 @@ std::vector<uint8_t> Emulator::saveMedia(std::string_view extension)
     const std::string ext = normalizedExtension(extension);
     if (m_config.mediaFormats.hasSaver(ext))
         return m_config.mediaFormats.invokeSaver(ext, *this);
-    if (ext == ".sna" || ext == ".szx")
+    if (ext == ".sna" || ext == ".szx" || ext == ".z80" || ext == ".nex")
         return saveSnapshot(ext);
     if (ext == ".tap")
         return m_tapeDeck.saveTap();
+    if (ext == ".tzx")
+        return m_tapeDeck.saveTzx();
     if (ext == ".png")
         return screenshotPng();
     throw FormatException(std::format("Unsupported save file extension '{}'", ext));
@@ -1002,8 +1012,51 @@ void Emulator::loadSnapshot(std::span<const uint8_t> data, std::string_view exte
         if (m_rzx.isRecording() || m_rzx.isReviewing()) throw FormatException("Stop recording before loading a snapshot");
         stopRzxPlayback();
     }
-    m_ula.endRasterFrame();
     const std::string ext = normalizedExtension(extension);
+    if (ext == ".szx" && !m_applyingRzxSnapshot && data.size() >= 8 && std::memcmp(data.data(), "ZXST", 4) == 0) {
+        StateReader chunks(data.subspan(8));
+        while (!chunks.eof()) {
+            const auto tag = chunks.readSpan(4);
+            const auto chunk = chunks.readSpan(chunks.read<uint32_t>());
+            if (std::memcmp(tag.data(), "ZKNX", 4)) continue;
+            StateReader body(chunk);
+            if (body.read<uint32_t>() != 1) throw FormatException("Unsupported ZxKit Next SZX state version");
+            const auto line = body.read<uint16_t>();
+            const auto frameStarted = body.readBool(), lineStarted = body.readBool();
+            const auto peripherals = body.read<uint32_t>();
+            if (peripherals != m_peripherals.size()) throw FormatException("Next SZX requires the same attached peripherals");
+            for (const auto &p : m_peripherals)
+                if (body.readString() != p->id()) throw FormatException("Next SZX peripheral configuration does not match");
+            const auto decoded = zlibDecompressBounded(body.readSpan(body.remaining()), 32 * 1024 * 1024);
+            if (m_machine->id() != "next") selectMachine("next");
+            m_mediaBootFrame = 0;
+            if (line >= m_clock.timings().linesPerFrame) throw FormatException("Invalid Next SZX scanline");
+            const auto previous = serializeState();
+            const auto previousLine = m_line;
+            const bool previousFrameStarted = m_frameStarted, previousLineStarted = m_lineStarted;
+            try { deserializeState(decoded); }
+            catch (...) {
+                deserializeState(previous);
+                m_line = previousLine; m_frameStarted = previousFrameStarted; m_lineStarted = previousLineStarted;
+                throw;
+            }
+            m_line = line; m_frameStarted = frameStarted; m_lineStarted = lineStarted;
+            refreshFrame();
+            return;
+        }
+    }
+    if (!m_applyingRzxSnapshot) {
+        const auto id = SnapshotFormats::machineId(data, ext);
+        if (id != m_machine->id()) selectMachine(id);
+    }
+    if (ext == ".nex" && data.size() >= 512 && data[134] == 0)
+        reset(ResetKind::Soft); // NEX's default requests a clean device/register state.
+    m_mediaBootFrame = 0;
+    m_ula.endRasterFrame();
+    m_cpu.registers().halted = false;
+    m_cpu.registers().eiDelayed = false;
+    m_cpu.registers().Q = m_cpu.registers().lastQ = 0;
+    m_clock.setFrameTstates(0);
     SnapshotMachineState state{m_context, *m_machine, m_ula};
     if (ext == ".sna")
         SnapshotFormats::loadSna(data, state);
@@ -1035,7 +1088,26 @@ std::vector<uint8_t> Emulator::saveSnapshot(std::string_view extension)
     const std::string ext = normalizedExtension(extension);
     SnapshotMachineState state{m_context, *m_machine, m_ula};
     if (ext == ".sna")
-        return SnapshotFormats::saveSna48k(state);
+        return m_mmu.bank(m_machine->ramBankId()).count16kPages() > 3
+            ? SnapshotFormats::saveSna128k(state) : SnapshotFormats::saveSna48k(state);
+    if (ext == ".z80") return SnapshotFormats::saveZ80(state);
+    if (ext == ".nex") return SnapshotFormats::saveNex(state);
+    // SZX has no standard Next device blocks. Keep its classic preview/base chunks, and add
+    // a versioned ZxKit extension for native Next state. Other readers may ignore this chunk.
+    if (ext == ".szx" && m_machine->id() == "next") {
+        auto base = SnapshotFormats::saveSzx(state);
+        StateWriter body;
+        body.write<uint32_t>(1); // ZKNX native state schema; increment when serializeState changes.
+        body.write<uint16_t>(m_line);
+        body.writeBool(m_frameStarted); body.writeBool(m_lineStarted);
+        body.write<uint32_t>(static_cast<uint32_t>(m_peripherals.size()));
+        for (const auto &p : m_peripherals) body.writeString(p->id());
+        body.writeBytes(zlibCompress(serializeState()));
+        StateWriter out;
+        out.writeBytes(base); out.writeTag("ZKNX");
+        out.write<uint32_t>(static_cast<uint32_t>(body.size())); out.writeBytes(body.data());
+        return out.takeBuffer();
+    }
     if (ext == ".szx")
         return SnapshotFormats::saveSzx(state);
     throw FormatException(std::format("Unsupported snapshot save format '{}'", ext));
@@ -1048,8 +1120,67 @@ void Emulator::loadTape(std::span<const uint8_t> data, std::string_view extensio
         m_tapeDeck.loadTap(data);
     else if (ext == ".tzx")
         m_tapeDeck.loadTzx(data);
+    else if (ext == ".pzx")
+        m_tapeDeck.loadPzx(data);
+    else if (ext == ".csw")
+        m_tapeDeck.loadCsw(data);
     else
         throw FormatException(std::format("Unsupported tape format '{}'", ext));
+}
+
+bool Emulator::autoLoadTape(std::size_t block)
+{
+    const auto id = m_machine->id();
+    if (id != "16k" && id != "48k" && id != "48k_ntsc" && id != "128k" && id != "plus2"
+        && id != "plus2a" && id != "plus3" && id != "plus3e")
+        return false;
+    if (block >= m_tapeDeck.blocks().size()) throw InvalidArgumentException("Tape block is outside the tape");
+    reset(ResetKind::Soft);
+    m_tapeDeck.seekBlock(block);
+    m_tapeDeck.setPlaying(false);
+    m_mediaBoot48k = id == "16k" || id == "48k" || id == "48k_ntsc";
+    m_mediaBootFrame = 1;
+    return true;
+}
+
+bool Emulator::autoBootDisk()
+{
+    auto disk = diskDrive(0);
+    if (!disk || disk->get().empty()) return false;
+    Beta128Peripheral *beta = nullptr;
+    if (auto p = findPeripheral("beta128")) beta = dynamic_cast<Beta128Peripheral *>(&p->get());
+    else if (auto *p = dynamic_cast<PentagonMachine *>(m_machine.get())) beta = &p->beta();
+    else if (auto *p = dynamic_cast<ScorpionMachine *>(m_machine.get())) beta = &p->beta();
+    const auto id = m_machine->id();
+    if (!beta && id != "plus3" && id != "plus3e") return false;
+    // Refuse before modifying the image or keyboard when an RZX edit is active.
+    if (m_rzx.isRecording() || m_rzx.isReviewing()) throw FormatException("Stop RZX recording before booting a disk");
+    if (beta) {
+        insertTrDosBootLoader(disk->get());
+        reset(ResetKind::Hard);
+        m_ioBus.write(0x7FFD, 0x10);
+        beta->setPaged(m_context, true);
+        m_cpu.registers().PC = 0;
+    } else {
+        reset(ResetKind::Soft);
+        m_mediaBoot48k = false;
+        m_mediaBootFrame = 1; // Enter on the +3's Loader, after the ROM has initialized.
+    }
+    return true;
+}
+
+void Emulator::advanceMediaBoot() noexcept
+{
+    const uint16_t frame = m_mediaBootFrame++;
+    if (frame < 90) return;
+    static constexpr std::array<ZxKey,4> keys{ZxKey::J, ZxKey::P, ZxKey::P, ZxKey::Enter};
+    const unsigned step = (frame - 90) / 5;
+    const unsigned count = m_mediaBoot48k ? 8 : 2;
+    if (step >= count) { m_mediaBootFrame = 0; return; }
+    const auto key = m_mediaBoot48k ? keys[step / 2] : ZxKey::Enter;
+    const bool pressed = (step & 1) == 0;
+    setKeyState(key, pressed);
+    if (m_mediaBoot48k && (step / 2 == 1 || step / 2 == 2)) setKeyState(ZxKey::SymbolShift, pressed);
 }
 
 void Emulator::insertDisk(std::size_t drive, std::span<const uint8_t> data, std::string_view extension)

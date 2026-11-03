@@ -168,6 +168,11 @@ void testUpd765NonDmaInterrupt()
         }
     };
 
+    const auto ready = [&] {
+        for (unsigned i = 0; !(fdc.readMainStatus(now) & 0x80) && i < 200000; ++i) now += 16;
+        assert(fdc.readMainStatus(now) & 0x80);
+    };
+
     // SPECIFY with ND: non-DMA, the INT pin requests each byte
     command({0x03, 0xDF, 0x03});
     assert(!fdc.interruptLine(now));
@@ -184,12 +189,13 @@ void testUpd765NonDmaInterrupt()
     // READ DATA: the first byte requests once the sector is under the head, not at once
     command({0x46, 0x00, 0, 0, 1, 2, 1, 0x2A, 0xFF});
     assert((fdc.readMainStatus(now) & 0x20) && !fdc.interruptLine(now));
-    now += 1000;
+    ready();
     assert(fdc.interruptLine(now));
     for (int i = 0; i < 511; ++i) {
         assert(fdc.interruptLine(now));
         assert(fdc.readData(now) == static_cast<uint8_t>(i));
-        now += 40;
+        assert(!fdc.interruptLine(now));
+        ready();
     }
     // A hardware TC with the sector's last byte presented: that byte still moves
     fdc.terminalCount();
@@ -213,9 +219,11 @@ void testUpd765NonDmaInterrupt()
 
     // A TC between the bytes of a sector ends it after the presented one
     command({0x46, 0x00, 0, 0, 1, 2, 1, 0x2A, 0xFF});
-    now += 1000;
-    for (int i = 0; i < 9; ++i)
+    ready();
+    for (int i = 0; i < 9; ++i) {
         fdc.readData(now);
+        ready();
+    }
     fdc.terminalCount();
     assert(fdc.readData(now) == 9);
     assert(!fdc.interruptLine(now) && (fdc.readMainStatus(now) & 0x90) == 0x10);
@@ -361,7 +369,7 @@ void testCobraFloppyRead()
     assert((io.read(kFdcStatus) & 0xF0) == 0x70 && im2.pendingMask() == 0);
 
     // The first byte request: CTC0's interrupt (vector 98, index 12)
-    emulator.clock().advance(1000);
+    for (unsigned i = 0; !(io.read(kFdcStatus) & 0x80) && i < 200000; ++i) emulator.clock().advance(16);
     io.read(kFdcStatus);
     assert(im2.pendingMask() == 0x1000);
     assert(im2.acknowledge() == 0x98);
@@ -371,7 +379,9 @@ void testCobraFloppyRead()
     // TC with the fourth byte presented, the transfer ends after it.
     for (int i = 0; i < 4; ++i) {
         assert(io.read(kFdcData) == 0x40 + i);
-        emulator.clock().advance(50);
+        assert(im2.pendingMask() == 0);
+        emulator.clock().advance(112);
+        io.read(kFdcStatus);
         assert(im2.pendingMask() == (i < 3 ? 0x1000 : 0));
         if (im2.pendingMask()) {
             im2.acknowledge();

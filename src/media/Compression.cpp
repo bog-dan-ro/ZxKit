@@ -24,6 +24,7 @@
 #include <cctype>
 #include <format>
 #include <fstream>
+#include <limits>
 #include <zlib.h>
 
 namespace zxkit {
@@ -70,6 +71,33 @@ std::vector<uint8_t> zlibDecompress(std::span<const uint8_t> input, std::size_t 
 
     out.resize(totalOut);
     return out;
+}
+
+std::vector<uint8_t> zlibDecompressBounded(std::span<const uint8_t> input, std::size_t maxSize)
+{
+    if (input.size() > std::numeric_limits<uInt>::max())
+        throw FormatException("Compressed media is too large");
+    z_stream stream{};
+    stream.next_in = const_cast<Bytef *>(input.data());
+    stream.avail_in = static_cast<uInt>(input.size());
+    if (inflateInit(&stream) != Z_OK)
+        throw FormatException("Cannot initialize media decompression");
+    struct End { z_stream &stream; ~End() { inflateEnd(&stream); } } end{stream};
+    std::vector<uint8_t> result;
+    std::array<uint8_t, 16384> buffer;
+    int status;
+    do {
+        stream.next_out = buffer.data();
+        stream.avail_out = buffer.size();
+        status = inflate(&stream, Z_NO_FLUSH);
+        const auto count = buffer.size() - stream.avail_out;
+        if (count > maxSize - result.size())
+            throw FormatException("Decompressed media exceeds the size limit");
+        result.insert(result.end(), buffer.begin(), buffer.begin() + count);
+    } while (status == Z_OK);
+    if (status != Z_STREAM_END || stream.avail_in != 0)
+        throw FormatException("Invalid compressed media stream");
+    return result;
 }
 
 uint32_t computeCrc32(std::span<const uint8_t> data) noexcept

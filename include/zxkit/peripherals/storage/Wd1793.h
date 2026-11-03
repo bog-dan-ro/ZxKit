@@ -26,13 +26,14 @@
 namespace zxkit {
 
 /// The WD1793 floppy disk controller (Beta 128 / TR-DOS), emulated at the sector level on
-/// `DiskImage`s: commands complete at once, transfers go as fast as the CPU moves the bytes.
+/// `DiskImage`s, with timed seeks, uniform sector rotation, byte requests and lost-data deadlines.
 /// `now` is the CPU's T-state (`Clock::totalTstates()`): the index pulses come from it.
 class Wd1793 {
 public:
     static constexpr std::size_t kDriveCount = 4;
 
     void reset() noexcept;
+    void setClockHz(uint32_t hz) noexcept { m_clockHz = hz; }
 
     DiskImage &drive(std::size_t idx) noexcept { return m_drives[idx % kDriveCount]; }
     const DiskImage &drive(std::size_t idx) const noexcept { return m_drives[idx % kDriveCount]; }
@@ -71,6 +72,10 @@ private:
 
     enum class Transfer : uint8_t { None, ReadSector, WriteSector, ReadAddress, ReadTrack, WriteTrack };
 
+    uint64_t rotation() const noexcept { return m_clockHz / 5; }
+    uint64_t byteTime() const noexcept { return uint64_t{m_clockHz} * 32 / 1'000'000; }
+    uint64_t sectorArrival(uint8_t id) const noexcept;
+    void scheduleError(uint8_t status) noexcept;
     void typeOne(uint8_t command);
     void startReadSector();
     void startWriteSector();
@@ -100,6 +105,16 @@ private:
     std::vector<uint8_t> m_buffer;
     std::size_t m_bufferPos = 0;
     std::size_t m_readAddressIndex = 0; // the sector under the head, for READ ADDRESS
+    uint32_t m_clockHz = 3'500'000;
+    uint64_t m_now = 0;
+    uint64_t m_nextDrqAt = 0;
+    uint64_t m_nextStepAt = 0, m_stepInterval = 0;
+    bool m_finishing = false;
+    bool m_seeking = false;
+    uint8_t m_finishStatus = 0;
+    uint8_t m_targetCylinder = 0, m_targetTrack = 0;
+    uint8_t m_forceInterrupt = 0;
+    bool m_wasReady = false;
     uint64_t m_deadline = 0;             // a WRITE TRACK without data ends at the index pulse
 };
 

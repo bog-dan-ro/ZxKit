@@ -92,6 +92,7 @@ private:
 class Upd765Fdc {
 public:
     void reset() noexcept;
+    void setClockHz(uint32_t hz) noexcept { m_clockHz = hz; }
 
     DiskImage &drive(std::size_t idx) noexcept;
     const DiskImage &drive(std::size_t idx) const noexcept;
@@ -136,8 +137,17 @@ private:
     void commitWriteSector();
     void commitFormat();
     void checkOverrun(uint64_t now) noexcept;
+    void updateSeeks(uint64_t now) noexcept;
+    uint64_t byteTime() const noexcept;
+    uint64_t sectorArrival(uint8_t unit, uint8_t side, uint8_t id, bool index = false);
+    void nextByte(uint64_t now) noexcept;
     uint8_t headUnit() const noexcept;
 
+    uint32_t m_clockHz = 3'500'000;
+    uint16_t m_stepMs = 6, m_headLoadMs = 0, m_headUnloadMs = 256;
+    std::array<uint64_t,4> m_headLoadedUntil{};
+    std::array<uint64_t,4> m_seekStarted{};
+    std::array<uint8_t,4> m_seekOrigin{}, m_seekTarget{};
     std::array<DiskImage, 4> m_drives;
     std::array<uint8_t, 4> m_currentTrack{};
     std::array<uint8_t, 4> m_readIdIndex{}; // emulates the disk rotating under the head

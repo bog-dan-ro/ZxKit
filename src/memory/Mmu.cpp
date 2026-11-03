@@ -307,6 +307,14 @@ void Mmu::loadState(StateReader &r)
         m_overlayMap[i].writable    = r.readBool();
         m_overlayMap[i].contended   = r.readBool();
 
+        const auto valid = [this](const SlotMapping &map) {
+            return (map.bankId == 0 || (map.bankId <= m_banks.size()
+                        && map.readPage1k < m_banks[map.bankId - 1].count1kPages()))
+                && (map.writeBankId == 0 || (map.writeBankId <= m_banks.size()
+                        && map.writePage1k < m_banks[map.writeBankId - 1].count1kPages()));
+        };
+        if (!valid(m_baseMap[i]) || !valid(m_overlayMap[i]))
+            throw FormatException("Invalid MMU mapping in state");
         refreshSlot(i);
     }
 }

@@ -31,7 +31,9 @@ enum class JoystickType : uint8_t {
     Sinclair2,
     Cursor,
     Fuller,
-    MegaDrive6
+    MegaDrive6,
+    Timex1,
+    Timex2
 };
 
 struct JoystickButtons {

@@ -25,7 +25,7 @@
 
 namespace zxkit {
 
-/// The tape block kinds. The values are the TZX block ids.
+/// The tape block kinds. Values below 0xF0 are the TZX block ids.
 enum class TapeBlockType : uint8_t {
     StandardData    = 0x10, ///< ROM timings (TAP blocks, TZX 0x10)
     TurboData       = 0x11,
@@ -51,7 +51,10 @@ enum class TapeBlockType : uint8_t {
     ArchiveInfo     = 0x32,
     HardwareType    = 0x33,
     CustomInfo      = 0x35,
-    Glue            = 0x5A
+    Glue            = 0x5A,
+    PzxPulses       = 0xF0, ///< `pulses`: (duration, repeat count) pairs; initially low
+    PzxData         = 0xF1, ///< two dataSymbols (zero pulses are real edges), bit count, initial level in value
+    PzxPause        = 0xF2  ///< one pulse in `pulses`, initial level in value; zero does not stop
 };
 
 /// A symbol of a generalized data block (TZX 0x19): how its first pulse starts, and its pulses.
@@ -112,6 +115,8 @@ struct TapeBlock {
     int32_t value = 0;
     std::vector<int16_t> offsets;
     std::vector<std::string> labels;
+    /// Original body of descriptive TZX blocks, retained for lossless metadata export.
+    std::vector<uint8_t> metadata;
 
     /// Carries data the ROM loader can read: a standard (or turbo) block with the ROM timings.
     bool isRomBlock() const noexcept;
@@ -178,6 +183,7 @@ private:
     Step pulsesStep(const TapeBlock &block);
     Step samplesStep(const TapeBlock &block);
     Step symbolsStep(const TapeBlock &block);
+    Step pzxStep(const TapeBlock &block);
     Step tailStep(const TapeBlock &block);
     bool nextBit(const TapeBlock &block);
     void controlBlock(std::span<const TapeBlock> blocks, const TapeBlock &block, uint8_t &flags);
@@ -210,7 +216,10 @@ private:
 namespace TapeFormats {
 std::vector<TapeBlock> parseTap(std::span<const uint8_t> raw);
 std::vector<TapeBlock> parseTzx(std::span<const uint8_t> raw);
+std::vector<TapeBlock> parsePzx(std::span<const uint8_t> raw);
+std::vector<TapeBlock> parseCsw(std::span<const uint8_t> raw);
 std::vector<uint8_t> writeTap(std::span<const TapeBlock> blocks);
+std::vector<uint8_t> writeTzx(std::span<const TapeBlock> blocks);
 /// "Program: NAME", "Bytes: NAME" for ROM headers, "Data (N bytes)" otherwise.
 std::string describeStandardBlock(std::span<const uint8_t> data);
 } // namespace TapeFormats

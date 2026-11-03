@@ -640,8 +640,142 @@ void testRomLoading(const std::filesystem::path &romDir)
 
 } // namespace
 
+void testBootActions(const std::filesystem::path &romDir)
+{
+    const auto resolver = [romDir](std::string_view name, std::size_t) {
+        std::ifstream file(romDir / name, std::ios::binary);
+        return std::vector<uint8_t>(std::istreambuf_iterator<char>(file), {});
+    };
+    const auto program = basicProgram(32);
+    auto tape = TapeFormats::parseTap(programTap(program));
+    tape.insert(tape.begin(), TapeBlock::standard({0xFF,0xFF}));
+    EmulatorConfig config; config.machineId = "48k"; config.romResolver = resolver;
+    Emulator emulator(config);
+    emulator.tapeDeck().load(std::move(tape));
+    assert(emulator.autoLoadTape(1));
+    assert(emulator.clock().frameCount() == 0 && emulator.tapeDeck().currentBlockIndex() == 1);
+    emulator.runFrames(250);
+    const auto pointers = emulator.readMemory(0x5C53,2);
+    const auto at = static_cast<uint16_t>(pointers[0] | (pointers[1] << 8));
+    assert(emulator.readMemory(at,program.size()) == program);
+    assert(emulator.tapeDeck().currentBlockIndex() == 3);
+
+    config.machineId = "plus3";
+    Emulator plus3(config);
+    assert(!plus3.autoBootDisk());
+    plus3.diskDrive(0)->get().formatBlank(40,1,9,512,1);
+    assert(plus3.autoBootDisk());
+    assert(plus3.clock().frameCount() == 0);
+    bool accessed = false;
+    for (unsigned i = 0; i < 220; ++i) {
+        plus3.runFrames(1);
+        accessed |= plus3.mediaActivity().busyDisks != 0;
+    }
+    assert(accessed); // The actual +3 ROM's Loader accessed drive A without host-side frame execution.
+
+    Emulator pentagon({.machineId="pentagon"});
+    pentagon.diskDrive(0)->get().formatBlank(80,2,16,256,1);
+    assert(pentagon.autoBootDisk());
+    assert(pentagon.registers().PC == 0 && pentagon.machine().lastPort7ffd() == 0x10);
+    assert(static_cast<PentagonMachine &>(pentagon.machine()).beta().isPaged());
+    assert(pentagon.clock().frameCount() == 0);
+    std::println("  Selected-block tape auto-load and +3/TR-DOS boot actions: OK");
+}
+
+// Compare the physical signal, coalescing zero-time transitions and equal-level runs.
+std::vector<std::pair<uint64_t, bool>> waveform(std::span<const TapeBlock> blocks)
+{
+    std::vector<std::pair<uint64_t, bool>> runs;
+    for (const auto &edge : allEdges(blocks)) {
+        if (!edge.length) continue;
+        if (!runs.empty() && runs.back().second == edge.level) runs.back().first += edge.length;
+        else runs.emplace_back(edge.length, edge.level);
+    }
+    return runs;
+}
+
+void testPzxAndCsw()
+{
+    StateWriter pzx;
+    const auto chunk = [&](std::string_view id, std::initializer_list<uint8_t> data) {
+        pzx.writeTag(id); pzx.write<uint32_t>(data.size()); pzx.writeBytes(data);
+    };
+    chunk("PZXT", {1, 0});
+    chunk("PULS", {3, 0x80, 10, 0, 0, 0, 20, 0}); // 3x10, zero, 20.
+    chunk("DATA", {2, 0, 0, 0x80, 7, 0, 2, 2, 5, 0, 0, 0, 0, 0, 9, 0, 0x40});
+    chunk("PAUS", {30, 0, 0, 0});
+    chunk("STOP", {1, 0});
+    auto blocks = TapeFormats::parsePzx(pzx.data());
+    const std::vector<std::pair<uint64_t, bool>> expected{{10,false},{10,true},{30,false},
+                                                        {5,true},{9,false},{7,true},{30,false}};
+    assert(waveform(blocks) == expected);
+    const auto exported = TapeFormats::parseTzx(TapeFormats::writeTzx(blocks));
+    assert(waveform(exported) == expected);
+    assert(exported.back().type == TapeBlockType::StopIf48k);
+    auto bad = pzx.takeBuffer(); bad.pop_back();
+    bool failed = false;
+    try { (void)TapeFormats::parsePzx(bad); } catch (const FormatException &) { failed = true; }
+    assert(failed);
+
+    for (const uint8_t compression : {1, 2}) {
+        StateWriter csw;
+        csw.writeTag(std::string_view("Compressed Square Wave\x1A", 23));
+        csw.write<uint8_t>(2); csw.write<uint8_t>(0); csw.write<uint32_t>(44100);
+        csw.write<uint32_t>(3); csw.write(compression); csw.write<uint8_t>(1); csw.write<uint8_t>(0);
+        csw.writeTag(std::string(16, '\0'));
+        const std::vector<uint8_t> rle{1, 2, 0, 0x2C, 1, 0, 0}; // 1, 2, 300 samples.
+        csw.writeBytes(compression == 1 ? rle : zlibCompress(rle));
+        const auto tape = TapeFormats::parseCsw(csw.data());
+        const std::vector<std::pair<uint64_t, bool>> signal{{79,true},{159,false},{23809,true}};
+        assert(waveform(tape) == signal); // Cumulative conversion, without per-pulse rounding drift.
+        assert(waveform(TapeFormats::parseTzx(TapeFormats::writeTzx(tape))) == signal);
+        Emulator emu;
+        emu.loadTape(csw.data(), ".csw");
+        assert(emu.tapeDeck().blocks().size() == 2);
+        auto malformed = csw.takeBuffer(); malformed[29] = 4;
+        failed = false;
+        try { (void)TapeFormats::parseCsw(malformed); } catch (const FormatException &) { failed = true; }
+        assert(failed);
+    }
+    // Truncated RLE and compression bombs fail explicitly, never a partial tape.
+    failed = false;
+    try { (void)zlibDecompressBounded(zlibCompress(std::vector<uint8_t>(10000, 0)), 100); }
+    catch (const FormatException &) { failed = true; }
+    assert(failed);
+    failed = false;
+    try { (void)TapeFormats::writeTap(blocks); } catch (const FormatException &) { failed = true; }
+    assert(failed);
+    std::println("  PZX/CSW waveforms, polarity, export and invalid inputs: OK");
+}
+
+void testTzxExport()
+{
+    Tzx source;
+    source.u8(0x21).u8(4).text("Test")
+          .u8(0x24).u16(2)
+          .u8(0x12).u16(100).u16(3)
+          .u8(0x25)
+          .u8(0x22)
+          .u8(0x30).u8(4).text("Text")
+          .standard({0xFF, 0x42, 0xBD}, 1000);
+    const auto tape = TapeFormats::parseTzx(source.data());
+    assert(TapeFormats::writeTzx(tape) == source.data());
+    assert(waveform(TapeFormats::parseTzx(TapeFormats::writeTzx(tape))) == waveform(tape));
+    // A waveform expands into three blocks; relative jumps still reach the original target.
+    TapeBlock jump; jump.type = TapeBlockType::JumpTo; jump.value = 2;
+    TapeBlock pulses; pulses.type = TapeBlockType::PzxPulses; pulses.pulses = {12,3};
+    TapeBlock tone; tone.type = TapeBlockType::PureTone; tone.pilotPulse = 33; tone.pilotPulses = 2;
+    const std::vector<TapeBlock> control{jump, pulses, tone};
+    const auto roundtrip = TapeFormats::parseTzx(TapeFormats::writeTzx(control));
+    assert(roundtrip[0].value == 4);
+    assert(waveform(roundtrip) == waveform(control));
+    std::println("  TZX signal, control targets and metadata export: OK");
+}
+
 int main(int argc, char **argv)
 {
+    testPzxAndCsw();
+    testTzxExport();
     testTapFile();
     testStandardBlockSignal();
     testTurboAndPureData();
@@ -659,6 +793,7 @@ int main(int argc, char **argv)
 
     const std::filesystem::path romDir = argc > 1 ? argv[1] : ZXKIT_TEST_ROM_DIR;
     assert(std::filesystem::file_size(romDir / "48.rom") == 16384);
+    testBootActions(romDir);
     testRomLoading(romDir);
 
     std::println("test_tape: all tests passed");

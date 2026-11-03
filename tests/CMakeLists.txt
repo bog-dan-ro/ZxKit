@@ -5,6 +5,7 @@ target_compile_options(test_video_filters PRIVATE $<IF:$<CXX_COMPILER_ID:MSVC>,/
 add_test(NAME test_video_filters COMMAND test_video_filters)
 
 foreach(rom 48.rom 128-0.rom 128-1.rom
+        plus3-0.rom plus3-1.rom plus3-2.rom plus3-3.rom
         cobra1_boot.rom cobra1_sys-0.rom cobra1_sys-1.rom cobra1_sys-2.rom cobra1_sys-3.rom
         cobra2_ts_boot.rom tc2048.rom tc2068-0.rom tc2068-1.rom se-0.rom se-1.rom)
     if(NOT EXISTS "${ZXKIT_TEST_ROM_DIR}/${rom}")

@@ -640,10 +640,180 @@ void testZxNextDmaJoystickAndInterrupts()
     CHECK(interruptsPerFrame(0x00) == 1); // ULA only
 }
 
+void testSnapshotExports()
+{
+    for (const std::string_view id : {"48k","128k","plus2","plus2a","plus3","pentagon"}) {
+        EmulatorConfig config; config.machineId = id;
+        Emulator source(config);
+        const auto bank = source.machine().ramBankId();
+        auto &ram = source.mmu().bank(bank);
+        for (std::size_t p = 0; p < ram.count16kPages(); ++p) {
+            std::vector<uint8_t> pattern(16384);
+            for (std::size_t i = 0; i < pattern.size(); ++i) pattern[i] = static_cast<uint8_t>(p * 29 + i * 13);
+            ram.loadData(p * 16384, pattern);
+        }
+        auto regs = source.registers();
+        regs.PC = 0xBEEF; regs.SP = 0x8123; regs.AF = 0xABCD; regs.AF_ = 0x7531;
+        regs.BC = 0x1234; regs.DE = 0x5678; regs.HL = 0x9ABC; regs.IX = 0x1357; regs.IY = 0x2468;
+        regs.IFF1 = regs.IFF2 = 1; regs.IM = 2; regs.setFullR(0xE5);
+        source.setRegisters(regs);
+        source.clock().setFrameTstates(23456);
+        if (id != "48k") source.ioBus().write(0x7FFD, 0x1B);
+        for (const std::string_view format : {".z80", ".szx"}) {
+            const auto bytes = source.saveMedia(format);
+            CHECK(SnapshotFormats::machineId(bytes, format) == id);
+            Emulator target;
+            target.loadSnapshot(bytes, format);
+            CHECK(target.machine().id() == id);
+            CHECK(target.registers().PC == regs.PC && target.registers().SP == regs.SP);
+            CHECK(target.registers().AF == regs.AF && target.registers().AF_ == regs.AF_);
+            CHECK(target.registers().fullR() == regs.fullR() && target.registers().IFF1 == 1);
+            CHECK(target.clock().frameBaseTstates() == source.clock().frameBaseTstates());
+            const auto &restored = target.mmu().bank(target.machine().ramBankId());
+            for (std::size_t p = 0; p < ram.count16kPages(); ++p)
+                CHECK(std::ranges::equal(ram.span16k(p), restored.span16k(p)));
+            if (id != "48k") CHECK(target.machine().lastPort7ffd() == 0x1B);
+        }
+        if (id == "128k" || id == "plus2" || id == "pentagon") {
+            for (const uint8_t top : {0, 2, 5, 7}) {
+                source.ioBus().write(0x7FFD, top);
+                const auto bytes = source.saveSnapshot(".sna");
+                CHECK(bytes.size() == ((top == 2 || top == 5) ? 147487 : 131103));
+                CHECK(bytes[49179] == 0xEF && bytes[49180] == 0xBE && bytes[49181] == top);
+                Emulator target; target.loadSnapshot(bytes, ".sna");
+                CHECK(target.registers().PC == regs.PC && target.registers().SP == regs.SP);
+                const auto &restored = target.mmu().bank(target.machine().ramBankId());
+                for (std::size_t p = 0; p < 8; ++p) CHECK(std::ranges::equal(ram.span16k(p), restored.span16k(p)));
+            }
+        }
+    }
+    EmulatorConfig config; config.machineId = "next";
+    Emulator next(config);
+    next.ioBus().writeNextRegOpcode(0x52, 10); next.ioBus().writeNextRegOpcode(0x53, 11);
+    next.ioBus().writeNextRegOpcode(0x54, 4); next.ioBus().writeNextRegOpcode(0x55, 5);
+    next.ioBus().writeNextRegOpcode(0x56, 14); next.ioBus().writeNextRegOpcode(0x57, 15);
+    auto r = next.registers(); r.PC = 0xC100; r.SP = 0xBFF0; next.setRegisters(r);
+    next.writeMemory(0xC100, {0x3E,0x05,0xD3,0xFE,0x18,0xFE}); // LD A,5; OUT (FE),A; JR $
+    const auto native = next.saveSnapshot(".szx");
+    Emulator restoredNext;
+    restoredNext.loadSnapshot(native, ".szx");
+    CHECK(restoredNext.machine().id() == "next");
+    CHECK(restoredNext.readMemory(0xC100,6) == next.readMemory(0xC100,6));
+    CHECK(restoredNext.registers().PC == 0xC100 && restoredNext.registers().SP == 0xBFF0);
+    CHECK(restoredNext.saveSnapshot(".szx") == native);
+    const auto bytes = next.saveSnapshot(".nex");
+    CHECK(std::memcmp(bytes.data(), "NextV1.2", 8) == 0 && bytes[139] == 7);
+    Emulator target; target.loadSnapshot(bytes, ".nex");
+    CHECK(target.machine().id() == "next");
+    CHECK(target.registers().PC == 0xC100 && target.registers().SP == 0xBFF0);
+    CHECK(target.readMemory(0xC100,6) == next.readMemory(0xC100,6));
+    target.runFrames(1);
+    CHECK(target.registers().A() == 5 && target.ula().borderColor() == 5);
+    target.ioBus().writeNextRegOpcode(0x15, 0xFF);
+    target.loadSnapshot(bytes, ".nex");
+    CHECK(static_cast<ZxNextMachine &>(target.machine()).nextReg().peek(0x15) == 0);
+    std::println("  Snapshot exports: headers, every RAM bank, paging, CPU and frame position: OK");
+}
+
+
+void testSnapshotJoystickMetadata()
+{
+    using J = JoystickType;
+    Emulator emulator;
+    auto original = emulator.saveSnapshot(".szx");
+    CHECK(!SnapshotFormats::joystickInfo(original, ".szx").present);
+    constexpr std::array types{J::None,J::Kempston,J::Fuller,J::Cursor,J::Sinclair1,J::Sinclair2,J::Timex1,J::Timex2};
+    for (auto type : types) {
+        auto bytes = original;
+        CHECK(SnapshotFormats::setJoystickInfo(bytes, ".szx", type));
+        auto info = SnapshotFormats::joystickInfo(bytes, ".szx");
+        CHECK(info.present && info.type == type);
+        const auto size = bytes.size();
+        CHECK(SnapshotFormats::setJoystickInfo(bytes, ".szx", type));
+        CHECK(bytes.size() == size); // never duplicate JOY chunks
+        Emulator restored;
+        restored.loadSnapshot(bytes, ".szx");
+        CHECK(restored.registers().PC == emulator.registers().PC);
+    }
+    auto chunk = [](std::vector<uint8_t> &bytes, const char *id, std::initializer_list<uint8_t> body) {
+        bytes.insert(bytes.end(), id, id + 4);
+        const auto size = static_cast<uint8_t>(body.size());
+        bytes.insert(bytes.end(), {size,0,0,0});
+        bytes.insert(bytes.end(), body);
+    };
+    auto bytes = original;
+    chunk(bytes, "KEYB", {1,0,0,0}); // v1.0 has no joystick field
+    CHECK(!SnapshotFormats::joystickInfo(bytes, ".szx").present);
+    chunk(bytes, "KEYB", {0,0,0,0,5}); // Spectrum+ cursor keys are ordinary keyboard behavior
+    CHECK(!SnapshotFormats::joystickInfo(bytes, ".szx").present);
+    chunk(bytes, "KEYB", {1,0,0,0,4}); // keyboard-only Sinclair 2
+    CHECK(SnapshotFormats::joystickInfo(bytes, ".szx").type == J::Sinclair2);
+    chunk(bytes, "JOY\0", {1,0,0,0,8,8}); // deprecated flag is NOT a Kempston declaration
+    CHECK(SnapshotFormats::joystickInfo(bytes, ".szx").type == J::Sinclair2);
+    chunk(bytes, "JOY\0", {0,0,0,0,4,4}); // same type for two players is unambiguous
+    CHECK(SnapshotFormats::joystickInfo(bytes, ".szx").type == J::Sinclair2);
+    chunk(bytes, "JOY\0", {0,0,0,0,0,8}); // conflicting interface
+    auto info = SnapshotFormats::joystickInfo(bytes, ".szx");
+    CHECK(info.present && !info.type);
+    CHECK(SnapshotFormats::setJoystickInfo(bytes, ".szx", J::Fuller));
+    CHECK(SnapshotFormats::joystickInfo(bytes, ".szx").type == J::Fuller);
+    for (uint8_t value : {5,9,255}) {
+        auto unknown = original;
+        chunk(unknown, "JOY\0", {0,0,0,0,value,0});
+        info = SnapshotFormats::joystickInfo(unknown, ".szx");
+        CHECK(info.present && !info.type); // no guessing even with one supported player
+    }
+    bytes = original;
+    chunk(bytes, "JOY\0", {0,0,0,0,0});
+    bool rejected = false;
+    try { SnapshotFormats::joystickInfo(bytes, ".szx"); } catch (const FormatException &) { rejected = true; }
+    CHECK(rejected);
+    bytes = original; bytes.push_back(0);
+    rejected = false;
+    try { SnapshotFormats::joystickInfo(bytes, ".szx"); } catch (const FormatException &) { rejected = true; }
+    CHECK(rejected);
+    CHECK(!SnapshotFormats::joystickInfo({}, ".sna").present);
+
+    // Authored v1 and v2 headers: the left port is Sinclair 2, the right is Sinclair 1.
+    for (unsigned version : {1,2,3}) {
+        std::vector<uint8_t> header(version == 1 ? 30 : version == 2 ? 55 : 87, 0);
+        if (version == 1) header[6] = 1;
+        else header[30] = version == 2 ? 23 : 55;
+        constexpr std::array expected{J::Cursor,J::Kempston,J::Sinclair2,J::Sinclair1};
+        for (uint8_t mode = 0; mode < 4; ++mode) {
+            header[29] = static_cast<uint8_t>((mode << 6) | 6);
+            info = SnapshotFormats::joystickInfo(header, ".z80");
+            CHECK(info.present);
+            if (version == 3 && mode == 2) CHECK(!info.type); // arbitrary/unassigned custom mapping
+            else CHECK(info.type == expected[mode]);
+        }
+        for (auto type : {J::Cursor,J::Kempston,J::Sinclair1,J::Sinclair2}) {
+            CHECK(SnapshotFormats::setJoystickInfo(header, ".z80", type));
+            CHECK((header[29] & 0x3F) == 6); // IM and other flags unchanged
+            CHECK(SnapshotFormats::joystickInfo(header, ".z80").type == type);
+        }
+        const auto before = header;
+        CHECK(!SnapshotFormats::setJoystickInfo(header, ".z80", J::Timex1));
+        CHECK(header == before);
+        if (version == 3) {
+            header[63] = 7; // arbitrary programmable interface is not Sinclair 2
+            CHECK(!SnapshotFormats::joystickInfo(header, ".z80").type);
+        }
+    }
+    auto exported = emulator.saveSnapshot(".z80");
+    CHECK(!SnapshotFormats::joystickInfo(exported, ".z80").type); // core does not invent host preferences
+    CHECK(SnapshotFormats::setJoystickInfo(exported, ".z80", J::Sinclair2));
+    Emulator restored; restored.loadSnapshot(exported, ".z80");
+    CHECK(restored.registers().IM == emulator.registers().IM);
+    std::println("  Snapshot joystick metadata: versions, mappings, ambiguity, bounds and exports: OK");
+}
+
 } // namespace
 
 int main()
 {
+    testSnapshotExports();
+    testSnapshotJoystickMetadata();
     testSdCard();
     testFatVolume();
     testFatWriting(12, 2880);
