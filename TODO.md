@@ -63,11 +63,15 @@ See [Debugger run control and traps](docs/debugger.md).
 
 ## Performance and resource usage profiling
 
-- [ ] Profile the standalone Engine, audio generation and video filters with `perf`: CPU time, allocations,
+- [x] Profile the standalone Engine, audio generation and video filters with `perf`: CPU time, allocations,
       memory footprint, synchronization and wakeups. Separate core cost from each filter's cost and host overhead.
-- [ ] Establish reproducible before/after baselines with the same optimized build, machine, media, speed and
+- [x] Establish reproducible before/after baselines with the same optimized build, machine, media, speed and
       display workload. Investigate the consumer's reported increase since the initial ZxKit port; keep battery
       usage and audio continuity central to optimizations. QML tracing belongs in the consumer repository.
+
+Measured raster and bilinear improvements, standalone commands and evidence limits:
+[Engine and presentation profiling](docs/profiling.md). Raw traces and the complete matrix
+are retained locally under `build/profiling/`; kernel wakeup/energy access limits are explicit.
 
 ## CI, tests, installation and documentation
 

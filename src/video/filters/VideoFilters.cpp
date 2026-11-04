@@ -77,17 +77,27 @@ Sample sample(uint32_t coordinate, uint32_t sourceSize, uint32_t scale)
             static_cast<uint32_t>(position % denominator)};
 }
 
-void bilinear(const VideoFrame& source, VideoFrame& target, uint32_t scale)
+template<uint32_t Scale>
+void bilinear(const VideoFrame& source, VideoFrame& target, std::vector<uint32_t>& columns)
 {
-    const uint32_t denominator = 2 * scale;
-    const uint32_t divisor = denominator * denominator;
+    constexpr uint32_t denominator = 2 * Scale;
+    constexpr uint32_t divisor = denominator * denominator;
+    // The horizontal sampling positions repeat for every row. Reuse the
+    // pipeline's scratch storage rather than recomputing them per output pixel.
+    columns.resize(std::size_t(target.width()) * 2);
+    for (uint32_t x = 0; x < target.width(); ++x) {
+        const auto sx = sample(x, source.width(), Scale);
+        columns[x * 2] = sx.first;
+        columns[x * 2 + 1] = sx.fraction;
+    }
     for (uint32_t y = 0; y < target.height(); ++y) {
-        const auto sy = sample(y, source.height(), scale);
+        const auto sy = sample(y, source.height(), Scale);
         const auto top = source.scanline(sy.first);
         const auto bottom = source.scanline(sy.second);
         auto row = target.scanline(y);
         for (uint32_t x = 0; x < target.width(); ++x) {
-            const auto sx = sample(x, source.width(), scale);
+            const Sample sx{columns[x * 2], std::min(columns[x * 2] + 1, source.width() - 1),
+                            columns[x * 2 + 1]};
             uint32_t pixel = 0xFF000000u;
             for (uint32_t shift = 0; shift < 24; shift += 8) {
                 const auto a = (top[sx.first] >> shift) & 0xFFu;
@@ -178,7 +188,16 @@ void VideoFilterPipeline::applyStage(VideoFilterStage stage, const VideoFrame& s
         }
         return;
     case VideoFilter::Bilinear:
-        bilinear(source, target, stage.scale);
+        // Fixed denominators preserve the integer weights and rounding while
+        // avoiding division instructions for every output pixel/channel.
+        switch (stage.scale) {
+        case 1: bilinear<1>(source, target, m_inputScratch); break;
+        case 2: bilinear<2>(source, target, m_inputScratch); break;
+        case 3: bilinear<3>(source, target, m_inputScratch); break;
+        case 4: bilinear<4>(source, target, m_inputScratch); break;
+        case 5: bilinear<5>(source, target, m_inputScratch); break;
+        case 6: bilinear<6>(source, target, m_inputScratch); break;
+        }
         return;
     case VideoFilter::Xbrz:
         // xBRZ measures luminance in 0xAARRGGBB; VideoFrame uses 0xAABBGGRR.

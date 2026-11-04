@@ -65,6 +65,43 @@ void rasterCrops()
         assert(frame.pixel(x, 0) == kStandardZxPalette[x < 20 ? 2 : 1]);
 }
 
+// Bulk raster spans must match stopping at every clock, including writes at
+// non-character boundaries and odd/zero crops that straddle the first fetch.
+void rasterChunking()
+{
+    Mmu mmu;
+    const auto bank = mmu.registerBank("ram", 16384, true);
+    auto bytes = mmu.bank(bank).bytes();
+    for (std::size_t i = 0; i < bytes.size(); ++i) bytes[i] = uint8_t(i * 37);
+    for (const auto timings : {kTimings48k, kTimings128k}) {
+        for (const auto margins : {BorderMargins{0, 0, 0, 0}, BorderMargins{1, 3, 7, 5},
+                                   BorderMargins{32, 32, 32, 32}, BorderMargins{48, 56, 48, 56}}) {
+            UlaRenderer bulk, tick;
+            for (auto *ula : {&bulk, &tick}) {
+                ula->setVramSource(bank, 0);
+                ula->setBorderMargins(margins);
+                ula->beginRasterFrame(timings);
+            }
+            uint32_t cursor = 0;
+            for (uint32_t end = 113; cursor < timings.tstatesPerFrame(); end += 113) {
+                end = std::min(end, timings.tstatesPerFrame());
+                bulk.renderUntil(end, mmu);
+                while (cursor < end) tick.renderUntil(++cursor, mmu);
+                const uint8_t colour = uint8_t((end / 113) & 7);
+                bulk.setBorderColor(colour);
+                tick.setBorderColor(colour);
+                bytes[(end * 17) & 0x1fff] ^= uint8_t(end);
+            }
+            VideoFrame a, b;
+            for (uint32_t y = 0; y < bulk.outputHeight(); ++y) {
+                bulk.copyRasterScanline(y, a);
+                tick.copyRasterScanline(y, b);
+            }
+            assert(std::ranges::equal(a.pixels(), b.pixels()));
+        }
+    }
+}
+
 void frameBoundaries()
 {
     Emulator full({.fullBorder = true}), reference;
@@ -138,6 +175,7 @@ void hiddenCopper()
 int main()
 {
     rasterCrops();
+    rasterChunking();
     frameBoundaries();
     machineCrops();
     hiddenCopper();

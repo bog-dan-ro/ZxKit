@@ -220,6 +220,39 @@ void upstreamReferences()
     }
 }
 
+void bilinearPixels()
+{
+    // Frozen output of the original integer kernel, before scale specialization
+    // and cached column coordinates. Cover every scale, RGB/alpha, clipping,
+    // single rows/columns and resolution changes without duplicating the kernel.
+    constexpr std::array expected{
+        0xb6d6f2951f5c43b0ull, 0x013b29a99786e40dull, 0x7183d95d0981b26cull,
+        0x9afdddc4e9899eddull, 0x29ea760aab7eda68ull, 0x5ce18f3f92efedacull};
+    for (uint32_t scale = 1; scale <= 6; ++scale) {
+        uint64_t hash = 14695981039346656037ull;
+        VideoFilterPipeline pipeline({{VideoFilter::Bilinear, scale}});
+        for (auto size : {VideoFilterSize{1, 1}, {1, 7}, {7, 1}, {3, 5}, {5, 3}, {48, 51}}) {
+            VideoFrame source(size.width, size.height);
+            uint32_t random = 0xC0FFEEu;
+            for (auto &pixel : source.pixels()) {
+                random = random * 1664525u + 1013904223u;
+                pixel = random;
+            }
+            for (auto pixel : pipeline.apply(source).pixels())
+                hash = (hash ^ pixel) * 1099511628211ull;
+        }
+        assert(hash == expected[scale - 1]);
+    }
+    // Cached coordinates share scratch storage with the adapted kernels.
+    // Chaining must not reuse stale coordinate/conversion data.
+    const auto source = pattern(5, 3);
+    VideoFilterPipeline bilinear({{VideoFilter::Bilinear, 3}}), hq({{VideoFilter::Hq, 2}});
+    VideoFilterPipeline first({{VideoFilter::Bilinear, 3}, {VideoFilter::Hq, 2}});
+    equalFrames(first.apply(source), hq.apply(bilinear.apply(source)));
+    VideoFilterPipeline second({{VideoFilter::Hq, 2}, {VideoFilter::Bilinear, 3}});
+    equalFrames(second.apply(source), bilinear.apply(hq.apply(source)));
+}
+
 void compositionAndOwnership()
 {
     auto source = pattern(7, 5);
@@ -267,6 +300,7 @@ int main()
 {
     catalogAndBoundaries();
     numericResults();
+    bilinearPixels();
     upstreamReferences();
     compositionAndOwnership();
     std::println("Video filter tests passed (32 variants, composition, borders and ownership)");

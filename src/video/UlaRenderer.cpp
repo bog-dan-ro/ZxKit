@@ -187,54 +187,60 @@ void UlaRenderer::renderUntil(uint32_t frameTstate, const Mmu &mmu)
     while (m_rasterCursor < end) {
         const uint32_t relative = m_rasterCursor - first;
         const uint32_t y = relative / t.tstatesPerLine;
-        const uint32_t tick = relative % t.tstatesPerLine;
-        const int32_t screenTick = int32_t(tick) - int32_t(prefix);
-        if (screenTick >= 128 + (m_margins.right + 1) / 2) {
-            m_rasterCursor += std::min(end - m_rasterCursor, t.tstatesPerLine - tick);
-            continue;
-        }
+        uint32_t tick = relative % t.tstatesPerLine;
+        const uint32_t lineEnd = std::min(end, m_rasterCursor + t.tstatesPerLine - tick);
         auto row = m_rasterFrame.scanline(y);
         const int32_t screenY = int32_t(y) - m_margins.top;
         const bool screenLine = screenY >= 0 && screenY < int32_t(kScreenLines) && !vram.empty();
-        if (!screenLine || screenTick < 0 || screenTick >= 128) {
-            const int32_t x = screenTick * 2 + m_margins.left;
-            if (uint32_t(x) < row.size() - 1) {
-                row[x] = row[x + 1] = m_palette[m_borderColor];
-            } else {
-                // Only an odd margin or the pre-paper fetch can straddle a crop edge.
-                for (int32_t pixel = x; pixel < x + 2; ++pixel) {
-                    if (pixel >= 0 && pixel < int32_t(row.size()))
-                        row[pixel] = m_palette[m_borderColor];
-                }
+        // Divide and resolve the row once per span, retaining every fetch clock
+        // and the exact stop position before a host changes VRAM or the border.
+        while (m_rasterCursor < lineEnd) {
+            const int32_t screenTick = int32_t(tick) - int32_t(prefix);
+            if (screenTick >= 128 + (m_margins.right + 1) / 2) {
+                m_rasterCursor = lineEnd;
+                break;
             }
-        }
-        // A pair of characters is fetched on four consecutive clocks followed
-        // by four idle clocks. Attribute fetch completes each character latch;
-        // later writes cannot change the eight pixels already in that latch.
-        if (screenLine && screenTick >= -1 && screenTick < 123) {
-            const uint32_t fetchTick = screenTick + 1;
-            const uint32_t phase = fetchTick & 7;
-            if (phase < 4) {
-                const uint32_t col = (fetchTick / 8) * 2 + phase / 2;
-                const uint16_t bitmapOffset = ((screenY & 0xc0) << 5) | ((screenY & 7) << 8)
-                                              | ((screenY & 0x38) << 2) | col;
-                if (!(phase & 1)) {
-                    m_bitmapLatch[phase / 2] = vram[(m_vramOffsetBytes + bitmapOffset) & 0x3fff];
+            if (!screenLine || screenTick < 0 || screenTick >= 128) {
+                const int32_t x = screenTick * 2 + m_margins.left;
+                if (uint32_t(x) < row.size() - 1) {
+                    row[x] = row[x + 1] = m_palette[m_borderColor];
                 } else {
-                    const uint16_t attrOffset = 0x1800 + (screenY / 8) * 32 + col;
-                    m_attributeLatch = vram[(m_vramOffsetBytes + attrOffset) & 0x3fff];
-                    const uint8_t bright = (m_attributeLatch & 0x40) ? 8 : 0;
-                    uint8_t ink = (m_attributeLatch & 7) + bright;
-                    uint8_t paper = ((m_attributeLatch >> 3) & 7) + bright;
-                    if ((m_attributeLatch & 0x80) && m_flashInvert)
-                        std::swap(ink, paper);
-                    const uint8_t bits = m_bitmapLatch[phase / 2];
-                    for (uint32_t x = 0; x < 8; ++x)
-                        row[m_margins.left + col * 8 + x] = m_palette[(bits & (0x80 >> x)) ? ink : paper];
+                    // Only an odd margin or the pre-paper fetch can straddle a crop edge.
+                    for (int32_t pixel = x; pixel < x + 2; ++pixel) {
+                        if (pixel >= 0 && pixel < int32_t(row.size()))
+                            row[pixel] = m_palette[m_borderColor];
+                    }
                 }
             }
+            // A pair of characters is fetched on four consecutive clocks followed
+            // by four idle clocks. Attribute fetch completes each character latch;
+            // later writes cannot change the eight pixels already in that latch.
+            if (screenLine && screenTick >= -1 && screenTick < 123) {
+                const uint32_t fetchTick = screenTick + 1;
+                const uint32_t phase = fetchTick & 7;
+                if (phase < 4) {
+                    const uint32_t col = (fetchTick / 8) * 2 + phase / 2;
+                    const uint16_t bitmapOffset = ((screenY & 0xc0) << 5) | ((screenY & 7) << 8)
+                                                  | ((screenY & 0x38) << 2) | col;
+                    if (!(phase & 1)) {
+                        m_bitmapLatch[phase / 2] = vram[(m_vramOffsetBytes + bitmapOffset) & 0x3fff];
+                    } else {
+                        const uint16_t attrOffset = 0x1800 + (screenY / 8) * 32 + col;
+                        m_attributeLatch = vram[(m_vramOffsetBytes + attrOffset) & 0x3fff];
+                        const uint8_t bright = (m_attributeLatch & 0x40) ? 8 : 0;
+                        uint8_t ink = (m_attributeLatch & 7) + bright;
+                        uint8_t paper = ((m_attributeLatch >> 3) & 7) + bright;
+                        if ((m_attributeLatch & 0x80) && m_flashInvert)
+                            std::swap(ink, paper);
+                        const uint8_t bits = m_bitmapLatch[phase / 2];
+                        for (uint32_t x = 0; x < 8; ++x)
+                            row[m_margins.left + col * 8 + x] = m_palette[(bits & (0x80 >> x)) ? ink : paper];
+                    }
+                }
+            }
+            ++m_rasterCursor;
+            ++tick;
         }
-        ++m_rasterCursor;
     }
 }
 
