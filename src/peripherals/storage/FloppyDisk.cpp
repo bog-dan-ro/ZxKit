@@ -1038,7 +1038,7 @@ void HcIf1FdcPeripheral::onAttach(MachineContext &ctx)
 {
     m_romBank = ctx.mmu.registerBank("hc_if1_fdc_rom", 16 * 1024, false, false);
     m_ramBank = ctx.mmu.registerBank("hc_if1_fdc_ram", 1024, true, true);
-    if (ctx.romResolver)
+    if (ctx.romResolver || ctx.romOverrideResolver)
         ctx.mmu.bank(m_romBank).loadData(0, ctx.loadRom("hc-if1.rom", 16 * 1024));
     m_fdc.setUnitMask(1);
 

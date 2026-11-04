@@ -275,6 +275,44 @@ void testEmulatorAudioFrameBoundaries()
     assert(orderErrors == 0);
 }
 
+void testMachineScopedRoms()
+{
+    std::vector<std::pair<std::string, std::string>> requests;
+    EmulatorConfig config;
+    config.romResolver = [](std::string_view, std::size_t) -> std::vector<uint8_t> {
+        assert(false && "the scoped resolver takes precedence");
+        return {};
+    };
+    config.machineRomResolver = [&](std::string_view machine, std::string_view name, std::size_t size) {
+        requests.emplace_back(machine, name);
+        return std::vector<uint8_t>(size, machine == "16k" ? 0x16 : 0x48);
+    };
+    Emulator emulator(config);
+    assert(requests.back() == std::make_pair(std::string("48k"), std::string("48.rom")));
+    assert(emulator.mmu().peek(0) == 0x48);
+    emulator.selectMachine("16k");
+    assert(requests.back().first == "16k");
+    assert(emulator.mmu().peek(0) == 0x16);
+    emulator.reset(ResetKind::Hard);
+    assert(requests.back().first == "16k");
+    Emulator snapshot({.machineId = "128k"});
+    const auto bytes = snapshot.saveMedia(".szx");
+    emulator.loadMedia({bytes, ".szx"});
+    assert(emulator.machine().id() == "128k");
+    assert(requests.back().first == "128k");
+    assert(requests.back().second == "128-1.rom");
+
+    // Empty scoped overrides preserve the ordinary resolver and its size checks.
+    config.machineRomResolver = [](std::string_view, std::string_view, std::size_t) { return std::vector<uint8_t>{}; };
+    config.romResolver = [](std::string_view, std::size_t size) { return std::vector<uint8_t>(size, 0x33); };
+    Emulator fallback(config);
+    assert(fallback.mmu().peek(0) == 0x33);
+    config.machineRomResolver = [](std::string_view, std::string_view, std::size_t) { return std::vector<uint8_t>{0}; };
+    bool rejected = false;
+    try { Emulator invalid(config); } catch (const RomMissingException &) { rejected = true; }
+    assert(rejected);
+}
+
 void testSchedulerAndStateStream()
 {
     Scheduler sched;
@@ -314,6 +352,7 @@ int main()
     testAyWritesKeepTheirTiming();
     testContinuousAudioClock();
     testEmulatorAudioFrameBoundaries();
+    testMachineScopedRoms();
     testSchedulerAndStateStream();
     std::println("test_foundation: ALL PASSED");
     return 0;

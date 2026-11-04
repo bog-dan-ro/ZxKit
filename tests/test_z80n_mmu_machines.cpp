@@ -394,6 +394,21 @@ void testExtensibilityAndZxNextAndDebugger()
     auto loc = sym.findSourceLocation(32768);
     assert(loc.has_value() && loc->file == "main.asm" && loc->line == 42);
 
+    sym.clear();
+    sym.loadSldText("|SLD.data.version|1\nmain.asm|64:12:24|include.asm|52|14|32768|T|\n"
+                    "main.asm|62||0|14|32768|L|demo,main,loop,+used\n");
+    assert(sym.findAddress("demo.main.loop") == 32768);
+    loc = sym.findSourceLocation(32768);
+    assert(loc && loc->line == 64 && loc->page == 14 && loc->file == "main.asm");
+    sym.loadSldText("bad.asm|4||0|0|65536|L|,overflow\n"
+                    "bad.asm|bad||0|0|0|T|\n"
+                    "bad.asm|1||0|oops|0|L|,badpage\n"
+                    "bad.asm|1||0|0|123x|L|,partial\n");
+    assert(!sym.findSymbol(0));
+    assert(!sym.findAddress("overflow"));
+    assert(!sym.findSourceLocation(0));
+    assert(!sym.findAddress("partial"));
+
     // 5. Test RZX recording and playback round-trip
     IoBus testBus;
     RzxStream rzx;

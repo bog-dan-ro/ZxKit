@@ -57,7 +57,7 @@ void HcMachine::initialize(MachineContext &ctx, UlaRenderer &ula)
     // 2 x 16KB ROMs (0 = BASIC, 1 = CP/M) and 4 x 16KB RAM pages (64KB total)
     m_romBank = ctx.mmu.registerBank("rom", 2 * 16 * 1024, false, false);
     m_ramBank = ctx.mmu.registerBank("ram", 4 * 16 * 1024, true, true);
-    if (ctx.romResolver) {
+    if (ctx.romResolver || ctx.romOverrideResolver) {
         ctx.mmu.bank(m_romBank).loadData(0, ctx.loadRom("hc2000-basic.rom", 16 * 1024));
         ctx.mmu.bank(m_romBank).loadData(16 * 1024, ctx.loadRom("hc2000-cpm.rom", 16 * 1024));
     }
@@ -208,7 +208,7 @@ void CobraMachine::initialize(MachineContext &ctx, UlaRenderer &ula)
     m_romBank = ctx.mmu.registerBank("rom", 5 * 16 * 1024, false, false);
     // 5 x 16KB RAM pages (80KB total: 0=DRAM0, 1=VRAM, 2=BootRAM, 3=SysRAM, 4=DRAM1)
     m_ramBank = ctx.mmu.registerBank("ram", 5 * 16 * 1024, true, true);
-    if (ctx.romResolver) {
+    if (ctx.romResolver || ctx.romOverrideResolver) {
         // Page 0: boot ROM, pages 1..4: Opus, BASIC, Devil BASIC and CP/M system ROMs
         ctx.mmu.bank(m_romBank).loadData(0, ctx.loadRom("cobra1_boot.rom", 16 * 1024));
         for (std::size_t i = 0; i < 4; ++i)
@@ -559,7 +559,7 @@ void Cobra2Machine::initialize(MachineContext &ctx, UlaRenderer &ula)
     // The 16K EEPROM: the boot, its logo and a compacted Spectrum ROM (https://cobrasov.org/download/)
     m_romBank = ctx.mmu.registerBank("rom", 16 * 1024, false, false);
     m_ramBank = ctx.mmu.registerBank("ram", 4 * 16 * 1024, true, true);
-    if (ctx.romResolver)
+    if (ctx.romResolver || ctx.romOverrideResolver)
         ctx.mmu.bank(m_romBank).loadData(0, ctx.loadRom("cobra2_ts_boot.rom", 16 * 1024));
 
     // Any even port (A0 = 0): an IN reads the keyboard and the tape (the B buffer), an OUT stores

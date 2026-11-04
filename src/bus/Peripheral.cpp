@@ -23,9 +23,12 @@ namespace zxkit {
 
 std::vector<uint8_t> MachineContext::loadRom(std::string_view romName, std::size_t expectedSize) const
 {
-    if (!romResolver)
-        throw RomMissingException(std::format("No ROM resolver configured while requesting '{}'", romName));
-    auto data = romResolver(romName, expectedSize);
+    auto data = romOverrideResolver ? romOverrideResolver(romName, expectedSize) : std::vector<uint8_t>{};
+    if (data.empty()) {
+        if (!romResolver)
+            throw RomMissingException(std::format("No ROM resolver configured while requesting '{}'", romName));
+        data = romResolver(romName, expectedSize);
+    }
     if (expectedSize != 0 && data.size() != expectedSize) {
         throw RomMissingException(std::format("ROM '{}' size mismatch: expected {} bytes, got {}",
                                               romName, expectedSize, data.size()));

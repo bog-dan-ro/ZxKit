@@ -56,6 +56,7 @@ void SymbolTable::loadSldText(std::string_view sldText)
     std::istringstream iss{std::string(sldText)};
     std::string row;
     while (std::getline(iss, row)) {
+        if (!row.empty() && row.back() == '\r') row.pop_back();
         if (row.empty() || row[0] == '|')
             continue;
         std::vector<std::string_view> cols;
@@ -68,26 +69,34 @@ void SymbolTable::loadSldText(std::string_view sldText)
                 break;
             start = bar + 1;
         }
-        if (cols.size() >= 7) {
+        // Version 1 has eight fields (including a separate definition-line).
+        // Accept the older seven-field shorthand used by existing clients too.
+        if (cols.size() == 7 || cols.size() == 8) {
+            const std::size_t shift = cols.size() == 8 ? 1 : 0;
+            const auto parse = [](std::string_view text, auto &value) {
+                const auto [end, ec] = std::from_chars(text.data(), text.data() + text.size(), value);
+                return ec == std::errc{} && end == text.data() + text.size();
+            };
             uint32_t lineNo = 0;
-            uint16_t pageNo = 0;
+            int32_t pageNo = 0;
             uint16_t addr = 0;
-            std::from_chars(cols[1].data(), cols[1].data() + cols[1].size(), lineNo);
-            std::from_chars(cols[3].data(), cols[3].data() + cols[3].size(), pageNo);
-            std::from_chars(cols[4].data(), cols[4].data() + cols[4].size(), addr);
+            const auto line = cols[1].substr(0, cols[1].find(':'));
+            if (!parse(line, lineNo) || !parse(cols[3 + shift], pageNo) || pageNo < -1 || pageNo > 65535
+                || !parse(cols[4 + shift], addr))
+                continue;
 
-            if (cols[5] == "T") {
+            if (cols[5 + shift] == "T") {
                 m_sldMap[addr] = SourceLineLocation{
                     .file = std::string(cols[0]),
                     .line = lineNo,
-                    .page = pageNo,
+                    .page = static_cast<uint16_t>(pageNo < 0 ? 0 : pageNo),
                     .address = addr
                 };
-            } else if (cols[5] == "L" && !cols[6].empty()) {
+            } else if (cols[5 + shift] == "L" && !cols[6 + shift].empty()) {
                 // Label data is "module,label,local[,+flags]"; join the non empty
                 // name parts the way sjasmplus spells them: module.label.local
                 std::string name;
-                std::string_view data = cols[6];
+                std::string_view data = cols[6 + shift];
                 for (int part = 0; part < 3; ++part) {
                     const auto comma = data.find(',');
                     const std::string_view field = data.substr(0, comma);

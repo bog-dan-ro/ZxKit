@@ -59,7 +59,12 @@ See [Media formats and host boot actions](docs/media.md) for API examples, inter
 - [x] Step out through nested calls/interrupts and bank-aware run to cursor
       ([Spectacol #27](https://github.com/bog-dan-ro/spectacol/issues/27)), with cancellable Engine run control.
 
-See [Debugger run control and traps](docs/debugger.md).
+- [x] sjasmplus SLD v1 parsing: the documented eight fields, source column ranges and CRLF;
+      retain the legacy seven-field shorthand and ignore malformed/out-of-range addresses.
+- [x] Optional machine-scoped ROM overrides, including snapshot machine changes and precedence
+      over Next SD firmware. Empty overrides retain the ordinary ROM resolver/SD fallback.
+
+See [Debugger run control and traps](docs/debugger.md) and [Host ROM overrides](docs/roms.md).
 
 ## Performance and resource usage profiling
 

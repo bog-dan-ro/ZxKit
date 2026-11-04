@@ -176,7 +176,7 @@ void TimexMachine::reset(MachineContext &ctx, UlaRenderer &ula, ResetKind kind)
             ctx.mmu.bank(m_dockBank).fill(0x00);
             ctx.mmu.bank(m_exromBank).fill(0x00);
         }
-        if (ctx.romResolver) {
+        if (ctx.romResolver || ctx.romOverrideResolver) {
             switch (m_variant) {
             case Variant::Tc2048:
                 ctx.mmu.bank(m_romBank).loadData(0, ctx.loadRom("tc2048.rom", 16 * 1024));
@@ -374,7 +374,7 @@ void PentagonMachine::reset(MachineContext &ctx, UlaRenderer &ula, ResetKind kin
 {
     if (kind == ResetKind::Hard) {
         ctx.mmu.bank(m_ramBank).fill(0x00);
-        if (ctx.romResolver) {
+        if (ctx.romResolver || ctx.romOverrideResolver) {
             ctx.mmu.bank(m_romBank).loadData(0, ctx.loadRom("128p-0.rom", 16 * 1024));
             ctx.mmu.bank(m_romBank).loadData(16 * 1024, ctx.loadRom("128p-1.rom", 16 * 1024));
             ctx.mmu.bank(m_romBank).loadData(2 * 16 * 1024, ctx.loadRom("trdos.rom", 16 * 1024));
@@ -495,7 +495,7 @@ void ScorpionMachine::reset(MachineContext &ctx, UlaRenderer &ula, ResetKind kin
     m_beta->reset(ctx, kind);
     if (kind == ResetKind::Hard) {
         ctx.mmu.bank(m_ramBank).fill(0x00);
-        if (ctx.romResolver) {
+        if (ctx.romResolver || ctx.romOverrideResolver) {
             for (int i = 0; i < 4; ++i) {
                 ctx.mmu.bank(m_romBank).loadData(static_cast<std::size_t>(i) * 16 * 1024,
                                                  ctx.loadRom(std::format("256s-{}.rom", i), 16 * 1024));

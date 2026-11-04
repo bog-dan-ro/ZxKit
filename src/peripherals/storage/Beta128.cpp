@@ -102,7 +102,7 @@ void Beta128Peripheral::onAttach(MachineContext &ctx)
     } else {
         m_romBank = ctx.mmu.registerBank("beta128_rom", 16 * 1024, false, false);
         m_romPage = 0;
-        if (ctx.romResolver)
+        if (ctx.romResolver || ctx.romOverrideResolver)
             ctx.mmu.bank(m_romBank).loadData(0, ctx.loadRom("trdos.rom", 16 * 1024));
     }
 

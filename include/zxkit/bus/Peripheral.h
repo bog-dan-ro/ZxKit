@@ -64,6 +64,8 @@ struct MachineContext {
     SdCard &sdCard;
     TapeDeck &tape;
     RomResolverFn romResolver;
+    /// Optional overrides, before bundled/SD ROMs. Empty means use the default.
+    RomResolverFn romOverrideResolver;
 
     std::vector<uint8_t> loadRom(std::string_view romName, std::size_t expectedSize = 0) const;
 };

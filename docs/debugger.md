@@ -42,3 +42,16 @@ With debugging inactive, memory retains its existing fast path. The per-instruct
 debug hook is enabled only for execution traps, tracing or active run control.
 Next-register and interrupt observers are installed only when needed. No UI,
 network, Qt or consumer-checkout dependency is introduced.
+
+## Assembler source mappings
+
+`SymbolTable::loadSldText()` accepts sjasmplus SLD v1 records:
+`source|line[:column[:end]]|definitionFile|definitionLine|page|value|type|data`.
+It imports `T` instruction locations and `L` label names, joining module/main/local
+name parts. CRLF and the older seven-field shorthand are accepted. Malformed numeric
+fields and addresses outside 0–65535 are ignored rather than narrowed into a valid address.
+
+`SymbolTable` indexes logical 16-bit addresses. A host importing banked SLD data must
+keep separate tables per source memory page and match them against effective MMU
+mappings before annotating addresses. Source file names are metadata: importing SLD
+does not execute code or load the referenced source files.

@@ -49,7 +49,10 @@ public:
     std::optional<std::string_view> findSymbol(uint16_t address) const noexcept;
     std::optional<uint16_t> findAddress(std::string_view name) const noexcept;
 
-    /// Parses a sjasmplus SLD (Source Level Debugging) text file (`file|line|def|page|value|type|data`).
+    /// Parses a sjasmplus SLD (Source Level Debugging) text file (`file|line|defFile|defLine|page|value|type|data`).
+    /// Invalid/out-of-range records are ignored. The seven-field legacy shorthand
+    /// is accepted too. This table is logical-address based; banked hosts should
+    /// maintain a separate table per source memory page.
     void loadSldText(std::string_view sldText);
 
     std::optional<SourceLineLocation> findSourceLocation(uint16_t address) const noexcept;

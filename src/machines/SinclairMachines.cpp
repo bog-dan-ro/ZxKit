@@ -65,7 +65,7 @@ void Spectrum48kMachine::reset(MachineContext &ctx, UlaRenderer &ula, ResetKind 
 {
     if (kind == ResetKind::Hard) {
         ctx.mmu.bank(m_ramBank).fill(0x00);
-        if (ctx.romResolver) {
+        if (ctx.romResolver || ctx.romOverrideResolver) {
             auto romData = ctx.loadRom("48.rom", 16 * 1024);
             ctx.mmu.bank(m_romBank).loadData(0, romData);
         }
@@ -127,7 +127,7 @@ void Spectrum128kMachine::reset(MachineContext &ctx, UlaRenderer &ula, ResetKind
 {
     if (kind == ResetKind::Hard) {
         ctx.mmu.bank(m_ramBank).fill(0x00);
-        if (ctx.romResolver) {
+        if (ctx.romResolver || ctx.romOverrideResolver) {
             const std::string_view rom0 = m_isPlus2 ? "plus2-0.rom" : "128-0.rom";
             const std::string_view rom1 = m_isPlus2 ? "plus2-1.rom" : "128-1.rom";
             ctx.mmu.bank(m_romBank).loadData(0, ctx.loadRom(rom0, 16 * 1024));
@@ -289,7 +289,7 @@ void SpectrumPlus3Machine::reset(MachineContext &ctx, UlaRenderer &ula, ResetKin
 {
     if (kind == ResetKind::Hard) {
         ctx.mmu.bank(m_ramBank).fill(0x00);
-        if (ctx.romResolver) {
+        if (ctx.romResolver || ctx.romOverrideResolver) {
             const std::string_view prefix = (m_variant == Variant::Plus3e) ? "plus3e" : "plus3";
             for (int i = 0; i < 4; ++i) {
                 const std::string romFile = std::format("{}-{}.rom", prefix, i);

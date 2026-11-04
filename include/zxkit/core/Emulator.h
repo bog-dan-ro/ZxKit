@@ -45,6 +45,7 @@
 #include <array>
 #include <cstdint>
 #include <filesystem>
+#include <functional>
 #include <deque>
 #include <initializer_list>
 #include <memory>
@@ -69,6 +70,12 @@ struct EmulatorConfig {
     /// Include the full scanned border rather than the traditional 32-pixel crop.
     /// Hosts can crop the published frame using VideoFrame::paperRect().
     bool fullBorder = false;
+    /// Optional machine-scoped ROM override. A nonempty result takes precedence
+    /// over romResolver and Next SD firmware; empty uses the normal fallback;
+    /// the machine id also follows switches made by snapshot loading. Called
+    /// with the emulator locked: preload host files and do not acquire its lock.
+    std::function<std::vector<uint8_t>(std::string_view machineId, std::string_view romName,
+                                       std::size_t expectedSize)> machineRomResolver;
 };
 
 /// A media file's content, ready to be loaded. Reading (and unzipping) it is the

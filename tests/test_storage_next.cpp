@@ -297,6 +297,53 @@ bool throws(Fn fn)
 
 #define kTara "\xC8\x9A" "ar\xC4\x83.tap" // "Țară.tap" in UTF-8
 
+void testMachineScopedNextRoms()
+{
+    auto image = makeBlankFat(12, 2880, 1);
+    FatVolume volume([&](uint64_t lba, std::span<uint8_t, 512> out) {
+        if ((lba + 1) * 512 > image.size()) return false;
+        std::memcpy(out.data(), image.data() + lba * 512, 512);
+        return true;
+    }, [&](uint64_t lba, std::span<const uint8_t, 512> in) {
+        if ((lba + 1) * 512 > image.size()) return false;
+        std::memcpy(image.data() + lba * 512, in.data(), 512);
+        return true;
+    });
+    volume.makeDirectory("/machines/next");
+    volume.writeFile("/machines/next/enNextZX.rom", std::vector<uint8_t>(65536, 0xBB));
+    volume.writeFile("/machines/next/enNxtmmc.rom", std::vector<uint8_t>(8192, 0xCC));
+    volume.writeFile("/machines/next/enAltZX.rom", std::vector<uint8_t>(32768, 0xDD));
+    const auto path = tempPath("scoped-roms.img");
+    writeFile(path, image);
+    bool custom = false;
+    EmulatorConfig config;
+    config.romResolver = [](std::string_view name, std::size_t size) {
+        return name == "enNextMf.rom" ? std::vector<uint8_t>{} : std::vector<uint8_t>(size, 0);
+    };
+    config.machineRomResolver = [&](std::string_view machine, std::string_view name, std::size_t size) {
+        if (custom && machine == "next" && name == "enNextZX.rom") return std::vector<uint8_t>(size, 0xAA);
+        if (custom && machine == "next" && name == "enNextMf.rom") return std::vector<uint8_t>(size, 0xAB);
+        return std::vector<uint8_t>{};
+    };
+    {
+        Emulator emulator(config);
+        emulator.insertSdCard(path);
+        emulator.selectMachine("next");
+        CHECK(emulator.mmu().bank(emulator.machine().romBankId()).bytes()[0] == 0xBB);
+        custom = true;
+        emulator.reset(ResetKind::Hard);
+        CHECK(emulator.mmu().bank(emulator.machine().romBankId()).bytes()[0] == 0xAA);
+        for (const auto &bank : emulator.mmu().banks())
+            if (bank.name() == "next_mf_rom") CHECK(bank.bytes()[0] == 0xAB);
+        custom = false;
+        emulator.reset(ResetKind::Hard);
+        CHECK(emulator.mmu().bank(emulator.machine().romBankId()).bytes()[0] == 0xBB);
+        for (const auto &bank : emulator.mmu().banks())
+            if (bank.name() == "next_mf_rom") CHECK(bank.bytes()[0] == 0x00);
+    }
+    std::filesystem::remove(path);
+}
+
 void testFatWriting(int bits, uint32_t totalSectors)
 {
     auto img = makeBlankFat(bits, totalSectors, 1);
@@ -816,6 +863,7 @@ int main()
     testSnapshotJoystickMetadata();
     testSdCard();
     testFatVolume();
+    testMachineScopedNextRoms();
     testFatWriting(12, 2880);
     testFatWriting(16, 8192);
     testFatWriting(32, 4096);
