@@ -104,6 +104,8 @@ public:
     /// Steps over the current instruction (see `Emulator::stepOver()`), resuming the
     /// emulation when the instruction needs to run to completion (calls, block instructions).
     void stepOver();
+    void stepOut();
+    void runTo(uint16_t address);
 
     /// Stops the Engine thread (the destructor does it). Call it from the owner's thread.
     void stop() noexcept;
@@ -124,6 +126,7 @@ private:
     static constexpr uint32_t kTurbo = 1u << 1;
     static constexpr uint32_t kRefresh = 1u << 2;
     static constexpr uint32_t kStop = 1u << 3;
+    static constexpr uint32_t kCancelRunControl = 1u << 4;
 
     void run();
     void setFlag(uint32_t flag, bool on) noexcept;

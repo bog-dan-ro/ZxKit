@@ -56,6 +56,8 @@
 
 namespace zxkit {
 
+class ZxNextMachine;
+
 struct EmulatorConfig {
     std::string machineId = "48k";
     uint32_t audioSampleRate = 48'000;
@@ -203,8 +205,15 @@ public:
     /// Steps over CALLs, RSTs and repeated block instructions: returns true when it set a
     /// temporary breakpoint after the instruction, i.e. the emulation must run to reach it.
     bool stepOver();
+    /// Runs to the return from this stack frame (nested calls/interrupts are skipped).
+    bool stepOut();
+    /// Runs to the currently mapped instruction at address; false if already there.
+    bool runTo(uint16_t address);
+    void cancelRunControl() noexcept { m_debugRun.reset(); }
+    bool hasRunControl() const noexcept { return m_debugRun.has_value(); }
     uint32_t addBreakpoint(Breakpoint breakpoint);
     bool removeBreakpoint(uint32_t id);
+    bool setBreakpointEnabled(uint32_t id, bool enabled);
     void clearBreakpoints();
     std::vector<DisasmInstruction> disassemble(uint16_t address, std::size_t count) const;
     std::vector<uint8_t> assembleAndPatch(uint16_t address, std::string_view mnemonic, bool allowRomWrite = false);
@@ -267,7 +276,7 @@ private:
     bool m_recordingBoundary = false;
     bool m_snapshotStandardAy = false;
     void endFrame();
-    void requestPause(PauseReason reason) noexcept;
+    void requestPause(PauseReason reason, uint16_t address = 0) noexcept;
     void updateMediaActivity();
     void updateDebuggerHook() noexcept;
     VideoFramePtr acquireFrame();
@@ -332,6 +341,20 @@ private:
     uint64_t m_sdBusyUntil = 0;
     MediaActivity m_mediaActivity;
 
+    struct DebugRun {
+        enum class Kind { Target, Out, Returning } kind = Kind::Target;
+        uint16_t address = 0;
+        std::optional<uint16_t> stack;
+        BankId bank = 0;
+        uint16_t page1k = 0;
+        uint32_t depth = 0;
+    };
+    std::optional<DebugRun> m_debugRun;
+    ZxNextMachine *m_nextDebugMachine = nullptr; // machine owns it; replaced on installation
+    uint32_t m_debugObserverTypes = ~uint32_t(0);
+    bool m_nextDebugArmed = false;
+    bool m_interruptDebugArmed = false;
+    bool checkRunControl(uint16_t pc);
     std::optional<PauseEvent> m_pendingPause;
     std::optional<uint16_t> m_stoppedAtBreakpoint; // the next instruction there runs without breaking again
     bool m_rewindEnabled = false;

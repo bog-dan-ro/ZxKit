@@ -34,8 +34,11 @@ enum class BreakpointType : uint8_t {
     PortRead,
     PortWrite,
     NextRegWrite,
-    RasterLine
+    RasterLine,
+    Event
 };
+
+enum class DebugEvent : uint16_t { Interrupt = 0, Nmi = 1 };
 
 struct Breakpoint {
     uint32_t id = 0;
@@ -45,6 +48,7 @@ struct Breakpoint {
     uint16_t address = 0;
     uint16_t mask = 0xFFFF;
     std::optional<uint16_t> page1k;
+    std::optional<BankId> bankId; // distinguishes equal page numbers in RAM/ROM/peripheral banks
     uint32_t hitCount = 0;
     std::function<bool(const Z80Registers &)> condition;
 };
@@ -54,9 +58,16 @@ public:
     uint32_t add(Breakpoint bp, Mmu &mmu);
     bool remove(uint32_t id, Mmu &mmu);
     void clear(Mmu &mmu);
+    bool setEnabled(uint32_t id, bool enabled, Mmu &mmu);
+    uint32_t enabledTypes() const noexcept { return m_enabledTypes; }
+    bool has(BreakpointType type) const noexcept { return m_enabledTypes & (1u << unsigned(type)); }
     bool checkExecute(uint16_t pc, const Mmu &mmu, const Z80Registers &regs);
-    bool checkMemory(uint16_t addr, bool isWrite, const Z80Registers &regs);
+    bool checkMemory(uint16_t addr, bool isWrite, const Z80Registers &regs, Mmu *mmu = nullptr);
     bool checkPort(uint16_t port, bool isWrite, const Z80Registers &regs);
+
+    bool checkNextReg(uint8_t reg, const Z80Registers &regs);
+    bool checkRaster(uint16_t line, const Z80Registers &regs);
+    bool checkEvent(DebugEvent event, const Z80Registers &regs);
 
     const std::vector<Breakpoint> &breakpoints() const noexcept { return m_breakpoints; }
     bool empty() const noexcept { return m_breakpoints.empty(); }
@@ -64,6 +75,9 @@ public:
     void syncMmuWatchFlags(Mmu &mmu) const noexcept;
 
 private:
+    bool checkValue(BreakpointType type, uint16_t value, const Z80Registers &regs);
+    void updateEnabledTypes() const noexcept;
+    mutable uint32_t m_enabledTypes = 0;
     std::vector<Breakpoint> m_breakpoints;
     uint32_t m_nextId = 0;
 };

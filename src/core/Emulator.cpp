@@ -205,16 +205,19 @@ void Emulator::installMachine(std::unique_ptr<MachineProfile> machine)
     m_mediaActivity = {};
 
     m_cpu.setDebuggerHook([this](uint16_t pc) -> bool {
-        // Resuming from (or stepping over) a breakpoint runs its instruction
+        bool skip = false;
         if (m_stoppedAtBreakpoint) {
-            const bool resuming = *m_stoppedAtBreakpoint == pc;
+            skip = *m_stoppedAtBreakpoint == pc;
             m_stoppedAtBreakpoint.reset();
-            if (resuming)
-                return false;
         }
-        if (m_debugger.breakpoints().checkExecute(pc, m_mmu, m_cpu.registers())) {
+        if (!skip && m_debugger.breakpoints().checkExecute(pc, m_mmu, m_cpu.registers())) {
             m_stoppedAtBreakpoint = pc;
-            requestPause(PauseReason::ExecutionBreakpoint);
+            requestPause(PauseReason::ExecutionBreakpoint, pc);
+            return true;
+        }
+        if (m_debugRun && checkRunControl(pc)) {
+            m_stoppedAtBreakpoint = pc;
+            requestPause(PauseReason::StepComplete, pc);
             return true;
         }
         if (m_debugger.isTraceEnabled())
@@ -223,23 +226,29 @@ void Emulator::installMachine(std::unique_ptr<MachineProfile> machine)
     });
 
     m_mmu.setWatchpointCallback([this](uint16_t addr, uint8_t /*val*/, bool isWrite) {
-        if (m_debugger.breakpoints().checkMemory(addr, isWrite, m_cpu.registers())) {
-            requestPause(PauseReason::MemoryWatchpoint);
+        if (m_debugger.breakpoints().checkMemory(addr, isWrite, m_cpu.registers(), &m_mmu)) {
+            requestPause(PauseReason::MemoryWatchpoint, addr);
             m_cpu.trap();
         }
     });
 
     m_ioBus.setWatchpointCallback([this](uint16_t port, uint8_t /*val*/, bool isWrite) {
         if (m_debugger.breakpoints().checkPort(port, isWrite, m_cpu.registers())) {
-            requestPause(PauseReason::PortWatchpoint);
+            requestPause(PauseReason::PortWatchpoint, port);
             m_cpu.trap();
         }
     });
 
     const bool sameFrameSize = m_machine && m_machine->frameWidth() == machine->frameWidth()
                                && m_machine->frameHeight() == machine->frameHeight();
+    m_nextDebugMachine = nullptr;
+    m_debugObserverTypes = ~uint32_t(0);
+    m_nextDebugArmed = false;
+    m_interruptDebugArmed = false;
+    m_cpu.setInterruptObserver({});
     m_machine = std::move(machine);
     m_machine->initialize(m_context, m_ula);
+    m_nextDebugMachine = dynamic_cast<ZxNextMachine *>(m_machine.get());
     if (m_machine->usesRasterUla()) {
         m_mmu.setVideoWriteCallback(m_machine->ramBankId(), [this] {
             m_ula.renderUntil(m_clock.frameBaseTstates(), m_mmu);
@@ -266,6 +275,7 @@ void Emulator::installMachine(std::unique_ptr<MachineProfile> machine)
     m_lineStarted = false;
     m_pendingPause.reset();
     m_stoppedAtBreakpoint.reset();
+    cancelRunControl();
 
     if (!sameFrameSize || !m_frame) {
         m_framePool.clear();
@@ -342,6 +352,7 @@ void Emulator::reset(ResetKind kind)
     m_lineStarted = false;
     m_pendingPause.reset();
     m_stoppedAtBreakpoint.reset();
+    cancelRunControl();
 }
 
 void Emulator::triggerNmi() noexcept
@@ -367,17 +378,46 @@ void Emulator::setKeyState(ZxKey key, bool pressed) noexcept
 
 // ── Running ───────────────────────────────────────────────────────────────
 
-void Emulator::requestPause(PauseReason reason) noexcept
+void Emulator::requestPause(PauseReason reason, uint16_t address) noexcept
 {
+    cancelRunControl();
     if (!m_pendingPause)
-        m_pendingPause = PauseEvent{reason, m_cpu.registers().PC, m_clock.totalTstates()};
+        m_pendingPause = PauseEvent{reason, m_cpu.registers().PC, m_clock.totalTstates(), address};
 }
 
 void Emulator::updateDebuggerHook() noexcept
 {
-    // Breakpoints and tracing cost a call per instruction, only pay for them when used
-    m_cpu.setDebuggerHookEnabled(!m_debugger.breakpoints().empty() || m_debugger.isTraceEnabled()
-                                 || m_stoppedAtBreakpoint.has_value());
+    const auto &breakpoints = m_debugger.breakpoints();
+    const bool hook = breakpoints.has(BreakpointType::Execute) || m_debugger.isTraceEnabled()
+                      || m_stoppedAtBreakpoint.has_value() || m_debugRun.has_value();
+    const bool steppingOut = m_debugRun && m_debugRun->kind != DebugRun::Kind::Target;
+    const auto observers = breakpoints.enabledTypes() | (steppingOut ? 0x80000000u : 0u) | (hook ? 0x40000000u : 0u);
+    if (m_debugObserverTypes == observers) return;
+    m_debugObserverTypes = observers;
+    m_cpu.setDebuggerHookEnabled(hook);
+    const bool next = m_nextDebugMachine && breakpoints.has(BreakpointType::NextRegWrite);
+    if (next != m_nextDebugArmed) {
+        m_nextDebugArmed = next;
+        if (next) m_nextDebugMachine->nextReg().setWatchCallback([this](uint8_t reg, uint8_t, uint8_t) {
+            if (m_debugger.breakpoints().checkNextReg(reg, m_cpu.registers())) {
+                requestPause(PauseReason::NextRegWatchpoint, reg);
+                m_cpu.trap();
+            }
+        });
+        else if (m_nextDebugMachine) m_nextDebugMachine->nextReg().setWatchCallback({});
+    }
+    const bool events = breakpoints.has(BreakpointType::Event) || steppingOut;
+    if (events != m_interruptDebugArmed) {
+        m_interruptDebugArmed = events;
+        if (events) m_cpu.setInterruptObserver([this](bool nmi) {
+            if (m_debugRun && m_debugRun->kind == DebugRun::Kind::Out) ++m_debugRun->depth;
+            if (m_debugger.breakpoints().checkEvent(nmi ? DebugEvent::Nmi : DebugEvent::Interrupt, m_cpu.registers())) {
+                requestPause(PauseReason::EventTrap, uint16_t(nmi ? DebugEvent::Nmi : DebugEvent::Interrupt));
+                m_cpu.trap();
+            }
+        });
+        else m_cpu.setInterruptObserver({});
+    }
 }
 
 void Emulator::startRzxRecording()
@@ -654,6 +694,9 @@ RunStatus Emulator::runPlaybackScanline()
         if (!m_lineStarted) {
             m_lineStarted = true;
             if (m_line < timings.linesPerFrame) m_machine->onScanlineStart(m_line, m_context);
+            if (m_debugger.breakpoints().has(BreakpointType::RasterLine)
+            && m_debugger.breakpoints().checkRaster(m_line, m_cpu.registers())) requestPause(PauseReason::RasterBreakpoint, m_line);
+            if (m_pendingPause) return RunStatus::Stopped;
         }
         const auto target = std::max<uint32_t>((uint32_t(m_line) + 1) * timings.tstatesPerLine,
                                                m_clock.frameBaseTstates() + 1);
@@ -737,6 +780,9 @@ RunStatus Emulator::runScanline()
     if (!m_lineStarted) {
         m_lineStarted = true;
         m_machine->onScanlineStart(m_line, m_context);
+        if (m_debugger.breakpoints().has(BreakpointType::RasterLine)
+            && m_debugger.breakpoints().checkRaster(m_line, m_cpu.registers())) requestPause(PauseReason::RasterBreakpoint, m_line);
+        if (m_pendingPause) return RunStatus::Stopped;
     }
 
     const uint32_t lineEnd = (static_cast<uint32_t>(m_line) + 1) * timings.tstatesPerLine;
@@ -1008,6 +1054,7 @@ void Emulator::saveMediaFile(const std::filesystem::path &path)
 
 void Emulator::loadSnapshot(std::span<const uint8_t> data, std::string_view extension)
 {
+    cancelRunControl();
     if (!m_applyingRzxSnapshot) {
         if (m_rzx.isRecording() || m_rzx.isReviewing()) throw FormatException("Stop recording before loading a snapshot");
         stopRzxPlayback();
@@ -1283,47 +1330,104 @@ void Emulator::writeMemory(uint16_t address, std::span<const uint8_t> data, bool
 
 Z80Registers Emulator::stepInstruction()
 {
-    // A step always executes the current instruction, breakpoint or not
+    if (m_rzx.isPlaying() || m_rzx.isRecording() || m_rzx.isReviewing())
+        throw DebuggerException("Stop RZX playback/recording before single-stepping");
+    cancelRunControl();
+    m_pendingPause.reset();
     m_stoppedAtBreakpoint = m_cpu.registers().PC;
     updateDebuggerHook();
     m_cpu.clearTrap();
     m_cpu.stepInstruction();
     m_cpu.clearTrap();
-    m_pendingPause.reset();
+    if (!m_pendingPause) requestPause(PauseReason::StepComplete);
     return m_cpu.registers();
+}
+
+bool Emulator::runTo(uint16_t address)
+{
+    cancelRunControl();
+    if (m_cpu.registers().PC == address) return false;
+    const auto &map = m_mmu.effectiveMapping(address >> Mmu::kPageShift);
+    m_debugRun = DebugRun{DebugRun::Kind::Target, address, std::nullopt, map.bankId, map.readPage1k};
+    m_stoppedAtBreakpoint = m_cpu.registers().PC;
+    return true;
 }
 
 bool Emulator::stepOver()
 {
     const uint16_t pc = m_cpu.registers().PC;
-    const auto inst = Disassembler::disassembleOne([this](uint16_t a) { return m_mmu.peek(a); }, pc,
-                                                   m_cpu.isZ80nEnabled());
-    if (!inst.isStepOverCandidate) {
-        stepInstruction();
+    const auto inst = Disassembler::disassembleOne([this](uint16_t a) { return m_mmu.peek(a); }, pc, m_cpu.isZ80nEnabled());
+    if (!inst.isStepOverCandidate) { stepInstruction(); return false; }
+    const auto address = static_cast<uint16_t>(pc + inst.length);
+    if (!runTo(address)) return false;
+    m_debugRun->stack = m_cpu.registers().SP;
+    return true;
+}
+
+bool Emulator::stepOut()
+{
+    cancelRunControl();
+    m_debugRun = DebugRun{DebugRun::Kind::Out, 0, m_cpu.registers().SP};
+    m_stoppedAtBreakpoint = m_cpu.registers().PC;
+    return true;
+}
+
+bool Emulator::checkRunControl(uint16_t pc)
+{
+    auto &run = *m_debugRun;
+    const auto &regs = m_cpu.registers();
+    if (run.kind == DebugRun::Kind::Target) {
+        const auto &map = m_mmu.effectiveMapping(pc >> Mmu::kPageShift);
+        return pc == run.address && (!run.stack || regs.SP == *run.stack)
+            && map.bankId == run.bank && map.readPage1k == run.page1k;
+    }
+    if (run.kind == DebugRun::Kind::Returning) return regs.SP == *run.stack;
+    uint16_t at = pc;
+    uint8_t opcode = m_mmu.peek(at++);
+    // DD/FD before RET are ignored by the CPU; bound a malformed all-prefix address space.
+    for (unsigned prefixes = 0; (opcode == 0xDD || opcode == 0xFD) && prefixes < 65536; ++prefixes)
+        opcode = m_mmu.peek(at++);
+    const auto flags = regs.F();
+    const std::array<bool, 8> conditions{!(flags & 0x40), bool(flags & 0x40), !(flags & 1), bool(flags & 1),
+                                       !(flags & 4), bool(flags & 4), !(flags & 0x80), bool(flags & 0x80)};
+    if (opcode == 0xCD || ((opcode & 0xC7) == 0xC4 && conditions[(opcode >> 3) & 7]) || (opcode & 0xC7) == 0xC7) {
+        ++run.depth;
         return false;
     }
-    Breakpoint after;
-    after.type = BreakpointType::Execute;
-    after.address = static_cast<uint16_t>(pc + inst.length);
-    after.temporary = true;
-    m_debugger.breakpoints().add(std::move(after), m_mmu);
-    m_stoppedAtBreakpoint = pc;
-    return true;
+    bool returns = opcode == 0xC9;
+    if ((opcode & 0xC7) == 0xC0) returns = conditions[(opcode >> 3) & 7];
+    else if (opcode == 0xED) returns = (m_mmu.peek(at) & 0xC7) == 0x45;
+    if (returns) {
+        if (run.depth) { --run.depth; return false; }
+        if (static_cast<int16_t>(uint16_t(regs.SP - *run.stack)) < 0) return false;
+        run.kind = DebugRun::Kind::Returning;
+        run.stack = uint16_t(regs.SP + 2);
+    }
+    return false;
 }
 
 uint32_t Emulator::addBreakpoint(Breakpoint breakpoint)
 {
-    return m_debugger.breakpoints().add(std::move(breakpoint), m_mmu);
+    const auto id = m_debugger.breakpoints().add(std::move(breakpoint), m_mmu);
+    updateDebuggerHook();
+    return id;
 }
-
 bool Emulator::removeBreakpoint(uint32_t id)
 {
-    return m_debugger.breakpoints().remove(id, m_mmu);
+    const bool removed = m_debugger.breakpoints().remove(id, m_mmu);
+    updateDebuggerHook();
+    return removed;
 }
-
+bool Emulator::setBreakpointEnabled(uint32_t id, bool enabled)
+{
+    const bool found = m_debugger.breakpoints().setEnabled(id, enabled, m_mmu);
+    updateDebuggerHook();
+    return found;
+}
 void Emulator::clearBreakpoints()
 {
     m_debugger.breakpoints().clear(m_mmu);
+    updateDebuggerHook();
 }
 
 std::vector<DisasmInstruction> Emulator::disassemble(uint16_t address, std::size_t count) const

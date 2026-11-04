@@ -54,9 +54,12 @@ See [Media formats and host boot actions](docs/media.md) for API examples, inter
 
 ## Debugger
 
-- [ ] `BreakpointType::NextRegWrite` and `BreakpointType::RasterLine` exist but are never checked, and
-      `PauseReason::NextRegWatchpoint`, `RasterBreakpoint`, `EventTrap` and `StepComplete` are never reported.
-- [ ] Step out (run to the RET) and run to cursor ([Spectacol #27](https://github.com/bog-dan-ro/spectacol/issues/27)).
+- [x] Next-register writes, raster lines and accepted IRQ/NMI traps report their pause reasons;
+      step completion reports `StepComplete`. Masked, physical-bank and one-shot memory watches work across paging.
+- [x] Step out through nested calls/interrupts and bank-aware run to cursor
+      ([Spectacol #27](https://github.com/bog-dan-ro/spectacol/issues/27)), with cancellable Engine run control.
+
+See [Debugger run control and traps](docs/debugger.md).
 
 ## Performance and resource usage profiling
 

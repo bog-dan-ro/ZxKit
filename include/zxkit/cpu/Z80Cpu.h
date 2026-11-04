@@ -165,6 +165,9 @@ public:
         setHookFlag(HookFlags::TapeTrap, static_cast<bool>(m_tapeTrapHook));
     }
 
+    /// Called after an accepted interrupt (false IRQ, true NMI); never on rejected requests.
+    void setInterruptObserver(std::function<void(bool)> observer) { m_interruptObserver = std::move(observer); }
+
     void setDebuggerHook(DebuggerHookFn fn)
     {
         m_debuggerHook = std::move(fn);
@@ -282,6 +285,7 @@ private:
     std::vector<OwnedHook<RetnHookFn>> m_retnHooks;
     TapeTrapFn m_tapeTrapHook;
     DebuggerHookFn m_debuggerHook;
+    std::function<void(bool)> m_interruptObserver;
 };
 
 } // namespace zxkit

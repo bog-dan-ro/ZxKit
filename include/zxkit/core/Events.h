@@ -69,6 +69,7 @@ struct PauseEvent {
     PauseReason reason = PauseReason::UserRequest;
     uint16_t pc = 0;
     uint64_t cycle = 0;
+    uint16_t address = 0; ///< watched memory/port/register, raster line or DebugEvent, according to reason
 };
 
 // Callbacks the Engine thread invokes, without holding any emulator lock. Hosts own them

@@ -119,3 +119,8 @@ add_executable(test_next_devices test_next_devices.cpp)
 target_link_libraries(test_next_devices PRIVATE ZX::Kit)
 target_compile_options(test_next_devices PRIVATE $<IF:$<CXX_COMPILER_ID:MSVC>,/UNDEBUG,-UNDEBUG>)
 add_test(NAME test_next_devices COMMAND test_next_devices)
+
+add_executable(test_debugger test_debugger.cpp)
+target_link_libraries(test_debugger PRIVATE ZX::Kit)
+target_compile_options(test_debugger PRIVATE $<IF:$<CXX_COMPILER_ID:MSVC>,/UNDEBUG,-UNDEBUG>)
+add_test(NAME test_debugger COMMAND test_debugger)

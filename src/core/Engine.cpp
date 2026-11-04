@@ -84,7 +84,7 @@ void Engine::wakePacing() noexcept
 
 void Engine::setPaused(bool paused) noexcept
 {
-    setFlag(kPaused, paused);
+    setFlag(kPaused | kCancelRunControl, paused);
 }
 
 void Engine::setSpeed(uint32_t percent) noexcept
@@ -106,10 +106,22 @@ void Engine::refreshFrame() noexcept
 
 void Engine::stepOver()
 {
-    if (m_emulator.writeLock()->stepOver())
-        setPaused(false);
-    else
-        refreshFrame();
+    auto emulator = m_emulator.writeLock();
+    if (emulator->stepOver()) setPaused(false);
+    else refreshFrame();
+}
+
+void Engine::stepOut()
+{
+    auto emulator = m_emulator.writeLock();
+    if (emulator->stepOut()) setPaused(false);
+    else refreshFrame();
+}
+void Engine::runTo(uint16_t address)
+{
+    auto emulator = m_emulator.writeLock();
+    if (emulator->runTo(address)) setPaused(false);
+    else refreshFrame();
 }
 
 void Engine::setCallbacks(EngineCallbacks callbacks)
@@ -224,6 +236,15 @@ void Engine::run()
         service(m_threadHooks.poll);
 
         if (state & kPaused) {
+            if (state & kCancelRunControl) {
+                auto emulator = m_emulator.writeLock();
+                // A new run command may have superseded this pause while we waited for the lock.
+                if ((m_state.load(std::memory_order_acquire) & (kPaused | kCancelRunControl)) == (kPaused | kCancelRunControl)) {
+                    emulator->cancelRunControl();
+                    m_state.fetch_and(~kCancelRunControl, std::memory_order_acq_rel);
+                    pauseReported = false; // acknowledge even a resume immediately followed by pause
+                }
+            }
             if (!pauseReported) {
                 pauseReported = true;
                 PauseEvent event;

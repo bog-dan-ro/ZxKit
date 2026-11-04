@@ -81,6 +81,7 @@ public:
     MemoryBank &bank(BankId id);
     const MemoryBank &bank(BankId id) const;
     BankId findBank(std::string_view name) const noexcept;
+    std::span<const MemoryBank> banks() const noexcept { return m_banks; }
 
     void clear() noexcept;
     void resetMappings() noexcept;

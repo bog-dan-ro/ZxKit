@@ -332,6 +332,7 @@ bool Z80Cpu::serviceNmi()
 
     m_regs.Q = 0;
     m_regs.PC = 0x0066;
+    if (m_interruptObserver) m_interruptObserver(true);
     return true;
 }
 
@@ -397,6 +398,7 @@ bool Z80Cpu::serviceInterrupt()
 
     m_regs.WZ = m_regs.PC;
     m_regs.Q = 0;
+    if (m_interruptObserver) m_interruptObserver(false);
     return true;
 }
 
