@@ -357,7 +357,21 @@ void ZxNextMachine::wireNextRegs(MachineContext &ctx, UlaRenderer &ula)
     m_nextReg.setWriteHandler(0xC0, [&ctx](uint8_t, uint8_t val) {
         ctx.im2.setHardwareIm2Enabled((val & 0x01) != 0);
         ctx.im2.setVectorBase(val & 0xE0);
+        if (!(val & 0x08))
+            ctx.cpu.configureStacklessRetn(false, ctx.cpu.nmiReturnAddress());
     });
+    // NMI acknowledge captures PC even in ordinary stack mode. In stackless
+    // mode RETN reads these registers instead of the two bytes at SP.
+    for (uint8_t reg : {0xC2, 0xC3}) {
+        const unsigned shift = reg == 0xC2 ? 0 : 8;
+        m_nextReg.setReadHandler(reg, [&ctx, shift](uint8_t, uint8_t) {
+            return uint8_t(ctx.cpu.nmiReturnAddress() >> shift);
+        });
+        m_nextReg.setWriteHandler(reg, [&ctx, shift](uint8_t, uint8_t value) {
+            const auto address = uint16_t((ctx.cpu.nmiReturnAddress() & ~(0xFFu << shift)) | (unsigned(value) << shift));
+            ctx.cpu.configureStacklessRetn(ctx.cpu.stacklessRetnActive(), address);
+        });
+    }
 }
 
 void ZxNextMachine::wirePorts(MachineContext &ctx, UlaRenderer &ula)
@@ -629,7 +643,7 @@ bool ZxNextMachine::requestNmi(MachineContext &ctx, bool multiface, bool button)
     }
     if (!button)
         m_resetType |= multiface ? 8 : 4;
-    ctx.cpu.requestNmi();
+    ctx.cpu.requestNmi((m_nextReg.peek(0xC0) & 0x08) != 0);
     return true;
 }
 

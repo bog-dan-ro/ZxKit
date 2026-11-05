@@ -201,6 +201,9 @@ public:
         m_stacklessRetnActive = active;
         m_stacklessRetnAddress = returnAddress;
     }
+    bool stacklessRetnActive() const noexcept { return m_stacklessRetnActive; }
+    /// PC captured by the last NMI acknowledge, also used by stackless RETN.
+    uint16_t nmiReturnAddress() const noexcept { return m_stacklessRetnAddress; }
 
     void saveState(StateWriter &w) const;
     void loadState(StateReader &r);

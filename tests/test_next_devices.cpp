@@ -262,6 +262,28 @@ void machineTests()
     em.cpu().stepInstruction();
     em.cpu().stepInstruction();
     assert(em.cpu().registers().PC == 0x8000); // NMI acknowledge, then RETN in MF ROM
+    assert(nr.read(0xC2) == 0 && nr.read(0xC3) == 0x80);
+    assert(!em.romcs().isActive("next_multiface"));
+    // NextZXOS restores 128K snapshots through a stackless Multiface NMI.
+    // Its return address is held in C2/C3 and may be changed by the handler.
+    nr.write(0xC0, 0x08);
+    em.cpu().registers().PC = 0x8123;
+    em.cpu().registers().SP = 0xFF00;
+    em.mmu().write(0xFEFE, 0xA5);
+    em.mmu().write(0xFEFF, 0x5A);
+    nr.write(0x02, 0x08);
+    assert(nr.read(0x02) & 0x08);
+    em.cpu().stepInstruction();
+    assert(em.cpu().registers().PC == 0x66);
+    assert(em.cpu().registers().SP == 0xFEFE);
+    assert(em.mmu().read(0xFEFE) == 0xA5 && em.mmu().read(0xFEFF) == 0x5A);
+    assert(nr.read(0xC2) == 0x23 && nr.read(0xC3) == 0x81);
+    nr.write(0xC2, 0x56);
+    nr.write(0xC3, 0x84);
+    const auto pendingNmi = em.saveSnapshot();
+    em.cpu().stepInstruction();
+    assert(em.cpu().registers().PC == 0x8456);
+    assert(em.cpu().registers().SP == 0xFF00);
     assert(!em.romcs().isActive("next_multiface"));
     assert(em.triggerNextNmi(false));
     em.cpu().stepInstruction();
@@ -270,6 +292,21 @@ void machineTests()
     assert(next.isDivMmcMapped());
     em.reset();
     assert(!next.isDivMmcMapped());
+
+    em.loadSnapshot(pendingNmi, ".szx");
+    auto &restored = static_cast<ZxNextMachine &>(em.machine());
+    assert(restored.nextReg().read(0xC2) == 0x56 && restored.nextReg().read(0xC3) == 0x84);
+    em.cpu().stepInstruction();
+    assert(em.cpu().registers().PC == 0x8456);
+    assert(em.cpu().registers().SP == 0xFF00);
+    assert(!em.romcs().isActive("next_multiface"));
+
+    // Clearing stackless mode before RETN restores ordinary stack reads.
+    em.loadSnapshot(pendingNmi, ".szx");
+    static_cast<ZxNextMachine &>(em.machine()).nextReg().write(0xC0, 0);
+    em.cpu().stepInstruction();
+    assert(em.cpu().registers().PC == 0x5AA5);
+    assert(em.cpu().registers().SP == 0xFF00);
 }
 
 void ioDispatchTests()

@@ -73,6 +73,11 @@ from the Next SD image, maps its ROM/RAM on the 0066 fetch, handles its configur
 paging ports and releases on RETN. Its entry watcher exists only while NMI is
 pending, so it adds no instruction hook to normal execution.
 
+NR C0 bit 3 enables stackless NMI. NMI acknowledge captures the return PC in
+NR C2/C3; stackless entry preserves the two stack bytes, and RETN returns through
+those registers. This also supports NextZXOS's handover to 128K BASIC. The return
+address and pending stackless return survive internal snapshots and rewind.
+
 ## DACs
 
 All four DAC channels and their port aliases are supported, including decode

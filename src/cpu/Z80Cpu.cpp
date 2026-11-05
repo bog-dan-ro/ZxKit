@@ -318,6 +318,7 @@ bool Z80Cpu::serviceNmi()
 
     m_regs.IFF1 = 0;
     m_regs.incrementR(1);
+    m_stacklessRetnAddress = m_regs.PC;
 
     if (m_nmiStackless) {
         m_stacklessRetnActive = true;
