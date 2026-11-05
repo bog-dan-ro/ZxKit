@@ -22,9 +22,12 @@
 #include <algorithm>
 #include <chrono>
 #include <format>
+#include <string_view>
 #include <utility>
 
 namespace zxkit {
+
+using namespace std::literals;
 
 namespace {
 
@@ -168,7 +171,7 @@ uint8_t shortNameChecksum(std::span<const uint8_t, 11> name) noexcept
 
 bool isShortNameChar(char c) noexcept
 {
-    return (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || std::string_view("!#$%&'()-@^_`{}~").contains(c);
+    return (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || "!#$%&'()-@^_`{}~"sv.contains(c);
 }
 
 // `name` as an 8.3 name, if it is one once in upper case
@@ -250,7 +253,7 @@ std::u16string checkedName(std::string_view name)
     if (name == "." || name == ".." || name.ends_with(' ') || name.ends_with('.'))
         throw InvalidArgumentException(std::format("'{}' isn't a valid FAT file name", name));
     for (char c : name) {
-        if (static_cast<unsigned char>(c) < 0x20 || std::string_view("\"*/:<>?\\|").contains(c))
+        if (static_cast<unsigned char>(c) < 0x20 || "\"*/:<>?\\|"sv.contains(c))
             throw InvalidArgumentException(std::format("'{}' isn't a valid FAT file name", name));
     }
     std::u16string utf16 = utf8ToUtf16(name);

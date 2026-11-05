@@ -22,11 +22,13 @@
 #include <filesystem>
 #include <fstream>
 #include <print>
+#include <string_view>
 #include <vector>
 
 #include <zlib.h>
 
 using namespace zxkit;
+using namespace std::literals;
 
 // Unlike CHECK(), always evaluated: these checks drive the hardware under test
 #define CHECK(cond) \
@@ -178,11 +180,11 @@ std::vector<uint8_t> makeFat12Image()
 
     // Data starts at sector 3 (cluster 2). DIR: an LFN entry + LONGFI~1.ROM -> cluster 3
     const std::size_t dir = 3 * 512;
-    const std::string_view lfn = "LongName.rom"; // fits one LFN fragment
+    const auto lfn = "LongName.rom"sv; // fits one LFN fragment
     img[dir] = 0x41; // last (and first) LFN fragment
     img[dir + 11] = 0x0F;
     uint8_t checksum = 0; // of the 8.3 name it belongs to
-    for (char ch : std::string_view("LONGFI~1ROM"))
+    for (char ch : "LONGFI~1ROM"sv)
         checksum = static_cast<uint8_t>(((checksum & 1) << 7) + (checksum >> 1) + static_cast<uint8_t>(ch));
     img[dir + 13] = checksum;
     std::size_t c = 0;

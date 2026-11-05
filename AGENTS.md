@@ -7,6 +7,15 @@ only. Never add them to ZxKit's index as files or gitlinks, or commit applicatio
 revision pointers in this repository. Application changes belong in the
 application's own repository.
 
+## C++ conventions
+
+- Prefer `"text"s` for owning `std::string` literals and `"text"sv` for
+  `std::string_view` literals, with `using namespace std::literals;` scoped to
+  implementation files or function bodies. Include `<string>` or `<string_view>`
+  directly as needed. Do not add namespace-wide using directives to public headers.
+- Keep C string literals where an API requires a null-terminated character pointer.
+  Use `sv` for binary string-view literals so embedded NUL bytes retain their length.
+
 ## Mandatory verification after every change
 
 - After every change, build ZxKit and run the complete unit test suite before

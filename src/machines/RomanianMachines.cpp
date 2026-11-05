@@ -22,18 +22,21 @@
 #include "zxkit/machines/SinclairMachines.h"
 
 #include <format>
+#include <string_view>
 #include <utility>
 
 namespace zxkit {
 
+using namespace std::literals;
+
 std::string_view HcMachine::id() const noexcept
 {
-    return "hc2000";
+    return "hc2000"sv;
 }
 
 std::string_view HcMachine::name() const noexcept
 {
-    return "ICE Felix HC-2000";
+    return "ICE Felix HC-2000"sv;
 }
 
 FrameTimings HcMachine::timings() const noexcept
@@ -179,12 +182,12 @@ CobraMachine::CobraMachine(bool mode80k) noexcept
 
 std::string_view CobraMachine::id() const noexcept
 {
-    return m_mode80k ? "cobra1_80k" : "cobra1_64k";
+    return m_mode80k ? "cobra1_80k"sv : "cobra1_64k"sv;
 }
 
 std::string_view CobraMachine::name() const noexcept
 {
-    return m_mode80k ? "CoBra 1 (80KB)" : "CoBra 1 (64KB)";
+    return m_mode80k ? "CoBra 1 (80KB)"sv : "CoBra 1 (64KB)"sv;
 }
 
 FrameTimings CobraMachine::timings() const noexcept
@@ -531,12 +534,12 @@ void CobraMachine::updateMemoryMap(MachineContext &ctx, UlaRenderer &ula)
 
 std::string_view Cobra2Machine::id() const noexcept
 {
-    return "cobra2";
+    return "cobra2"sv;
 }
 
 std::string_view Cobra2Machine::name() const noexcept
 {
-    return "CoBra 2 (TS)";
+    return "CoBra 2 (TS)"sv;
 }
 
 FrameTimings Cobra2Machine::timings() const noexcept

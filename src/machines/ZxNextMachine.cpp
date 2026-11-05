@@ -27,12 +27,15 @@
 #include <array>
 #include <format>
 #include <optional>
+#include <string_view>
 
 namespace zxkit {
 
+using namespace std::literals;
+
 namespace {
 
-constexpr std::string_view kDivMmcId = "next_divmmc";
+constexpr auto kDivMmcId = "next_divmmc"sv;
 
 // MMU page values >= 0xE0 are ROM in slots 0/1 and unmapped in slots 2..7
 constexpr uint8_t kFirstNonRamPage = 0xE0;
@@ -41,12 +44,12 @@ constexpr uint8_t kFirstNonRamPage = 0xE0;
 
 std::string_view ZxNextMachine::id() const noexcept
 {
-    return "next";
+    return "next"sv;
 }
 
 std::string_view ZxNextMachine::name() const noexcept
 {
-    return "ZX Spectrum Next";
+    return "ZX Spectrum Next"sv;
 }
 
 FrameTimings ZxNextMachine::timings() const noexcept

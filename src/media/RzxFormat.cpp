@@ -27,14 +27,21 @@
 #include <cstring>
 #include <format>
 #include <limits>
+#include <string>
+#include <string_view>
 #include <zlib.h>
 
 namespace zxkit {
+
+using namespace std::literals;
+
 namespace {
 constexpr std::size_t maxDecodedBytes = 128 * 1024 * 1024;
 constexpr std::size_t maxSnapshotBytes = 16 * 1024 * 1024;
 constexpr std::size_t maxFrames = 2'000'000;
-constexpr std::array<std::string_view, 16> machines = {"16k", "48k", "128k", "plus2", "plus2a", "plus3", "plus3e", "pentagon", "tc2048", "tc2068", "scorpion", "se", "ts2068", "pentagon512", "pentagon1024", "48k_ntsc"};
+constexpr std::array machines{
+    "16k"sv, "48k"sv, "128k"sv, "plus2"sv, "plus2a"sv, "plus3"sv, "plus3e"sv, "pentagon"sv,
+    "tc2048"sv, "tc2068"sv, "scorpion"sv, "se"sv, "ts2068"sv, "pentagon512"sv, "pentagon1024"sv, "48k_ntsc"sv};
 
 std::vector<uint8_t> inflateRzx(std::span<const uint8_t> bytes, std::size_t limit)
 {
@@ -65,7 +72,7 @@ std::vector<uint8_t> inflateRzx(std::span<const uint8_t> bytes, std::size_t limi
 }
 std::string extension(std::span<const uint8_t> bytes)
 {
-    std::string result = ".";
+    auto result = "."s;
     for (auto c : bytes) {
         if (!c) break;
         if (!std::isalnum(c)) throw FormatException("Invalid RZX snapshot extension");
@@ -386,7 +393,7 @@ std::vector<uint8_t> RzxStream::serializeRzx() const
     out.writeTag("RZX!"); out.write<uint8_t>(0); out.write<uint8_t>(13); out.write<uint32_t>(0);
     out.write<uint8_t>(0x10); out.write<uint32_t>(29);
     std::array<uint8_t, 20> creator{};
-    constexpr std::string_view name = "ZxKit";
+    constexpr auto name = "ZxKit"sv;
     std::copy(name.begin(), name.end(), creator.begin());
     out.writeBytes(creator); out.write<uint16_t>(1); out.write<uint16_t>(0);
     std::size_t frame = 0, command = 0;

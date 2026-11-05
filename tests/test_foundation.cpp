@@ -22,10 +22,12 @@
 #include <chrono>
 #include <functional>
 #include <print>
+#include <string>
 #include <thread>
 #include <vector>
 
 using namespace zxkit;
+using namespace std::literals;
 
 namespace {
 
@@ -288,7 +290,7 @@ void testMachineScopedRoms()
         return std::vector<uint8_t>(size, machine == "16k" ? 0x16 : 0x48);
     };
     Emulator emulator(config);
-    assert(requests.back() == std::make_pair(std::string("48k"), std::string("48.rom")));
+    assert(requests.back() == std::make_pair("48k"s, "48.rom"s));
     assert(emulator.mmu().peek(0) == 0x48);
     emulator.selectMachine("16k");
     assert(requests.back().first == "16k");

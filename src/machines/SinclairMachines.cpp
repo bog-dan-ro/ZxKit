@@ -21,8 +21,11 @@
 
 #include <array>
 #include <format>
+#include <string_view>
 
 namespace zxkit {
+
+using namespace std::literals;
 
 Spectrum48kMachine::Spectrum48kMachine(Variant variant) noexcept
     : m_variant(variant)
@@ -32,18 +35,18 @@ Spectrum48kMachine::Spectrum48kMachine(Variant variant) noexcept
 std::string_view Spectrum48kMachine::id() const noexcept
 {
     switch (m_variant) {
-    case Variant::Spec16k:     return "16k";
-    case Variant::Spec48kNtsc: return "48k_ntsc";
-    default:                   return "48k";
+    case Variant::Spec16k:     return "16k"sv;
+    case Variant::Spec48kNtsc: return "48k_ntsc"sv;
+    default:                   return "48k"sv;
     }
 }
 
 std::string_view Spectrum48kMachine::name() const noexcept
 {
     switch (m_variant) {
-    case Variant::Spec16k:     return "ZX Spectrum 16K";
-    case Variant::Spec48kNtsc: return "ZX Spectrum 48K (NTSC)";
-    default:                   return "ZX Spectrum 48K";
+    case Variant::Spec16k:     return "ZX Spectrum 16K"sv;
+    case Variant::Spec48kNtsc: return "ZX Spectrum 48K (NTSC)"sv;
+    default:                   return "ZX Spectrum 48K"sv;
     }
 }
 
@@ -87,12 +90,12 @@ Spectrum128kMachine::Spectrum128kMachine(bool isPlus2) noexcept
 
 std::string_view Spectrum128kMachine::id() const noexcept
 {
-    return m_isPlus2 ? "plus2" : "128k";
+    return m_isPlus2 ? "plus2"sv : "128k"sv;
 }
 
 std::string_view Spectrum128kMachine::name() const noexcept
 {
-    return m_isPlus2 ? "ZX Spectrum +2" : "ZX Spectrum 128K";
+    return m_isPlus2 ? "ZX Spectrum +2"sv : "ZX Spectrum 128K"sv;
 }
 
 FrameTimings Spectrum128kMachine::timings() const noexcept
@@ -128,8 +131,8 @@ void Spectrum128kMachine::reset(MachineContext &ctx, UlaRenderer &ula, ResetKind
     if (kind == ResetKind::Hard) {
         ctx.mmu.bank(m_ramBank).fill(0x00);
         if (ctx.romResolver || ctx.romOverrideResolver) {
-            const std::string_view rom0 = m_isPlus2 ? "plus2-0.rom" : "128-0.rom";
-            const std::string_view rom1 = m_isPlus2 ? "plus2-1.rom" : "128-1.rom";
+            const auto rom0 = m_isPlus2 ? "plus2-0.rom"sv : "128-0.rom"sv;
+            const auto rom1 = m_isPlus2 ? "plus2-1.rom"sv : "128-1.rom"sv;
             ctx.mmu.bank(m_romBank).loadData(0, ctx.loadRom(rom0, 16 * 1024));
             ctx.mmu.bank(m_romBank).loadData(16 * 1024, ctx.loadRom(rom1, 16 * 1024));
         }
@@ -186,18 +189,18 @@ SpectrumPlus3Machine::SpectrumPlus3Machine(Variant variant) noexcept
 std::string_view SpectrumPlus3Machine::id() const noexcept
 {
     switch (m_variant) {
-    case Variant::Plus2A: return "plus2a";
-    case Variant::Plus3e: return "plus3e";
-    default:              return "plus3";
+    case Variant::Plus2A: return "plus2a"sv;
+    case Variant::Plus3e: return "plus3e"sv;
+    default:              return "plus3"sv;
     }
 }
 
 std::string_view SpectrumPlus3Machine::name() const noexcept
 {
     switch (m_variant) {
-    case Variant::Plus2A: return "ZX Spectrum +2A";
-    case Variant::Plus3e: return "ZX Spectrum +3e";
-    default:              return "ZX Spectrum +3";
+    case Variant::Plus2A: return "ZX Spectrum +2A"sv;
+    case Variant::Plus3e: return "ZX Spectrum +3e"sv;
+    default:              return "ZX Spectrum +3"sv;
     }
 }
 
@@ -290,7 +293,7 @@ void SpectrumPlus3Machine::reset(MachineContext &ctx, UlaRenderer &ula, ResetKin
     if (kind == ResetKind::Hard) {
         ctx.mmu.bank(m_ramBank).fill(0x00);
         if (ctx.romResolver || ctx.romOverrideResolver) {
-            const std::string_view prefix = (m_variant == Variant::Plus3e) ? "plus3e" : "plus3";
+            const auto prefix = (m_variant == Variant::Plus3e) ? "plus3e"sv : "plus3"sv;
             for (int i = 0; i < 4; ++i) {
                 const std::string romFile = std::format("{}-{}.rom", prefix, i);
                 ctx.mmu.bank(m_romBank).loadData(static_cast<std::size_t>(i) * 16 * 1024,

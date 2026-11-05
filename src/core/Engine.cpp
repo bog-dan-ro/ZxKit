@@ -25,9 +25,12 @@
 #include <optional>
 #include <span>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace zxkit {
+
+using namespace std::literals;
 
 Engine::Engine(EmulatorConfig emulatorConfig, EngineConfig config)
     : Engine(makeShared<Emulator>(std::move(emulatorConfig)), std::move(config))
@@ -217,7 +220,7 @@ void Engine::run()
         } catch (const std::exception &e) {
             notify(&EngineCallbacks::log, LogLevel::Error, std::string_view(e.what()));
         } catch (...) {
-            notify(&EngineCallbacks::log, LogLevel::Error, std::string_view("Host service failed"));
+            notify(&EngineCallbacks::log, LogLevel::Error, "Host service failed"sv);
         }
     };
     service(m_threadHooks.started);
@@ -305,7 +308,7 @@ void Engine::run()
             notify(&EngineCallbacks::log, LogLevel::Error, std::string_view(message));
         } catch (...) {
             pause = PauseEvent{PauseReason::Error, m_emulator.readLock()->registers().PC, 0};
-            notify(&EngineCallbacks::log, LogLevel::Error, std::string_view("Unknown emulation error"));
+            notify(&EngineCallbacks::log, LogLevel::Error, "Unknown emulation error"sv);
         }
 
         if (activity != lastActivity) {

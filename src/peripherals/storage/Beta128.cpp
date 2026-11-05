@@ -27,6 +27,8 @@
 
 namespace zxkit {
 
+using namespace std::literals;
+
 bool insertTrDosBootLoader(DiskImage &disk)
 {
     const auto spec = disk.findSector(0, 0, 9);
@@ -46,7 +48,7 @@ bool insertTrDosBootLoader(DiskImage &disk)
         const auto entry = std::span(sector->get().data).subspan((i % 16) * 16, 16);
         if (entry[0] <= 0x01 || entry[8] != 'B')
             continue;
-        if (std::ranges::equal(entry.first(8), std::string_view("boot    ")))
+        if (std::ranges::equal(entry.first(8), "boot    "sv))
             return false; // it has one
         if (!hasBasic) {
             std::ranges::copy(entry.first(8), firstBasic.begin());
@@ -78,7 +80,7 @@ bool insertTrDosBootLoader(DiskImage &disk)
     std::ranges::copy(program, data->get().data.begin());
 
     const auto entry = std::span(catalog->get().data).subspan((info[0xE4] % 16) * 16, 16);
-    std::ranges::copy(std::string_view("boot    B"), entry.begin());
+    std::ranges::copy("boot    B"sv, entry.begin());
     entry[9] = entry[11] = static_cast<uint8_t>(length);
     entry[10] = entry[12] = static_cast<uint8_t>(length >> 8);
     entry[13] = 1; // sectors

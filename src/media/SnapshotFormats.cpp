@@ -28,8 +28,11 @@
 #include <array>
 #include <cstring>
 #include <format>
+#include <string_view>
 
 namespace zxkit {
+
+using namespace std::literals;
 
 namespace {
 
@@ -180,8 +183,9 @@ std::string_view SnapshotFormats::machineId(std::span<const uint8_t> data, std::
         throw FormatException("Invalid SNA size");
     }
     if (ext == ".szx") {
-        constexpr std::array<std::string_view,16> machines{"16k","48k","128k","plus2","plus2a","plus3","plus3e",
-            "pentagon","tc2048","tc2068","scorpion","se","ts2068","pentagon512","pentagon1024","48k_ntsc"};
+        constexpr std::array machines{
+            "16k"sv, "48k"sv, "128k"sv, "plus2"sv, "plus2a"sv, "plus3"sv, "plus3e"sv, "pentagon"sv,
+            "tc2048"sv, "tc2068"sv, "scorpion"sv, "se"sv, "ts2068"sv, "pentagon512"sv, "pentagon1024"sv, "48k_ntsc"sv};
         if (data.size() < 8 || std::memcmp(data.data(), "ZXST", 4) || data[4] != 1 || data[6] >= machines.size())
             throw FormatException("Unsupported SZX header or machine");
         return machines[data[6]];
@@ -615,8 +619,9 @@ std::vector<uint8_t> SnapshotFormats::saveSzx(const SnapshotMachineState &state)
     w.write<uint8_t>(1);
     w.write<uint8_t>(5);
     const auto &ram = state.ctx.mmu.bank(state.machine.ramBankId());
-    constexpr std::array<std::string_view,16> machines{"16k","48k","128k","plus2","plus2a","plus3","plus3e",
-        "pentagon","tc2048","tc2068","scorpion","se","ts2068","pentagon512","pentagon1024","48k_ntsc"};
+    constexpr std::array machines{
+        "16k"sv, "48k"sv, "128k"sv, "plus2"sv, "plus2a"sv, "plus3"sv, "plus3e"sv, "pentagon"sv,
+        "tc2048"sv, "tc2068"sv, "scorpion"sv, "se"sv, "ts2068"sv, "pentagon512"sv, "pentagon1024"sv, "48k_ntsc"sv};
     const auto found = std::ranges::find(machines, state.machine.id());
     const uint8_t machine = found != machines.end() ? static_cast<uint8_t>(found - machines.begin())
         : (ram.count16kPages() > 3 ? 2 : 1); // Next has its native extension in Emulator.
@@ -659,7 +664,7 @@ std::vector<uint8_t> SnapshotFormats::saveSzx(const SnapshotMachineState &state)
     w.write<uint32_t>(0);
 
     if (state.ctx.audioMixer.ayChipCount()) {
-        w.writeTag(std::string_view("AY\0\0", 4));
+        w.writeTag("AY\0\0"sv);
         w.write<uint32_t>(18);
         w.write<uint8_t>(ram.count16kPages() <= 3 ? 2 : 0);
         const auto &ay = state.ctx.audioMixer.activeAy();

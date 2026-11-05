@@ -62,6 +62,7 @@
 #include <vector>
 
 using namespace zxkit;
+using namespace std::literals;
 
 namespace {
 
@@ -195,7 +196,7 @@ private:
 
 int main(int argc, char **argv)
 {
-    std::string machine = "48k";
+    auto machine = "48k"s;
     std::vector<std::filesystem::path> romDirs;
     std::filesystem::path sdcard;
     bool sdcardReadOnly = false;

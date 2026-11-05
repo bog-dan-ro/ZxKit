@@ -18,14 +18,17 @@
 #include <array>
 #include <cassert>
 #include <filesystem>
-#include <fstream>
 #include <format>
+#include <fstream>
 #include <iterator>
-#include <string>
-#include <vector>
 #include <print>
+#include <string>
+#include <string_view>
+#include <vector>
 #include <zxkit/zxkit.h>
 using namespace zxkit;
+using namespace std::literals;
+
 namespace {
 std::vector<uint8_t> readFile(const std::filesystem::path &p)
 {
@@ -191,15 +194,15 @@ int main(int argc, char **argv)
     for (const auto &machine : {"48k", "128k"}) {
         if (!audit && machine != mode)
             continue;
-        auto dir = fixtures / (machine == std::string_view("48k") ? "48k" : "128k-plus2");
+        auto dir = fixtures / (machine == "48k"sv ? "48k" : "128k-plus2");
         std::filesystem::path snapshot;
         for (const auto &file : std::filesystem::directory_iterator(dir))
             if (file.path().filename().string().starts_with("ZX Spectrum Timing Tests") &&
                 (file.path().extension() == ".sna" || file.path().extension() == ".szx"))
                 snapshot = file.path();
         assert(!snapshot.empty());
-        for (unsigned n = 1; n <= (machine == std::string_view("128k") ? 34u : 35u); ++n) {
-            if (!audit && machine == std::string_view("128k")
+        for (unsigned n = 1; n <= (machine == "128k"sv ? 34u : 35u); ++n) {
+            if (!audit && machine == "128k"sv
                 && (n == 4 || n == 17 || n == 18 || n == 26 || n == 33)) {
                 std::println("128k test {}: known failure; run --audit for evidence", n);
                 continue;
@@ -220,7 +223,7 @@ int main(int argc, char **argv)
             if (!audit) {
                 assert(text.find(std::format("Test {} ", n)) != std::string::npos);
                 assert(text.find("Fail") == std::string::npos);
-                if (machine == std::string_view("48k")) {
+                if (machine == "48k"sv) {
                     assert(text.find("All Tests Complete 100% Pass") != std::string::npos);
                 } else {
                     assert(text.find("9 STOP statement, 1350:1") != std::string::npos);

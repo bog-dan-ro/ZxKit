@@ -27,26 +27,27 @@
 #include "zxkit/peripherals/expansion/ExpansionPeripherals.h"
 
 #include <algorithm>
-#include <limits>
 #include <array>
 #include <cctype>
 #include <cmath>
 #include <cstring>
 #include <format>
 #include <fstream>
+#include <limits>
+#include <string_view>
 
 namespace zxkit {
+
+using namespace std::literals;
 
 namespace {
 
 // Frames a host may hold on to before the emulator allocates new ones instead of recycling
 constexpr std::size_t kMaxPooledFrames = 8;
 
-constexpr std::array kSnapshotExtensions{std::string_view{".sna"}, std::string_view{".z80"},
-                                         std::string_view{".szx"}, std::string_view{".nex"}};
-constexpr std::array kDiskExtensions{std::string_view{".dsk"}, std::string_view{".trd"}, std::string_view{".scl"},
-                                     std::string_view{".img"}, std::string_view{".mgt"}, std::string_view{".opd"},
-                                     std::string_view{".td0"}};
+constexpr std::array kSnapshotExtensions{".sna"sv, ".z80"sv, ".szx"sv, ".nex"sv};
+constexpr std::array kDiskExtensions{".dsk"sv, ".trd"sv, ".scl"sv, ".img"sv,
+                                     ".mgt"sv, ".opd"sv, ".td0"sv};
 
 // Normalizes a file extension to ".ext" in lower case. Accepts "ext", ".ext",
 // a multi-part suffix ("tar.dsk") or a whole file name.

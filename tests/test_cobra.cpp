@@ -25,10 +25,12 @@
 #include <array>
 #include <cassert>
 #include <print>
+#include <string_view>
 #include <tuple>
 #include <vector>
 
 using namespace zxkit;
+using namespace std::literals;
 
 namespace {
 
@@ -599,7 +601,7 @@ void testCobra64DiskLoader(const std::filesystem::path &fixtures)
         }
         auto &directory = disk.findSector(0, 0, 1)->get().data;
         std::fill_n(directory.begin(), 32, 0);
-        constexpr std::string_view name = "SYS     COM";
+        constexpr auto name = "SYS     COM"sv;
         std::ranges::copy(name, directory.begin() + 1);
         directory[15] = 16;
         directory[16] = 2;

@@ -24,14 +24,16 @@
 
 namespace zxkit {
 
+using namespace std::literals;
+
 namespace {
 
-constexpr std::array<std::string_view, 8> kReg8 = {"B", "C", "D", "E", "H", "L", "(HL)", "A"};
-constexpr std::array<std::string_view, 4> kReg16 = {"BC", "DE", "HL", "SP"};
-constexpr std::array<std::string_view, 4> kReg16Af = {"BC", "DE", "HL", "AF"};
-constexpr std::array<std::string_view, 8> kCond = {"NZ", "Z", "NC", "C", "PO", "PE", "P", "M"};
-constexpr std::array<std::string_view, 8> kAlu = {"ADD A,", "ADC A,", "SUB ", "SBC A,", "AND ", "XOR ", "OR ", "CP "};
-constexpr std::array<std::string_view, 8> kRot = {"RLC", "RRC", "RL", "RR", "SLA", "SRA", "SLL", "SRL"};
+constexpr std::array kReg8{"B"sv, "C"sv, "D"sv, "E"sv, "H"sv, "L"sv, "(HL)"sv, "A"sv};
+constexpr std::array kReg16{"BC"sv, "DE"sv, "HL"sv, "SP"sv};
+constexpr std::array kReg16Af{"BC"sv, "DE"sv, "HL"sv, "AF"sv};
+constexpr std::array kCond{"NZ"sv, "Z"sv, "NC"sv, "C"sv, "PO"sv, "PE"sv, "P"sv, "M"sv};
+constexpr std::array kAlu{"ADD A,"sv, "ADC A,"sv, "SUB "sv, "SBC A,"sv, "AND "sv, "XOR "sv, "OR "sv, "CP "sv};
+constexpr std::array kRot{"RLC"sv, "RRC"sv, "RL"sv, "RR"sv, "SLA"sv, "SRA"sv, "SLL"sv, "SRL"sv};
 constexpr std::array<uint8_t, 8> kImModes = {0, 0, 1, 2, 0, 0, 1, 2};
 
 // Decodes one instruction. Operands are fetched in their byte order, never inside
@@ -185,10 +187,10 @@ private:
         if ((op & 0xC0) == 0x40) {
             switch (op & 7) {
             case 0: // IN r,(C); ED 70 only sets the flags
-                set(y == 6 ? std::string("IN (C)") : std::format("IN {},(C)", kReg8[y]));
+                set(y == 6 ? "IN (C)"s : std::format("IN {},(C)", kReg8[y]));
                 return;
             case 1: // OUT (C),r; ED 71 outputs 0
-                set(y == 6 ? std::string("OUT (C),0") : std::format("OUT (C),{}", kReg8[y]));
+                set(y == 6 ? "OUT (C),0"s : std::format("OUT (C),{}", kReg8[y]));
                 return;
             case 2:
                 set(std::format("{} HL,{}", (y & 1) ? "ADC" : "SBC", kReg16[p]));

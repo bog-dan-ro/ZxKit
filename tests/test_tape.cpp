@@ -34,6 +34,7 @@
 #include <vector>
 
 using namespace zxkit;
+using namespace std::literals;
 
 namespace {
 
@@ -572,7 +573,7 @@ std::vector<uint8_t> romBlock(uint8_t flag, std::span<const uint8_t> payload)
 std::vector<uint8_t> programTap(std::span<const uint8_t> program)
 {
     std::vector<uint8_t> header{0x00};
-    for (char c : std::string_view("tapetest  "))
+    for (char c : "tapetest  "sv)
         header.push_back(static_cast<uint8_t>(c));
     const auto length = static_cast<uint16_t>(program.size());
     header.insert(header.end(), {static_cast<uint8_t>(length), static_cast<uint8_t>(length >> 8), 0x00, 0x80,
@@ -719,7 +720,7 @@ void testPzxAndCsw()
 
     for (const uint8_t compression : {1, 2}) {
         StateWriter csw;
-        csw.writeTag(std::string_view("Compressed Square Wave\x1A", 23));
+        csw.writeTag("Compressed Square Wave\x1A"sv);
         csw.write<uint8_t>(2); csw.write<uint8_t>(0); csw.write<uint32_t>(44100);
         csw.write<uint32_t>(3); csw.write(compression); csw.write<uint8_t>(1); csw.write<uint8_t>(0);
         csw.writeTag(std::string(16, '\0'));

@@ -26,9 +26,12 @@
 #include <format>
 #include <optional>
 #include <span>
+#include <string>
 #include <unordered_set>
 
 namespace zxkit {
+
+using namespace std::literals;
 
 namespace {
 
@@ -433,7 +436,7 @@ std::expected<std::vector<uint8_t>, std::string> defineBytes(std::string_view ar
         args = comma == std::string_view::npos ? std::string_view{} : args.substr(comma + 1);
     }
     if (out.empty())
-        return std::unexpected(std::string("DEFB needs at least one byte"));
+        return std::unexpected("DEFB needs at least one byte"s);
     return out;
 }
 
@@ -444,7 +447,7 @@ std::expected<std::vector<uint8_t>, std::string> Assembler::assemble(std::string
 {
     const std::string input = normalize(line);
     if (input.empty())
-        return std::unexpected(std::string("Nothing to assemble"));
+        return std::unexpected("Nothing to assemble"s);
     if (input.starts_with("DEFB ") || input.starts_with("DB "))
         return defineBytes(std::string_view(input).substr(input.find(' ') + 1), options.defaultBase);
 

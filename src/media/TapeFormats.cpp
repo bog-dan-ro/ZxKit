@@ -25,8 +25,12 @@
 #include <bit>
 #include <format>
 #include <limits>
+#include <string>
+#include <string_view>
 
 namespace zxkit {
+
+using namespace std::literals;
 
 namespace {
 
@@ -180,7 +184,7 @@ std::string archiveDescription(Reader &r)
         if (id == 0 && title.empty())
             title = std::move(text);
     }
-    return title.empty() ? std::string("Archive info") : std::format("Archive info: {}", title);
+    return title.empty() ? "Archive info"s : std::format("Archive info: {}", title);
 }
 
 // One TZX block, its id already read
@@ -297,7 +301,7 @@ TapeBlock parseTzxBlock(uint8_t id, Reader &r)
     }
     case 0x20: // Pause or stop the tape
         blk.pauseAfterMs = r.u16();
-        blk.description = blk.pauseAfterMs ? std::format("Pause ({} ms)", blk.pauseAfterMs) : std::string("Stop the tape");
+        blk.description = blk.pauseAfterMs ? std::format("Pause ({} ms)", blk.pauseAfterMs) : "Stop the tape"s;
         return blk;
     case 0x21: // Group start
         blk.description = std::format("Group: {}", r.text(r.u8()));
@@ -455,7 +459,7 @@ std::vector<TapeBlock> parseTap(std::span<const uint8_t> raw)
 
 std::vector<TapeBlock> parseTzx(std::span<const uint8_t> raw)
 {
-    if (raw.size() < 10 || std::ranges::equal(raw.first(8), std::string_view("ZXTape!\x1A")) == false)
+    if (raw.size() < 10 || std::ranges::equal(raw.first(8), "ZXTape!\x1A"sv) == false)
         throw FormatException("Invalid TZX header signature");
     // Like libspectrum, ignore the version: the blocks say what they are
 
@@ -481,7 +485,7 @@ std::vector<TapeBlock> parseTzx(std::span<const uint8_t> raw)
 
 std::vector<TapeBlock> parsePzx(std::span<const uint8_t> raw)
 {
-    if (raw.size() < 10 || !std::ranges::equal(raw.first(4), std::string_view("PZXT")))
+    if (raw.size() < 10 || !std::ranges::equal(raw.first(4), "PZXT"sv))
         throw FormatException("Invalid PZX header");
     Reader r(raw);
     std::vector<TapeBlock> blocks;
@@ -557,7 +561,7 @@ std::vector<TapeBlock> parsePzx(std::span<const uint8_t> raw)
 
 std::vector<TapeBlock> parseCsw(std::span<const uint8_t> raw)
 {
-    constexpr std::string_view signature("Compressed Square Wave\x1A", 23);
+    constexpr auto signature = "Compressed Square Wave\x1A"sv;
     if (raw.size() < 32 || !std::ranges::equal(raw.first(23), signature))
         throw FormatException("Invalid CSW header");
     Reader r(raw.subspan(23));
@@ -644,7 +648,7 @@ std::vector<uint8_t> writeTzx(std::span<const TapeBlock> blocks)
 {
     constexpr std::size_t limit = 64 * 1024 * 1024;
     StateWriter out;
-    out.writeTag(std::string_view("ZXTape!\x1A\x01\x14", 10));
+    out.writeTag("ZXTape!\x1A\x01\x14"sv);
     const auto pzx = [](const TapeBlock &b) {
         return b.type == TapeBlockType::PzxPulses || b.type == TapeBlockType::PzxData || b.type == TapeBlockType::PzxPause;
     };

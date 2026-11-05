@@ -22,8 +22,10 @@
 #include <iostream>
 #include <iterator>
 #include <string>
+#include <string_view>
 
 using namespace zxkit;
+using namespace std::literals;
 namespace
 {
 const std::filesystem::path fixtures = ZXKIT_RZX_FIXTURES;
@@ -33,7 +35,7 @@ std::vector<uint8_t> read(const std::filesystem::path& path)
     assert(file);
     return { std::istreambuf_iterator<char>(file), {} };
 }
-EmulatorConfig config(std::string machine = "48k")
+EmulatorConfig config(std::string machine = "48k"s)
 {
     EmulatorConfig c;
     c.machineId = machine;
@@ -312,7 +314,7 @@ void test48kAyInterfaces()
         file.writeBytes(std::span(fixture).first(39));
         StateWriter block;
         block.write<uint32_t>(0);
-        block.writeTag(std::string_view("z80\0", 4));
+        block.writeTag("z80\0"sv);
         block.write<uint32_t>(snapshot.size());
         block.writeBytes(snapshot);
         putBlock(file, 0x30, block);
@@ -417,7 +419,7 @@ void testParserAndLifetime()
     for (const uint32_t flags : { 0u, 1u }) {
         StateWriter block;
         block.write(flags);
-        block.writeTag(std::string_view("z80\0", 4));
+        block.writeTag("z80\0"sv);
         block.write<uint32_t>(16 * 1024 * 1024 + 1);
         RzxStream stream;
         assert(!fails([&] { stream.loadRzx(withBlock(0x30, block), bus); }).empty());

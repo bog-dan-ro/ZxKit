@@ -22,7 +22,11 @@
 #include "zxkit/input/Joystick.h"
 #include "zxkit/machines/SinclairMachines.h"
 
+#include <string_view>
+
 namespace zxkit {
+
+using namespace std::literals;
 
 TimexMachine::TimexMachine(Variant variant) noexcept
     : m_variant(variant)
@@ -32,23 +36,23 @@ TimexMachine::TimexMachine(Variant variant) noexcept
 std::string_view TimexMachine::id() const noexcept
 {
     switch (m_variant) {
-    case Variant::Tc2048: return "tc2048";
-    case Variant::Tc2068: return "tc2068";
-    case Variant::Ts2068: return "ts2068";
-    case Variant::SpecSe: return "se";
+    case Variant::Tc2048: return "tc2048"sv;
+    case Variant::Tc2068: return "tc2068"sv;
+    case Variant::Ts2068: return "ts2068"sv;
+    case Variant::SpecSe: return "se"sv;
     }
-    return "tc2048";
+    return "tc2048"sv;
 }
 
 std::string_view TimexMachine::name() const noexcept
 {
     switch (m_variant) {
-    case Variant::Tc2048: return "Timex TC2048";
-    case Variant::Tc2068: return "Timex TC2068";
-    case Variant::Ts2068: return "Timex TS2068";
-    case Variant::SpecSe: return "ZX Spectrum SE";
+    case Variant::Tc2048: return "Timex TC2048"sv;
+    case Variant::Tc2068: return "Timex TC2068"sv;
+    case Variant::Ts2068: return "Timex TS2068"sv;
+    case Variant::SpecSe: return "ZX Spectrum SE"sv;
     }
-    return "Timex TC2048";
+    return "Timex TC2048"sv;
 }
 
 FrameTimings TimexMachine::timings() const noexcept
@@ -293,18 +297,18 @@ PentagonMachine::PentagonMachine(Variant variant) noexcept
 std::string_view PentagonMachine::id() const noexcept
 {
     switch (m_variant) {
-    case Variant::Pentagon512:  return "pentagon512";
-    case Variant::Pentagon1024: return "pentagon1024";
-    default:                    return "pentagon";
+    case Variant::Pentagon512:  return "pentagon512"sv;
+    case Variant::Pentagon1024: return "pentagon1024"sv;
+    default:                    return "pentagon"sv;
     }
 }
 
 std::string_view PentagonMachine::name() const noexcept
 {
     switch (m_variant) {
-    case Variant::Pentagon512:  return "Pentagon 512K";
-    case Variant::Pentagon1024: return "Pentagon 1024SL";
-    default:                    return "Pentagon 128K";
+    case Variant::Pentagon512:  return "Pentagon 512K"sv;
+    case Variant::Pentagon1024: return "Pentagon 1024SL"sv;
+    default:                    return "Pentagon 128K"sv;
     }
 }
 
@@ -425,12 +429,12 @@ void PentagonMachine::updateMemoryMap(MachineContext &ctx, UlaRenderer &ula)
 
 std::string_view ScorpionMachine::id() const noexcept
 {
-    return "scorpion";
+    return "scorpion"sv;
 }
 
 std::string_view ScorpionMachine::name() const noexcept
 {
-    return "Scorpion ZS 256";
+    return "Scorpion ZS 256"sv;
 }
 
 FrameTimings ScorpionMachine::timings() const noexcept
