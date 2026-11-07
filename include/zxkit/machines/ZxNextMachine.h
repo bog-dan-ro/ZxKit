@@ -78,6 +78,7 @@ public:
     NextUart &uart() noexcept { return m_uart; }
     NextRtc &rtc() noexcept { return m_rtc; }
     void setExtendedKey(NextKey key, bool pressed) noexcept;
+    bool canRequestNmi(bool multiface) const noexcept;
     /// Physical buttons respect NextREG 06 enables; software requests set NR02 causes.
     bool requestNmi(MachineContext &ctx, bool multiface, bool button = true);
     uint64_t uartTime(const MachineContext &ctx) const noexcept;

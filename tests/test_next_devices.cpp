@@ -203,6 +203,44 @@ void rtcTests()
     assert(copy.nvram().back() == 0xAA);
 }
 
+void nmiAvailabilityTests()
+{
+    Emulator em;
+    const auto &core = em;
+    assert(!core.canTriggerNextNmi(true));
+    assert(!core.canTriggerNextNmi(false));
+    em.selectMachine("next");
+    auto &next = static_cast<ZxNextMachine &>(em.machine());
+    auto &nr = next.nextReg();
+    // Button enables and device decoders are independent, firmware-controlled gates.
+    for (uint8_t buttons : {0x00, 0x08, 0x10, 0x18}) {
+        nr.write(0x06, buttons);
+        for (uint8_t devices : {0x00, 0x01, 0x02, 0x03}) {
+            nr.write(0x83, devices);
+            assert(core.canTriggerNextNmi(true) == bool((buttons & 8) && (devices & 2)));
+            assert(core.canTriggerNextNmi(false) == bool((buttons & 0x10) && (devices & 1)));
+        }
+    }
+    // Explicit DivMMC paging blocks Multiface, while its own button remains available.
+    em.ioBus().write(0xE3, 0x80);
+    assert(!core.canTriggerNextNmi(true));
+    assert(core.canTriggerNextNmi(false));
+    em.ioBus().write(0xE3, 0);
+    assert(core.canTriggerNextNmi(true));
+    // A paced DMA owns the bus until disabled.
+    for (uint8_t byte : {0xC3, 0x7D, 0x00, 0x80, 0x04, 0x00, 0x14, 0x50, 0x20, 0xFF,
+                         0xCD, 0x00, 0x90, 0xCF, 0x87})
+        em.ioBus().write(0x6B, byte);
+    assert(next.dma().isActive());
+    assert(!core.canTriggerNextNmi(true));
+    assert(!core.canTriggerNextNmi(false));
+    assert(!em.triggerNextNmi(true));
+    assert(!em.triggerNextNmi(false));
+    next.dma().reset();
+    assert(core.canTriggerNextNmi(true));
+    assert(core.canTriggerNextNmi(false));
+}
+
 void machineTests()
 {
     Emulator em({.machineId = "next", .romResolver = [](std::string_view name, size_t size) {
@@ -257,13 +295,19 @@ void machineTests()
     nr.write(0x06, 0x18);
     em.cpu().registers().PC = 0x8000;
     em.cpu().registers().SP = 0xFF00;
+    assert(em.canTriggerNextNmi(true));
+    assert(em.canTriggerNextNmi(false));
     assert(em.triggerNextNmi(true));
+    assert(!em.canTriggerNextNmi(true));
+    assert(!em.canTriggerNextNmi(false));
     assert(!em.triggerNextNmi(false));
     em.cpu().stepInstruction();
     em.cpu().stepInstruction();
     assert(em.cpu().registers().PC == 0x8000); // NMI acknowledge, then RETN in MF ROM
     assert(nr.read(0xC2) == 0 && nr.read(0xC3) == 0x80);
     assert(!em.romcs().isActive("next_multiface"));
+    assert(em.canTriggerNextNmi(true));
+    assert(em.canTriggerNextNmi(false));
     // NextZXOS restores 128K snapshots through a stackless Multiface NMI.
     // Its return address is held in C2/C3 and may be changed by the handler.
     nr.write(0xC0, 0x08);
@@ -281,19 +325,27 @@ void machineTests()
     nr.write(0xC2, 0x56);
     nr.write(0xC3, 0x84);
     const auto pendingNmi = em.saveSnapshot();
+    assert(!em.canTriggerNextNmi(true));
+    assert(!em.canTriggerNextNmi(false));
     em.cpu().stepInstruction();
     assert(em.cpu().registers().PC == 0x8456);
     assert(em.cpu().registers().SP == 0xFF00);
     assert(!em.romcs().isActive("next_multiface"));
     assert(em.triggerNextNmi(false));
+    assert(!em.canTriggerNextNmi(true));
+    assert(!em.canTriggerNextNmi(false));
     em.cpu().stepInstruction();
     assert(em.cpu().registers().PC == 0x66);
     em.cpu().stepInstruction();
     assert(next.isDivMmcMapped());
     em.reset();
     assert(!next.isDivMmcMapped());
+    assert(em.canTriggerNextNmi(true));
+    assert(em.canTriggerNextNmi(false));
 
     em.loadSnapshot(pendingNmi, ".szx");
+    assert(!em.canTriggerNextNmi(true));
+    assert(!em.canTriggerNextNmi(false));
     auto &restored = static_cast<ZxNextMachine &>(em.machine());
     assert(restored.nextReg().read(0xC2) == 0x56 && restored.nextReg().read(0xC3) == 0x84);
     em.cpu().stepInstruction();
@@ -376,6 +428,7 @@ int main()
 {
     uartTests();
     rtcTests();
+    nmiAvailabilityTests();
     machineTests();
     ioDispatchTests();
     engineTests();

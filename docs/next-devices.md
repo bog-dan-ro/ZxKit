@@ -66,6 +66,9 @@ the documented CS/SS chords to the matrix. Releasing one extended key cannot
 release a separately held matrix key. Host input is not rewound with machine
 state.
 
+`canTriggerNextNmi(multiface)` queries whether the Multiface (`true`) or DivMMC
+(`false`) button can currently acquire NMI, without changing machine state.
+Consumers can use it when opening menus to disable unavailable actions.
 `triggerNextNmi(multiface)` presses the Multiface or DivMMC drive button. NR06
 button enables, device availability and NMI ownership apply. Software NR02
 requests expose their cause flags. The Multiface loads optional `enNextMf.rom`

@@ -135,6 +135,8 @@ public:
     void triggerNmi() noexcept;
     void setKeyState(ZxKey key, bool pressed) noexcept;
     void setNextKeyState(NextKey key, bool pressed) noexcept;
+    /// Whether the requested Next button can currently acquire NMI; false on other machines.
+    bool canTriggerNextNmi(bool multiface) const noexcept;
     bool triggerNextNmi(bool multiface);
 
     // ── Running ───────────────────────────────────────────────────────────

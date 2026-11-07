@@ -628,20 +628,23 @@ void ZxNextMachine::rebuildExtendedMatrix() noexcept
         }
 }
 
-bool ZxNextMachine::requestNmi(MachineContext &ctx, bool multiface, bool button)
+bool ZxNextMachine::canRequestNmi(bool multiface) const noexcept
 {
     const auto enable = multiface ? 8 : 0x10;
     if (!(m_nextReg.peek(0x06) & enable) || m_mfActive || m_mfMapped || m_divNmiLatched || m_dma.isActive())
         return false;
+    return multiface ? (m_nextReg.peek(0x83) & 2) && !(m_portE3 & 0x80) : (m_nextReg.peek(0x83) & 1);
+}
+
+bool ZxNextMachine::requestNmi(MachineContext &ctx, bool multiface, bool button)
+{
+    if (!canRequestNmi(multiface))
+        return false;
     if (multiface) {
-        if (!(m_nextReg.peek(0x83) & 2) || (m_portE3 & 0x80))
-            return false;
         m_mfActive = true;
         m_mfInvisible = false;
         armMultifaceEntry(ctx);
     } else {
-        if (!(m_nextReg.peek(0x83) & 1))
-            return false;
         m_divNmiLatched = true;
     }
     if (!button)

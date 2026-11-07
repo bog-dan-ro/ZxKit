@@ -372,6 +372,11 @@ void Emulator::setNextKeyState(NextKey key, bool pressed) noexcept
         static_cast<ZxNextMachine &>(*m_machine).setExtendedKey(key, pressed);
 }
 
+bool Emulator::canTriggerNextNmi(bool multiface) const noexcept
+{
+    return m_machine->id() == "next"sv && static_cast<const ZxNextMachine &>(*m_machine).canRequestNmi(multiface);
+}
+
 bool Emulator::triggerNextNmi(bool multiface)
 {
     return m_machine->id() == "next" && static_cast<ZxNextMachine &>(*m_machine).requestNmi(m_context, multiface);
