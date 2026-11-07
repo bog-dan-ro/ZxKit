@@ -1,6 +1,6 @@
 # Engine and presentation profiling
 
-The Linux drivers in `tools/` need only ZxKit, its bundled ROMs and the normal
+The Linux drivers in `tools/profiling/` need only ZxKit, its bundled ROMs and the normal
 SafeCpp dependency. A consumer checkout is not needed. Generated workloads,
 traces, commands and results belong under `build/profiling/`.
 
@@ -8,10 +8,10 @@ traces, commands and results belong under `build/profiling/`.
 cmake -S . -B build/profiling/native -DCMAKE_BUILD_TYPE=RelWithDebInfo -DZXKIT_BUILD_TESTS=ON
 cmake --build build/profiling/native --parallel
 c++ -std=c++23 -O2 -g -Iinclude -Ibuild/profiling/native/_deps/safecpp-src \
-    tools/profile_engine.cpp build/profiling/native/libzxkit_video_filters.a \
+    tools/profiling/profile_engine.cpp build/profiling/native/libzxkit_video_filters.a \
     build/profiling/native/libzxkit.a -lz -pthread -o build/profiling/profile-engine
-cc -shared -fPIC -O2 tools/profile_allocations.c -o build/profiling/allocations.so
-python3 tools/make_profile_workload.py
+cc -shared -fPIC -O2 tools/profiling/profile_allocations.c -o build/profiling/allocations.so
+python3 tools/profiling/make_profile_workload.py
 build/profiling/profile-engine engine 15 tests/fixtures/roms build/profiling/workload.z80
 build/profiling/profile-engine engine-rewind 15 tests/fixtures/roms build/profiling/workload.z80
 build/profiling/profile-engine paused 15 tests/fixtures/roms build/profiling/workload.z80

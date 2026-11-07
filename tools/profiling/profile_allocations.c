@@ -1,6 +1,6 @@
 /* Copyright (c) 2026, BogDan Vatra. SPDX-License-Identifier: GPL-3.0-or-later */
 /* Linux/glibc diagnostic interposer. Counts requested bytes, not live heap size.
- * Build: cc -shared -fPIC -O2 tools/profile_allocations.c -o build/profiling/allocations.so
+ * Build: cc -shared -fPIC -O2 tools/profiling/profile_allocations.c -o build/profiling/allocations.so
  * Run separately from production CPU sampling with LD_PRELOAD and PROFILE_WARMUP.
  */
 #define _GNU_SOURCE

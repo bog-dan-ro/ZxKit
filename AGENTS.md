@@ -9,6 +9,19 @@ application's own repository.
 
 ## C++ conventions
 
+- Follow the repository `.clang-format`, based on Qt's coding style. Use four
+  spaces, spaces around binary operators (`a && b`, `value = count + 1`), and
+  a space after control-flow keywords (`if (...)`). Function and class opening
+  braces go on the next line; control-flow and lambda braces stay attached.
+  Put separate statements and variable declarations on separate lines.
+- Use descriptive camelCase names for variables/functions and PascalCase for
+  types. Single-letter names are for obvious counters or short-lived temporaries.
+- Format new or changed C/C++ code with `clang-format -i path/to/file.cpp`.
+  Check it with `clang-format --dry-run --Werror path/to/file.cpp`. Avoid
+  reformatting unrelated code in an existing file; format changed ranges there.
+- Formatting does not enforce string ownership: check the literal rules below
+  explicitly. The project remains standard C++23; Qt types and Qt literals are
+  not required by this formatting style.
 - Prefer `"text"s` for owning `std::string` literals and `"text"sv` for
   `std::string_view` literals, with `using namespace std::literals;` scoped to
   implementation files or function bodies. Include `<string>` or `<string_view>`

@@ -1,0 +1,13 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: zxkit
+Source: https://github.com/bog-dan-ro/zxkit
+
+Files: *
+Copyright: 2026 BogDan Vatra
+License: GPL-3+
+ See /usr/share/common-licenses/GPL-3 for the license text.
+
+Files: debian/vendor/safecpp/* debian/vendor/safecpp/cmake/*
+Copyright: 2026 BogDan Vatra
+License: MIT-0
+ See debian/vendor/safecpp/LICENSE in the source package for the license text.

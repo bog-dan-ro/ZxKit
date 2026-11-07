@@ -1,0 +1,9 @@
+#!/usr/bin/make -f
+
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
+%:
+	dh $@ --buildsystem=cmake
+
+override_dh_auto_configure:
+	dh_auto_configure -- -DBUILD_SHARED_LIBS=OFF -DZXKIT_BUILD_TESTS=ON -DZXKIT_BUILD_FUSE_TOOL=OFF -DZXKIT_MC_EXTFS_DIR=lib/mc/extfs.d -DFETCHCONTENT_SOURCE_DIR_SAFECPP=$(CURDIR)/debian/vendor/safecpp

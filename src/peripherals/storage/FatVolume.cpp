@@ -606,6 +606,7 @@ FatVolume::Directory FatVolume::readDirectory(uint32_t cluster) const
                 entry.firstCluster &= 0xFFFF;
             entry.size = le32(e, 28);
             entry.isDir = (e[11] & kAttrDirectory) != 0;
+            entry.attributes = e[11];
             dir.entries.push_back(std::move(entry));
             nextPart = -1;
         }
@@ -647,7 +648,7 @@ std::optional<std::vector<FatVolume::DirEntry>> FatVolume::list(std::string_view
         if (e.shortName == "." || e.shortName == "..")
             continue;
         out.push_back({.name = e.longName.empty() ? e.shortName : e.longName, .size = e.isDir ? 0 : e.size,
-                       .isDirectory = e.isDir});
+                       .isDirectory = e.isDir, .attributes = e.attributes});
     }
     return out;
 }
@@ -914,7 +915,7 @@ void FatVolume::writeFile(std::string_view path, std::span<const uint8_t> data)
     }
     const auto clusters = allocate(needed);
     writeClusters(clusters, data);
-    const auto entries = makeEntries(*dir, parts.back(), kAttrArchive, clusters.empty() ? 0 : clusters.front(),
+    const auto entries = makeEntries(*dir, parts.back(), existing ? existing->attributes : kAttrArchive, clusters.empty() ? 0 : clusters.front(),
                                      static_cast<uint32_t>(data.size()));
     addEntries(*dir, entries);
     commit();
@@ -977,6 +978,73 @@ void FatVolume::remove(std::string_view path)
             throw InvalidArgumentException(std::format("The directory '{}' isn't empty", path));
     }
     removeEntry(*dir, *entry);
+    commit();
+}
+
+void FatVolume::setFileAttributes(std::string_view path, uint8_t attributes)
+{
+    using namespace std::literals;
+    const Operation operation(*this, true);
+    if (attributes & ~uint8_t{ 0x27 })
+        throw InvalidArgumentException(
+                "Only FAT read-only, hidden, system and archive bits can change"sv);
+    const auto parts = splitPath(path);
+    if (parts.empty())
+        throw InvalidArgumentException("The FAT root has no file attributes"sv);
+    const auto dir = openDirectory(std::span(parts).first(parts.size() - 1));
+    const auto entry = dir ? find(*dir, parts.back()) : std::nullopt;
+    if (!entry)
+        throw InvalidArgumentException("FAT entry not found"sv);
+    const auto lba = dir->sectors[entry->slot / 16];
+    auto sector = readBlock(lba);
+    sector[(entry->slot % 16) * 32 + 11] = (entry->attributes & ~uint8_t{ 0x27 }) | attributes;
+    writeBlock(lba, sector);
+}
+
+void FatVolume::rename(std::string_view path, std::string_view destination)
+{
+    using namespace std::literals;
+    const Operation operation(*this, true);
+    const auto from = splitPath(path);
+    const auto to = splitPath(destination);
+    if (from.empty() || to.empty())
+        throw InvalidArgumentException("Cannot rename the FAT root"sv);
+    auto source = openDirectory(std::span(from).first(from.size() - 1));
+    auto target = openDirectory(std::span(to).first(to.size() - 1));
+    const auto entry = source ? find(*source, from.back()) : std::nullopt;
+    if (!entry || !target || find(*target, to.back()))
+        throw InvalidArgumentException("Missing FAT source/parent, or destination exists"sv);
+    if (entry->isDir) {
+        uint32_t ancestor = target->cluster;
+        for (uint32_t depth = 0; ancestor != 0 && ancestor != m_rootCluster; ++depth) {
+            if (ancestor == entry->firstCluster || depth >= m_clusterCount)
+                throw InvalidArgumentException("Cannot move a directory into itself"sv);
+            const auto directory = readDirectory(ancestor);
+            const auto parent = find(directory, ".."sv);
+            if (!parent)
+                throw FormatException("FAT directory has no parent entry"sv);
+            ancestor = parent->firstCluster;
+        }
+    }
+    auto entries =
+            makeEntries(*target, to.back(), entry->attributes, entry->firstCluster, entry->size);
+    const auto oldSector = readBlock(source->sectors[entry->slot / 16]);
+    // Keep native timestamps and cluster/size fields when only the name changes.
+    std::copy_n(oldSector.begin() + (entry->slot % 16) * 32 + 14, 18, entries.back().begin() + 14);
+    addEntries(*target, entries);
+    // Tombstone directory slots without freeing the file's cluster chain.
+    for (auto slot = entry->firstSlot; slot <= entry->slot; ++slot) {
+        const auto lba = source->sectors[slot / 16];
+        auto sector = readBlock(lba);
+        sector[(slot % 16) * 32] = 0xE5;
+        writeBlock(lba, sector);
+    }
+    if (entry->isDir && source->cluster != target->cluster) {
+        auto sector = readBlock(clusterLba(entry->firstCluster));
+        put16(sector, 32 + 20, static_cast<uint16_t>(target->cluster >> 16));
+        put16(sector, 32 + 26, static_cast<uint16_t>(target->cluster));
+        writeBlock(clusterLba(entry->firstCluster), sector);
+    }
     commit();
 }
 

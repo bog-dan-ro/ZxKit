@@ -1,0 +1,137 @@
+#!/bin/sh
+# Copyright (c) 2026, BogDan Vatra. SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Enable (or remove) the ZxKit associations in the user's Midnight Commander
+# extension file, mc.ext.ini format 4.0 (MC 4.8.29 and later).
+#
+# MC reads one extension file and ~/.config/mc/mc.ext.ini replaces the system one
+# (/etc/mc/mc.ext.ini on Debian, owned by the mc package), so the user's file is
+# created from a copy of the system file first. The ZxKit sections are kept
+# between marker lines, which makes running this again after an upgrade replace
+# them instead of duplicating them.
+set -eu
+
+BEGIN='# BEGIN ZxKit (zxkit-mc-setup)'
+END='# END ZxKit (zxkit-mc-setup)'
+self=$(dirname -- "$0")
+fragment=
+systemFile=
+userFile=
+remove=no
+if [ -n "${XDG_CONFIG_HOME:-}" ]; then
+    userFile=$XDG_CONFIG_HOME/mc/mc.ext.ini
+elif [ -n "${HOME:-}" ]; then
+    userFile=$HOME/.config/mc/mc.ext.ini
+fi
+
+usage() {
+    cat <<EOF
+Usage: zxkit-mc-setup [--remove] [--user-file FILE] [--system-file FILE] [--fragment FILE]
+
+Make Midnight Commander open ZX Spectrum tape, disk and Microdrive images as
+archives (Enter) and list them (F3). Restart MC afterwards.
+  --remove       take the ZxKit sections out again
+  --user-file    the extension file to change (default: \$XDG_CONFIG_HOME/mc/mc.ext.ini,
+                 or ~/.config/mc/mc.ext.ini)
+  --system-file  the file to start from when there is no user file
+                 (default: /etc/mc/mc.ext.ini, then /usr/share/mc/mc.ext.ini)
+  --fragment     the ZxKit sections to add (default: the installed zxkit.ini)
+EOF
+}
+
+die() {
+    echo "zxkit-mc-setup: $*" >&2
+    exit 1
+}
+
+while [ $# -gt 0 ]; do
+    case $1 in
+    --remove) remove=yes ;;
+    --user-file) userFile=${2:?--user-file needs a file}; shift ;;
+    --system-file) systemFile=${2:?--system-file needs a file}; shift ;;
+    --fragment) fragment=${2:?--fragment needs a file}; shift ;;
+    -h | --help) usage; exit 0 ;;
+    *) usage >&2; exit 2 ;;
+    esac
+    shift
+done
+
+# Delete the marked block and the blank line that separated it from the rest.
+withoutBlock() {
+    awk -v begin="$BEGIN" -v end="$END" '
+        $0 == begin { skip = 1; held = 0; next }
+        skip { if ($0 == end) skip = 0; next }
+        $0 == "" { if (held) print ""; held = 1; next }
+        { if (held) print ""; held = 0; print }
+        END { if (held) print "" }' "$1"
+}
+
+isVersion4() {
+    grep -q '^\[mc\.ext\.ini\]' "$1" && grep -q '^Version=4\.0$' "$1"
+}
+
+[ -n "$userFile" ] || die "cannot tell where the user's mc.ext.ini is: use --user-file"
+
+if [ -e "$userFile" ]; then
+    isVersion4 "$userFile" || die "$userFile is not an mc.ext.ini 4.0 file (it has no [mc.ext.ini] section with Version=4.0). Move it away and run this again to start from the system file."
+    # A begin marker without its end marker would make the block removal eat the rest.
+    if grep -qxF -- "$BEGIN" "$userFile" && ! grep -qxF -- "$END" "$userFile"; then
+        die "$userFile has the line '$BEGIN' but not '$END': fix or delete that part by hand"
+    fi
+elif [ "$remove" = yes ]; then
+    echo "zxkit-mc-setup: $userFile does not exist, nothing to remove"
+    exit 0
+else
+    if [ -z "$systemFile" ]; then
+        for candidate in /etc/mc/mc.ext.ini /usr/share/mc/mc.ext.ini; do
+            if [ -f "$candidate" ]; then
+                systemFile=$candidate
+                break
+            fi
+        done
+    fi
+    [ -f "$systemFile" ] || die "no system mc.ext.ini found: is Midnight Commander installed?"
+    isVersion4 "$systemFile" || die "$systemFile is not an mc.ext.ini 4.0 file: Midnight Commander 4.8.29 or later is required"
+fi
+
+if [ "$remove" = no ] && [ -z "$fragment" ]; then
+    for candidate in "$self/zxkit.ini" "$self/../share/zxkit/mc/zxkit.ini"; do
+        if [ -f "$candidate" ]; then
+            fragment=$candidate
+            break
+        fi
+    done
+    [ -n "$fragment" ] || die "cannot find zxkit.ini; use --fragment"
+fi
+
+mkdir -p -- "$(dirname -- "$userFile")"
+temporary=$(mktemp "$userFile.XXXXXX")
+trap 'rm -f -- "$temporary"' EXIT
+if [ -e "$userFile" ]; then
+    withoutBlock "$userFile" >"$temporary"
+else
+    cat -- "$systemFile" >"$temporary"
+fi
+if [ "$remove" = no ]; then
+    {
+        echo
+        echo "$BEGIN"
+        cat -- "$fragment"
+        echo "$END"
+    } >>"$temporary"
+fi
+if [ -e "$userFile" ]; then
+    chmod --reference="$userFile" -- "$temporary" 2>/dev/null || true
+else
+    chmod 644 -- "$temporary"
+fi
+if [ -e "$userFile" ] && cmp -s -- "$userFile" "$temporary"; then
+    echo "zxkit-mc-setup: $userFile is already up to date"
+else
+    mv -f -- "$temporary" "$userFile"
+    if [ "$remove" = yes ]; then
+        echo "zxkit-mc-setup: removed the ZxKit sections from $userFile"
+    else
+        echo "zxkit-mc-setup: ZxKit sections written to $userFile; restart Midnight Commander"
+    fi
+fi

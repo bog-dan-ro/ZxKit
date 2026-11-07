@@ -42,6 +42,7 @@ public:
         std::string name; ///< the long name, or the 8.3 one
         uint32_t size = 0;
         bool isDirectory = false;
+        uint8_t attributes = 0;
 
         bool operator==(const DirEntry &) const = default;
     };
@@ -71,6 +72,10 @@ public:
     void makeDirectory(std::string_view path);
     /// Removes a file or an empty directory.
     void remove(std::string_view path);
+    /// Change the R/H/S/A bits (directory and volume bits are preserved).
+    void setFileAttributes(std::string_view path, uint8_t attributes);
+    /// Move a file or directory; the destination parent must already exist.
+    void rename(std::string_view path, std::string_view destination);
 
 private:
     using Sector = std::array<uint8_t, 512>;
@@ -84,6 +89,7 @@ private:
         uint32_t firstCluster = 0;
         uint32_t size = 0;
         bool isDir = false;
+        uint8_t attributes = 0;
         std::size_t slot = 0;      // the 32-byte slot of the 8.3 entry in its directory
         std::size_t firstSlot = 0; // its first long name slot (`slot` without a long name)
     };

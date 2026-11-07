@@ -1,0 +1,3 @@
+#!/bin/sh
+# Copyright (c) 2026, BogDan Vatra. SPDX-License-Identifier: GPL-3.0-or-later
+exec zxmedia mc "$@"

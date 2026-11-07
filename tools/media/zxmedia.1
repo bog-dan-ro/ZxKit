@@ -1,0 +1,369 @@
+.\" Copyright (c) 2026, BogDan Vatra. SPDX-License-Identifier: GPL-3.0-or-later
+.TH ZXMEDIA 1 "November 2026" "zxkit" "ZxKit"
+.SH NAME
+zxmedia \- inspect, edit and convert ZX Spectrum tape, disk and Microdrive images
+.SH SYNOPSIS
+.B zxmedia
+[\fIOPTION\fR...] \fICOMMAND\fR [\fIARGUMENT\fR...]
+.SH DESCRIPTION
+.B zxmedia
+works on image files without starting an emulator.
+It lists, extracts, adds, renames, removes and converts the files stored in
+tape images (TAP, TZX, PZX, CSW), floppy images (raw IMG, TRD, SCL, MGT, OPD,
+D40, D80, CPC DSK and EDSK, TD0, CQM), Microdrive cartridges (MDR), ZX
+Spectrum Next files (NEX), FAT12/16/32 SD card images and NextZXOS P3D images.
+The floppy filesystems are CP/M, +3DOS, HC BASIC, CIP\-04, TR\-DOS,
+MGT/+D/Disciple, Opus Discovery, Didaktik MDOS and CoBra DEVIL.
+.PP
+Options may be given anywhere on the command line.
+Without a command, or with
+.BR \-\-help ,
+a usage summary is printed.
+.SH COMMANDS
+.TP
+\fBcreate\fR \fIIMAGE\fR [\fB\-\-boot\-tracks\fR \fIFILE\fR]
+Create a blank image.
+The format is chosen by the extension of
+.IR IMAGE :
+.BR .tap ,
+.BR .tzx ,
+.BR .pzx ,
+.BR .csw ,
+.BR .trd ,
+.BR .scl ,
+.BR .mgt ,
+.BR .opd ,
+.BR .d40 ,
+.BR .d80 ,
+.BR .dsk ,
+.BR .edsk ,
+.BR .mdr ,
+.B .nex
+and
+.BR .p3d .
+The extensions
+.BR .img ,
+.B .td0
+and
+.B .cqm
+do not name a filesystem, so they need
+.BR \-\-filesystem .
+.B .dsk
+images are written as Extended DSK.
+An existing
+.I IMAGE
+is an error unless
+.B \-\-force
+is given.
+.B \-\-boot\-tracks
+installs the system tracks from
+.I FILE
+in a CP/M style image; they must exactly fill the reserved area (18432 bytes
+for CoBra 80K).
+A blank formatted image does not contain an operating system.
+.TP
+\fBlist\fR \fIIMAGE\fR
+Print one line per entry.
+A directory is shown as
+\(lqd 0<TAB>\fINAME\fR\(rq, a file as \(lqf \fISIZE\fR<TAB>\fINAME\fR\(rq
+followed by a tab and \fIkey\fR=\fIvalue\fR for each native attribute of the
+file.
+.TP
+\fBget\fR \fIIMAGE\fR \fIENTRY\fR \fIOUTPUT\fR
+Write the contents of
+.I ENTRY
+to the file
+.IR OUTPUT ,
+or to standard output when
+.I OUTPUT
+is
+.BR \- .
+An existing
+.I OUTPUT
+file is an error unless
+.B \-\-force
+is given.
+.TP
+\fBput\fR \fIIMAGE\fR \fIINPUT\fR \fIENTRY\fR [\fIkey\fR=\fIvalue\fR...]
+Store the file
+.I INPUT
+in
+.I IMAGE
+as
+.IR ENTRY ,
+replacing an entry of that name.
+The \fIkey\fR=\fIvalue\fR pairs set native attributes (see
+.BR ATTRIBUTES ).
+.TP
+\fBrm\fR \fIIMAGE\fR \fIENTRY\fR
+Remove a file.
+.TP
+\fBrename\fR \fIIMAGE\fR \fIENTRY\fR \fINEWNAME\fR
+Rename a file.
+An existing
+.I NEWNAME
+is an error unless
+.B \-\-force
+is given.
+.TP
+\fBattrs\fR \fIIMAGE\fR \fIENTRY\fR \fIkey\fR=\fIvalue\fR...
+Change native attributes of a file.
+.TP
+\fBmkdir\fR \fIIMAGE\fR \fIDIRECTORY\fR
+Create a directory, in the filesystems that have them (FAT).
+.TP
+\fBboot\fR \fIIMAGE\fR \fIBOOT_TRACKS\fR
+Install the system tracks from the file
+.IR BOOT_TRACKS ,
+which must exactly fill the reserved tracks of the CP/M style image.
+.TP
+\fBconvert\fR \fIINPUT\fR \fIOUTPUT\fR
+Convert a container or tape to the format given by the extension of
+.IR OUTPUT .
+Examples are TAP to TZX, PZX or WAV, PZX back to TAP when its standard pilot,
+sync and data timings are recognizable, and one floppy container to another.
+A TAP becomes an unsigned 8\-bit mono PCM WAV at 44.1 kHz; WAV files cannot be
+read.
+Arbitrary audio, protected loaders and control flow cannot become ordinary
+TAP data, and such conversions fail.
+An existing
+.I OUTPUT
+is an error unless
+.B \-\-force
+is given.
+.TP
+\fBcopy\fR \fIINPUT\fR \fIENTRY\fR \fIOUTPUT\fR \fINEWNAME\fR [\fIkey\fR=\fIvalue\fR...]
+Copy the bytes of
+.I ENTRY
+from the image
+.I INPUT
+into the existing image
+.I OUTPUT
+as
+.IR NEWNAME .
+Give the attributes the destination filesystem needs explicitly; they are not
+translated.
+Loaders are not rewritten, so a program does not become compatible with a
+different disk interface.
+.TP
+\fBbasic compile\fR \fIINPUT\fR \fIOUTPUT\fR
+Tokenize numbered BASIC text from the file
+.I INPUT
+into a stored BASIC program
+.IR OUTPUT .
+.TP
+\fBbasic decompile\fR \fIINPUT\fR \fIOUTPUT\fR
+Turn a stored BASIC program into an editable text listing.
+Token and byte escapes (\fB\e{PRINT}\fR, \fB\exHH\fR) and stored variables
+(\fB!raw\fR \fIHEX\fR) are written out, so that compiling the listing again
+gives back the original bytes.
+.TP
+\fBbasic array\-compile\fR \fIINPUT\fR \fIOUTPUT\fR
+Convert array text to array data.
+The text starts with the comma separated dimensions; numeric values follow as
+whitespace separated numbers, and a character array has one quoted
+fixed\-width string per row.
+.TP
+\fBbasic array\-decompile\fR \fIINPUT\fR \fIOUTPUT\fR
+Convert array data to editable array text.
+.TP
+.B profiles
+List the filesystem and geometry profiles accepted by
+.BR \-\-filesystem ,
+one per line.
+.TP
+\fBmc\fR \fICOMMAND\fR \fIIMAGE\fR [\fIARGUMENT\fR...]
+The extfs protocol of Midnight Commander, used by the zxkit helper of
+.BR mc (1).
+.I COMMAND
+is one of
+\fBlist\fR \fIIMAGE\fR,
+\fBcopyout\fR \fIIMAGE\fR \fIENTRY\fR \fIFILE\fR,
+\fBcopyin\fR \fIIMAGE\fR \fIENTRY\fR \fIFILE\fR,
+\fBrm\fR \fIIMAGE\fR \fIENTRY\fR,
+\fBrmdir\fR \fIIMAGE\fR \fIENTRY\fR and
+\fBmkdir\fR \fIIMAGE\fR \fIENTRY\fR.
+.B list
+prints
+.B ls \-l
+style lines.
+.SH OPTIONS
+.TP
+\fB\-\-filesystem\fR \fIPROFILE\fR
+Use the filesystem or geometry profile
+.I PROFILE
+(see
+.BR profiles )
+instead of detecting it.
+A raw file extension does not uniquely specify a filesystem or geometry.
+Existing HC BASIC, CP/M and +3DOS layouts are detected from geometry,
+catalogue entries and allocation chains when exactly one profile matches, also
+inside DSK, EDSK, TD0 and CQM containers.
+Empty raw disks, HC images without a native Spectrum file header and ambiguous
+catalogues need this option, and so does creating an
+.BR .img ,
+.B .td0
+or
+.B .cqm
+image.
+An explicit profile always takes precedence; detection never depends on the
+directory or name of the image.
+The default comes from
+.BR ZXMEDIA_FILESYSTEM .
+.TP
+\fB\-\-dialect\fR \fI48\fR|\fI128\fR|\fInext\fR
+The BASIC dialect for
+.B basic compile
+and
+.BR "basic decompile" :
+Sinclair 48K (the default), 128K/+3 or NextBASIC.
+.TP
+\fB\-\-array\-type\fR \fInumeric\fR|\fIstring\fR
+Whether
+.B basic array\-compile
+and
+.B basic array\-decompile
+work on numeric arrays (the default) or character arrays.
+.TP
+\fB\-\-label\fR \fITEXT\fR
+The volume or cartridge label of a newly created FAT (11 characters), Didaktik
+MDOS (10), Opus Discovery (10), TR\-DOS (8) or Microdrive (10) image.
+The default is
+.BR ZXKIT .
+.TP
+.B \-\-force
+Overwrite existing output files, and an existing destination of
+.BR rename .
+.TP
+.BR \-h ", " \-\-help
+Print the usage summary.
+.SH ENTRY NAMES
+Entries are named the way the image stores them, with
+.B /
+separating directories.
+.PP
+Tapes show their logical files as
+\fBfiles/\fINAME\fR
+(duplicate names get numbered aliases) and BASIC programs also as the
+writable text view \fBbasic/\fINAME\fB.bas\fR.
+\fBblocks/000000.tzx\fR and the following numbers expose the tape blocks one
+by one as standalone TZX files.
+A block is appended by giving the next sequential number; removing a block
+fixes up the jump, call and selection targets of the blocks that remain, and
+is refused when a remaining block refers into the removed range.
+.PP
+A NEX file shows
+.BR header.bin ,
+\fBbanks/\fINNN\fB.bin\fR for the banks 000 to 111, its loading screens and an
+optional
+.BR extra.bin .
+.PP
+CP/M user areas 1 to 15 appear as the directories
+.B user01
+to
+.BR user15 .
+Generic CP/M names use upper case, and file lengths are rounded up to 128 byte
+records unless a +3DOS or HC BASIC header holds the exact length.
+Native names that cannot be POSIX paths are written with percent escapes; a
+blank CoBra DEVIL name is
+.BR %20 .
+.SH ATTRIBUTES
+Attributes are given as \fIkey\fR=\fIvalue\fR with a decimal or
+\fB0x\fR\-prefixed hexadecimal integer, and are shown by
+.BR list .
+The names depend on the filesystem.
+Tape files and files with a Spectrum header have
+.BR type ,
+.B param1
+and
+.BR param2 ;
+tape files also have
+.BR pause ,
+and CP/M files show their user area as
+.BR user .
+.B readonly
+is supported by CP/M, CoBra DEVIL, MGT and FAT,
+.B system
+and
+.B archive
+by CP/M and FAT,
+.B hidden
+by CoBra DEVIL, MGT and FAT.
+Didaktik MDOS keeps its native permission bits.
+An attribute the filesystem does not have is an error.
+The TR\-DOS
+.B type
+is the ASCII code of its one character extension, for example 67 for
+.BR C .
+Clear
+.B readonly
+before modifying or removing a protected file.
+.SH SAFETY
+Commands that change an image are transactions: the image is read, changed in
+memory and written back through a temporary file in the same directory, and a
+command that fails leaves the image unchanged.
+Writing takes an exclusive advisory lock on the sidecar file
+\fIIMAGE\fB.zxmedia.lock\fR
+and fails at once with \(lqImage is already being edited\(rq when another
+writer holds it.
+The image is also checked before it is replaced, and a change made by another
+program in the meantime is refused.
+The lock file contains no media data and can remain after the process exits.
+Do not edit an image in an emulator at the same time.
+.PP
+The image is kept in memory and cloned for a transaction, so a large SD card
+image needs several times its size in free memory.
+.SH ENVIRONMENT
+.TP
+.B ZXMEDIA_FILESYSTEM
+The default for
+.BR \-\-filesystem .
+Midnight Commander sessions use it to select a profile for ambiguous images.
+.SH EXIT STATUS
+0 on success.
+1 for every error, including usage errors, with a message starting with
+\(lqzxmedia:\(rq on standard error.
+.SH EXAMPLES
+Create a tape, add a machine code file and read it back:
+.PP
+.nf
+.RS
+zxmedia create games.tap
+zxmedia put games.tap game.bin files/GAME type=3 param1=32768
+zxmedia list games.tap
+zxmedia get games.tap files/GAME game.bin
+.RE
+.fi
+.PP
+Put a program on a +3 disk, make it read only, and copy a tape file to the
+disk:
+.PP
+.nf
+.RS
+zxmedia create disk.dsk
+zxmedia put disk.dsk program.bin PROGRAM.BIN type=3 param1=32768
+zxmedia attrs disk.dsk PROGRAM.BIN readonly=1
+zxmedia copy games.tap files/GAME disk.dsk GAME.BIN type=3 param1=32768
+.RE
+.fi
+.PP
+Create a FAT SD card image with a directory:
+.PP
+.nf
+.RS
+zxmedia \-\-filesystem fat \-\-label SPECTRUM create card.img
+zxmedia mkdir card.img programs
+.RE
+.fi
+.PP
+Convert a tape to audio, and compile BASIC text:
+.PP
+.nf
+.RS
+zxmedia convert games.tap games.wav
+zxmedia \-\-dialect 128 basic compile source.bas program.bin
+.RE
+.fi
+.SH SEE ALSO
+.BR mc (1),
+.BR zxkit\-mc\-setup (1)

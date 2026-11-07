@@ -16,6 +16,7 @@ endif()
 
 option(ZXKIT_BUILD_TESTS "Build the zxkit unit tests" ${ZXKIT_IS_TOP_LEVEL})
 option(ZXKIT_INSTALL "Generate the install and package rules" ${ZXKIT_IS_TOP_LEVEL})
+option(ZXKIT_BUILD_TOOLS "Build optional ZxKit command-line tools" ${ZXKIT_IS_TOP_LEVEL})
 
 find_package(ZLIB REQUIRED)
 find_package(Threads REQUIRED)
@@ -91,6 +92,9 @@ set(ZXKIT_PUBLIC_HEADERS
     include/zxkit/machines/RomanianMachines.h
     include/zxkit/machines/SinclairMachines.h
     include/zxkit/machines/ZxNextMachine.h
+    include/zxkit/media/MediaArchive.h
+    include/zxkit/media/BasicCodec.h
+    include/zxkit/media/TapeConversion.h
     include/zxkit/media/Compression.h
     include/zxkit/media/MediaPreview.h
     include/zxkit/media/MediaRegistry.h
@@ -158,6 +162,16 @@ set(ZXKIT_SOURCES
     src/machines/RomanianMachines.cpp
     src/machines/SinclairMachines.cpp
     src/machines/ZxNextMachine.cpp
+    src/media/MediaArchive.cpp
+    src/media/BasicCodec.cpp
+    src/media/TapeConversion.cpp
+    src/media/archive/TapeArchive.cpp
+    src/media/archive/NexArchive.cpp
+    src/media/archive/MicrodriveArchive.cpp
+    src/media/archive/DiskContainer.cpp
+    src/media/archive/MdosArchive.cpp
+    src/media/archive/DiskArchive.cpp
+    src/media/archive/FatArchive.cpp
     src/media/Compression.cpp
     src/media/MediaPreview.cpp
     src/media/MediaRegistry.cpp
@@ -237,6 +251,10 @@ target_link_libraries(zxkit_video_filters PUBLIC ZX::Kit)
 set_target_properties(zxkit_video_filters PROPERTIES EXPORT_NAME VideoFilters)
 
 # ----------------------------------------------------------------- tests
+
+if(ZXKIT_BUILD_TOOLS)
+    add_subdirectory(tools)
+endif()
 
 if(ZXKIT_BUILD_TESTS)
     enable_testing()

@@ -1,0 +1,45 @@
+Source: zxkit
+Section: libs
+Priority: optional
+Maintainer: ZxKit maintainers <bogdan@kde.org>
+Build-Depends: debhelper-compat (= 13),
+ cmake (>= 3.25),
+ g++ (>= 12),
+ zlib1g-dev,
+ python3 <!nocheck>,
+ python3-pexpect <!nocheck>,
+ mc (>= 3:4.8.29) <!nocheck>,
+Standards-Version: 4.7.0
+Homepage: https://github.com/bog-dan-ro/zxkit
+Rules-Requires-Root: no
+
+Package: libzxkit-dev
+Section: libdevel
+Architecture: any
+Depends: ${misc:Depends}, zlib1g-dev
+Description: ZX Spectrum emulation library development files
+ C++23 library for emulating Z80-based Spectrum machines. Includes static
+ libraries, public headers, CMake package files and the bundled SafeCpp headers.
+
+Package: zxkit-tools
+Section: utils
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: ZX Spectrum media tools
+ Utilities for inspecting and manipulating ZX Spectrum media.
+
+Package: zxkit-mc
+Section: utils
+Architecture: all
+Depends: ${misc:Depends}, zxkit-tools (>= ${source:Version}), mc (>= 3:4.8.29)
+Replaces: zxkit-tools (<< 1.0.0-2)
+Enhances: mc
+Description: Midnight Commander support for ZX Spectrum media
+ An extfs helper that lets Midnight Commander open ZX Spectrum tape, disk and
+ Microdrive images as directories and copy, edit and delete the files inside
+ them, using the zxmedia tool.
+ .
+ The helper is installed in Midnight Commander's own extfs directory, so
+ "cd games.tap/zxkit://" works at once. The zxkit-mc-setup command adds the
+ file associations (Enter opens an image, F3 lists it) to a user's
+ mc.ext.ini, which requires Midnight Commander 4.8.29 or later.

@@ -1,0 +1,26 @@
+zxkit (1.0.0-3) unstable; urgency=medium
+
+  * Add a manual page for zxmedia, and ship the zxkit-mc-setup one from the
+    source tree (tools/mc) instead of debian/, so every installation has both.
+
+ -- BogDan Vatra <bogdan@kde.org>  Sat, 07 Nov 2026 12:03:24 +0200
+
+zxkit (1.0.0-2) unstable; urgency=medium
+
+  * Add the zxkit-mc package for Midnight Commander 4.8.29 and later (the
+    mc.ext.ini 4.0 format): the extfs helper is installed in Debian's MC
+    directory, /usr/lib/mc/extfs.d, and zxkit-mc-setup adds the file
+    associations to a user's mc.ext.ini.
+  * Move the Midnight Commander files out of zxkit-tools; zxkit-mc replaces
+    the old /usr/share/zxkit/mc/zxkit.ini.
+  * Run the MC integration tests during the build and add the mc-layout
+    autopkgtest.
+  * Add a manual page for zxkit-mc-setup.
+
+ -- BogDan Vatra <bogdan@kde.org>  Sat, 07 Nov 2026 11:37:22 +0200
+
+zxkit (1.0.0-1) unstable; urgency=medium
+
+  * Initial Debian packaging.
+
+ -- BogDan Vatra <bogdan@kde.org>  Sat, 07 Nov 2026 10:00:00 +0200

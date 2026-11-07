@@ -4,7 +4,7 @@ from pathlib import Path
 import struct
 import argparse
 parser=argparse.ArgumentParser(description="Generate an authored moving video/beeper workload (GPL-3.0-or-later).")
-parser.add_argument('--output', type=Path, default=Path(__file__).resolve().parents[1]/'build/profiling')
+parser.add_argument('--output', type=Path, default=Path(__file__).resolve().parents[2]/'build/profiling')
 args=parser.parse_args()
 out=args.output.resolve()
 out.mkdir(parents=True, exist_ok=True)

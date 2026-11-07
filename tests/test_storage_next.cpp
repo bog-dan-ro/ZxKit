@@ -377,8 +377,10 @@ void testFatWriting(int bits, uint32_t totalSectors)
     CHECK(fat.readFile("/README.TXT") == pattern(1000));
     CHECK(fat.readFile("/empty.bin")->empty());
     const auto root = *fat.list("/");
-    const std::vector<FatVolume::DirEntry> expected{{"games", 0, true}, {"readme.txt", 1000, false},
-                                                    {"GAME.TAP", 5, false}, {"empty.bin", 0, false}};
+    const std::vector<FatVolume::DirEntry> expected{ { "games"s, 0, true, 0x10 },
+                                                     { "readme.txt"s, 1000, false, 0x20 },
+                                                     { "GAME.TAP"s, 5, false, 0x20 },
+                                                     { "empty.bin"s, 0, false, 0x20 } };
     CHECK(root == expected);
     const auto games = *fat.list("/games");
     CHECK(games.size() == 2 && games[1].name == kTara && games[1].size == 3000);

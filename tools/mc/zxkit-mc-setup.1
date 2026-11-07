@@ -1,0 +1,74 @@
+.\" Copyright (c) 2026, BogDan Vatra. SPDX-License-Identifier: GPL-3.0-or-later
+.TH ZXKIT\-MC\-SETUP 1 "November 2026" "zxkit" "ZxKit"
+.SH NAME
+zxkit\-mc\-setup \- enable ZX Spectrum image support in Midnight Commander
+.SH SYNOPSIS
+.B zxkit\-mc\-setup
+.RB [ \-\-remove ]
+.RB [ \-\-user\-file
+.IR FILE ]
+.RB [ \-\-system\-file
+.IR FILE ]
+.RB [ \-\-fragment
+.IR FILE ]
+.SH DESCRIPTION
+Adds the ZxKit file associations to the user's Midnight Commander extension
+file, so that Enter opens a ZX Spectrum tape, disk or Microdrive image as an
+archive and F3 lists it.
+The extfs helper itself works without this command once it is in Midnight
+Commander's extfs directory (for example
+.I /usr/lib/mc/extfs.d
+on Debian, or
+.I ~/.local/share/mc/extfs.d
+for one user): type
+.B cd games.tap/zxkit://
+in a panel.
+.PP
+Midnight Commander reads a single extension file, and the user's
+.I ~/.config/mc/mc.ext.ini
+replaces the system file
+.I /etc/mc/mc.ext.ini
+completely.
+When the user has no file yet, it is created from a copy of the system file.
+The ZxKit sections are kept between the lines
+.B # BEGIN ZxKit (zxkit\-mc\-setup)
+and
+.BR "# END ZxKit (zxkit\-mc\-setup)" ,
+so running the command again, for example after an upgrade, replaces them and
+leaves the rest of the file alone.
+The file must be in the
+.B mc.ext.ini
+4.0 format of Midnight Commander 4.8.29 and later;
+any other file is left unchanged and reported.
+Restart Midnight Commander afterwards.
+.SH OPTIONS
+.TP
+.B \-\-remove
+Take the ZxKit sections out again.
+.TP
+.BI \-\-user\-file " FILE"
+The extension file to change.
+The default is
+.I $XDG_CONFIG_HOME/mc/mc.ext.ini
+or
+.IR ~/.config/mc/mc.ext.ini .
+.TP
+.BI \-\-system\-file " FILE"
+The file to start from when there is no user file.
+The default is the first of
+.I /etc/mc/mc.ext.ini
+and
+.IR /usr/share/mc/mc.ext.ini .
+.TP
+.BI \-\-fragment " FILE"
+The sections to add.
+The default is the installed
+.IR zxkit.ini ,
+.I share/zxkit/mc/zxkit.ini
+under the install prefix, or the one next to the script in a source checkout.
+.SH EXIT STATUS
+0 on success, 1 when the extension file cannot be used or written and 2 for a
+usage error.
+.SH SEE ALSO
+.BR mc (1),
+.BR zxmedia (1)

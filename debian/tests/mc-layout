@@ -1,0 +1,9 @@
+#!/bin/sh
+# Run a real Midnight Commander against the installed packages: the helper must
+# be found in MC's system extfs directory and the user's mc.ext.ini is built from
+# Debian's /etc/mc/mc.ext.ini by zxkit-mc-setup.
+set -eu
+work=${AUTOPKGTEST_TMP:-$(mktemp -d)}
+exec python3 tests/tools/test_mc_integration.py system \
+    "$(command -v zxmedia)" /usr/lib/mc/extfs.d/zxkit /usr/share/zxkit/mc/zxkit.ini \
+    "$(command -v zxkit-mc-setup)" "$work/mc"

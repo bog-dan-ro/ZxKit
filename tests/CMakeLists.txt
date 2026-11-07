@@ -124,3 +124,30 @@ add_executable(test_debugger test_debugger.cpp)
 target_link_libraries(test_debugger PRIVATE ZX::Kit)
 target_compile_options(test_debugger PRIVATE $<IF:$<CXX_COMPILER_ID:MSVC>,/UNDEBUG,-UNDEBUG>)
 add_test(NAME test_debugger COMMAND test_debugger)
+
+add_executable(test_media_archive test_media_archive.cpp)
+target_link_libraries(test_media_archive PRIVATE ZX::Kit)
+target_compile_definitions(test_media_archive PRIVATE ZXKIT_MEDIA_FIXTURES="${CMAKE_CURRENT_SOURCE_DIR}/fixtures")
+target_compile_options(test_media_archive PRIVATE $<IF:$<CXX_COMPILER_ID:MSVC>,/UNDEBUG,-UNDEBUG>)
+add_test(NAME test_media_archive COMMAND test_media_archive)
+
+if(TARGET zxmedia)
+    find_package(Python3 COMPONENTS Interpreter QUIET)
+    if(Python3_Interpreter_FOUND)
+        add_test(NAME test_media_cli COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/tools/test_media_cli.py $<TARGET_FILE:zxmedia>
+            ${CMAKE_CURRENT_BINARY_DIR}/media-cli)
+        # The session test drives a real Midnight Commander and is reported as
+        # skipped (exit code 77) where MC 4.8.29+ or pexpect is not installed.
+        foreach(mode static session)
+            add_test(NAME test_mc_${mode} COMMAND ${Python3_EXECUTABLE}
+                ${CMAKE_CURRENT_SOURCE_DIR}/tools/test_mc_integration.py ${mode}
+                $<TARGET_FILE:zxmedia>
+                ${CMAKE_CURRENT_SOURCE_DIR}/../tools/mc/zxkit
+                ${CMAKE_CURRENT_SOURCE_DIR}/../tools/mc/zxkit.ini
+                ${CMAKE_CURRENT_SOURCE_DIR}/../tools/mc/zxkit-mc-setup
+                ${CMAKE_CURRENT_BINARY_DIR}/mc-integration)
+        endforeach()
+        set_tests_properties(test_mc_session PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 180)
+    endif()
+endif()

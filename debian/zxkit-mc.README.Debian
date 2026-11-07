@@ -1,0 +1,35 @@
+zxkit-mc for Debian
+-------------------
+
+Where the files are
+  /usr/lib/mc/extfs.d/zxkit     the extfs helper, next to Midnight Commander's own
+                                (uzip, urar, ...), so MC finds it without any setup
+  /usr/share/zxkit/mc/zxkit.ini the file associations, in the mc.ext.ini 4.0 format
+  /usr/bin/zxkit-mc-setup       adds those associations to a user's configuration
+
+Without any setup
+  In a Midnight Commander panel, type:  cd /path/to/games.tap/zxkit://
+  The image is then an ordinary directory: copying files in and out (F5), making
+  directories (F7) and deleting files (F8) rewrite the image.
+
+Enter and F3 on images
+  Run this once as each user who wants Enter to open images and F3 to list them:
+
+      zxkit-mc-setup
+
+  Then restart Midnight Commander. "zxkit-mc-setup --remove" undoes it.
+
+Why this is not done system-wide
+  Midnight Commander reads a single extension file. The system one,
+  /etc/mc/mc.ext.ini, is a configuration file of the mc package, which another
+  package must not edit, and there is no drop-in directory for it. A user's
+  ~/.config/mc/mc.ext.ini replaces the system file completely, so
+  zxkit-mc-setup starts from a copy of /etc/mc/mc.ext.ini when the user has no
+  file, and otherwise only adds or replaces its own marked block. It refuses to
+  touch a file that is not in the 4.0 format (MC then reports "The format of the
+  ... mc.ext.ini file has changed with version 4.0"): move that file away and run
+  it again.
+
+  Debian releases with Midnight Commander older than 4.8.29 (for example
+  bookworm) use the old mc.ext format and cannot use the associations, so the
+  package depends on a newer mc.

@@ -77,6 +77,9 @@
 #include "zxkit/machines/SinclairMachines.h"
 #include "zxkit/machines/ZxNextMachine.h"
 
+#include "zxkit/media/MediaArchive.h"
+#include "zxkit/media/BasicCodec.h"
+#include "zxkit/media/TapeConversion.h"
 #include "zxkit/media/Compression.h"
 #include "zxkit/media/MediaPreview.h"
 #include "zxkit/media/MediaRegistry.h"

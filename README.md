@@ -19,6 +19,13 @@ Modern C++23/26 ZX Spectrum, Z80 Clones (HC-2000, CoBra 1/2, Pentagon, Scorpion,
 - **ZX Spectrum Next**: boots NextZXOS straight from an SD card image (`Emulator::insertSdCard`), CSpect style: the ROMs come from the card's FAT file system, and the internal DivMMC (NR 0xB8..0xBB automap) and SPI SD/SDHC card give NextZXOS its storage. `extractZipEntryToFile` streams the official 1GB image out of its distribution zip. Hosts list, read and write the card's files with `Emulator::sdCardVolume()` (FAT12/16/32, long file names).
 - **Easily Extendable**: Add custom peripherals or Z80 machines by subclassing `zxkit::Peripheral` or `zxkit::MachineProfile` without modifying framework internals.
 
+## Media tools
+
+Optional CLI, Linux FUSE3 and Midnight Commander tools edit tape, disk, Microdrive
+and Next images through a shared library API. See [the media tools guide](docs/media-tools.md)
+for build options, format coverage, BASIC conversion and examples. Tools default
+to off when ZxKit is consumed with FetchContent.
+
 ## Using it
 
 ```cpp
@@ -70,7 +77,7 @@ The tests include their media, reference images and ROMs under
 external test collection is needed. Missing required ROM fixtures fail the
 build configuration instead of silently skipping coverage.
 
-The 17 CTest entries cover the software video filters, CPU, machine, tape and storage tests,
+The 23 CTest entries cover the software video filters, CPU, machine, tape and storage tests,
 Sinclair timing boundaries, the Butler timing suites, incremental ULA raster
 rendering, full-border geometry and an exact BASIC Border image comparison. Five known 128K Butler
 failures remain excluded from the passing suite; their case numbers and the
@@ -115,8 +122,22 @@ FetchContent_MakeAvailable(ZxKit)
 target_link_libraries(myapp PUBLIC ZX::Kit)
 ```
 
+## Coding style
+
+The root `.clang-format` follows Qt-style C++ formatting; see
+[the coding style guide](docs/coding-style.md) and [AGENTS.md](AGENTS.md).
+
 ## License
 
 GPL-3.0-or-later. See [LICENSE](LICENSE). Third-party test programs, reference
 images and ROM fixtures retain their original notices and distribution terms;
 see the fixture READMEs and [ROM notice](tests/fixtures/roms/README.copyright).
+
+### Debian packages
+
+Install `build-essential`, `debhelper`, `cmake`, and `zlib1g-dev`, then run
+`dpkg-buildpackage -us -uc -b` from the source tree. The build runs the test
+suite and produces `libzxkit-dev` and `zxkit-tools` packages in the parent
+directory. Debian builds use the included SafeCpp 1.0 source and do not fetch
+it from the network. The development package includes SafeCpp's public header
+and CMake configuration.
