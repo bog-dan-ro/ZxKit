@@ -45,31 +45,28 @@ enum class PauseReason : uint8_t {
     Error
 };
 
-enum class LogLevel : uint8_t {
-    Trace = 0,
-    Debug,
-    Info,
-    Warning,
-    Error
-};
+enum class LogLevel : uint8_t { Trace = 0, Debug, Info, Warning, Error };
 
 /// What the media devices are doing, for a host's status icons. `busyDisks` and `sdCardBusy`
 /// stay on for a few frames after the last access, so the icons don't flicker.
-struct MediaActivity {
+struct MediaActivity
+{
     bool tapePlaying = false;
-    std::size_t tapeBlock = 0;  ///< the tape's current block (`blocks().size()` at its end)
-    uint8_t busyDisks = 0;      ///< a bit per floppy drive (bit 0: drive A:)
-    bool sdCardBusy = false;    ///< the SD card (ZX Spectrum Next, DivMMC)
+    std::size_t tapeBlock = 0; ///< the tape's current block (`blocks().size()` at its end)
+    uint8_t busyDisks = 0; ///< a bit per floppy drive (bit 0: drive A:)
+    bool sdCardBusy = false; ///< the SD card (ZX Spectrum Next, DivMMC)
 
     bool operator==(const MediaActivity &) const = default;
 };
 
 /// Why and where the emulation stopped.
-struct PauseEvent {
+struct PauseEvent
+{
     PauseReason reason = PauseReason::UserRequest;
     uint16_t pc = 0;
     uint64_t cycle = 0;
-    uint16_t address = 0; ///< watched memory/port/register, raster line or DebugEvent, according to reason
+    uint16_t address =
+            0; ///< watched memory/port/register, raster line or DebugEvent, according to reason
 };
 
 // Callbacks the Engine thread invokes, without holding any emulator lock. Hosts own them
@@ -77,7 +74,8 @@ struct PauseEvent {
 // references, so the Engine never keeps a host object alive nor calls a destroyed one.
 // They must return quickly and must not throw (exceptions are dropped).
 using VideoFrameCallback = std::function<void(const VideoFramePtr &frame)>;
-using AudioCallback = std::function<void(std::span<const int16_t> samples, uint32_t sampleRate, uint8_t channels)>;
+using AudioCallback = std::function<void(std::span<const int16_t> samples, uint32_t sampleRate,
+                                         uint8_t channels)>;
 using PauseCallback = std::function<void(const PauseEvent &event)>;
 using ResumeCallback = std::function<void()>;
 using LogCallback = std::function<void(LogLevel level, std::string_view message)>;
@@ -85,7 +83,8 @@ using LogCallback = std::function<void(LogLevel level, std::string_view message)
 using MediaActivityCallback = std::function<void(const MediaActivity &activity)>;
 
 /// The frame just delivered to the host, at its current fixed playback speed.
-struct AudioPacingInfo {
+struct AudioPacingInfo
+{
     using Clock = std::chrono::steady_clock;
     Clock::time_point now{};
     std::chrono::nanoseconds frameDuration{};
@@ -100,14 +99,15 @@ struct AudioPacingInfo {
 /// playback position/queue depth. A past time requests immediate catch-up;
 /// nullopt, an expired callback or an exception uses ordinary wall-clock pacing.
 /// Must return promptly, never wait for the device. Not called during turbo.
-using AudioClockCallback = std::function<std::optional<AudioPacingInfo::Clock::time_point>(const AudioPacingInfo &)>;
+using AudioClockCallback =
+        std::function<std::optional<AudioPacingInfo::Clock::time_point>(const AudioPacingInfo &)>;
 
 /// Owns a callback given to an `Engine` as a `Weak` reference (see `weak()`).
 ///
 /// `reset()` and the destructor wait for a call in progress on the Engine thread
 /// to return, so whatever the callback captured can be destroyed right after.
-template <typename Function>
-class CallbackHandle {
+template <typename Function> class CallbackHandle
+{
 public:
     CallbackHandle() = default;
 
@@ -115,9 +115,13 @@ public:
         requires std::constructible_from<Function, F>
     explicit CallbackHandle(F &&function)
         : m_function(makeShared<Function>(std::forward<F>(function)))
-    {}
+    {
+    }
 
-    ~CallbackHandle() { reset(); }
+    ~CallbackHandle()
+    {
+        reset();
+    }
 
     CallbackHandle(CallbackHandle &&other) noexcept = default;
     CallbackHandle &operator=(CallbackHandle &&other) noexcept
@@ -131,8 +135,14 @@ public:
     CallbackHandle(const CallbackHandle &) = delete;
     CallbackHandle &operator=(const CallbackHandle &) = delete;
 
-    Weak<Function> weak() const noexcept { return m_function; }
-    explicit operator bool() const noexcept { return static_cast<bool>(m_function); }
+    Weak<Function> weak() const noexcept
+    {
+        return m_function;
+    }
+    explicit operator bool() const noexcept
+    {
+        return static_cast<bool>(m_function);
+    }
 
     void reset() noexcept
     {

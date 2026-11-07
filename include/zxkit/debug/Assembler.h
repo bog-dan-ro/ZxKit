@@ -25,7 +25,8 @@
 
 namespace zxkit {
 
-struct AssemblerOptions {
+struct AssemblerOptions
+{
     /// Accept the ZX Spectrum Next's Z80N instructions.
     bool z80n = true;
     /// The base of the numbers without a prefix or a suffix (10 or 16). In base 16 they
@@ -41,13 +42,15 @@ struct AssemblerOptions {
 /// spellings: any case and spacing, `(IX+5)`, `(IX)`, `ADD B` for `ADD A,B`, `CP A,B` for
 /// `CP B`, `EX AF,AF`, `JP HL`, and numbers as `$FF`, `#FF`, `0xFF`, `0FFh`, `%1010`, `0b1010`
 /// or plain (see `AssemblerOptions::defaultBase`). `DEFB n,...` (or `DB`) emits raw bytes.
-class Assembler {
+class Assembler
+{
 public:
     /// The bytes of `line` assembled at address `pc`, or why it can't be assembled.
-    static std::expected<std::vector<uint8_t>, std::string> assemble(std::string_view line, uint16_t pc = 0,
-                                                                     AssemblerOptions options = {});
+    static std::expected<std::vector<uint8_t>, std::string>
+    assemble(std::string_view line, uint16_t pc = 0, AssemblerOptions options = {});
     /// Like `assemble()`, but throws a `DebuggerException` when `line` can't be assembled.
-    static std::vector<uint8_t> assembleOne(std::string_view line, uint16_t pc = 0, AssemblerOptions options = {});
+    static std::vector<uint8_t> assembleOne(std::string_view line, uint16_t pc = 0,
+                                            AssemblerOptions options = {});
 };
 
 } // namespace zxkit

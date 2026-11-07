@@ -29,7 +29,8 @@ namespace zxkit {
 /// - 0x1000..0x1FFF: Programmable Page A (Port 0x003B)
 /// - 0x2000..0x2FFF: Programmable Page B (Port 0x013B)
 /// - 0x3000..0x3FFF: Fixed SRAM Page 0 (System variables & stack)
-class SpectranetPeripheral : public Peripheral {
+class SpectranetPeripheral : public Peripheral
+{
 public:
     std::string_view id() const noexcept override;
     std::string_view name() const noexcept override;

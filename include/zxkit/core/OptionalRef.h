@@ -23,7 +23,6 @@
 namespace zxkit {
 
 /// A reference that may be missing: what a lookup returns instead of a pointer.
-template <typename T>
-using OptionalRef = std::optional<std::reference_wrapper<T>>;
+template <typename T> using OptionalRef = std::optional<std::reference_wrapper<T>>;
 
 } // namespace zxkit

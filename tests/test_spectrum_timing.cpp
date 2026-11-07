@@ -33,7 +33,7 @@ namespace {
 std::vector<uint8_t> readFile(const std::filesystem::path &p)
 {
     std::ifstream f(p, std::ios::binary);
-    return {std::istreambuf_iterator<char>(f), {}};
+    return { std::istreambuf_iterator<char>(f), {} };
 }
 // Decode the suite's standard ROM font from display RAM: assertions concern
 // the test program's verdict, independently of the host's video renderer.
@@ -47,7 +47,8 @@ std::string screenText(const Emulator &e, const std::vector<uint8_t> &rom)
                 bool same = true;
                 for (unsigned y = 0; y < 8; ++y) {
                     unsigned sy = row * 8 + y;
-                    unsigned addr = 0x4000 | ((sy & 0xc0) << 5) | ((sy & 7) << 8) | ((sy & 0x38) << 2) | col;
+                    unsigned addr = 0x4000 | ((sy & 0xc0) << 5) | ((sy & 7) << 8)
+                            | ((sy & 0x38) << 2) | col;
                     if (e.mmu().read(addr) != rom[0x3d00 + (c - 32) * 8 + y]) {
                         same = false;
                         break;
@@ -76,7 +77,8 @@ void tapeRegression(const std::filesystem::path &fixtures, const std::filesystem
 {
     std::filesystem::path tape;
     for (const auto &entry : std::filesystem::recursive_directory_iterator(fixtures)) {
-        if (entry.path().extension() == ".tap" && entry.path().filename().string().starts_with(prefix))
+        if (entry.path().extension() == ".tap"
+            && entry.path().filename().string().starts_with(prefix))
             tape = entry.path();
     }
     assert(!tape.empty());
@@ -133,7 +135,8 @@ void interruptPulse()
     e.clock().advance(32);
     assert(cpu.stepInstruction() == 4 && r.PC == 0x8002);
 }
-void boundaries(std::string_view machine, uint32_t start, uint32_t fetch, uint32_t frame, uint16_t pulse)
+void boundaries(std::string_view machine, uint32_t start, uint32_t fetch, uint32_t frame,
+                uint16_t pulse)
 {
     Emulator e;
     e.selectMachine(machine);
@@ -141,8 +144,8 @@ void boundaries(std::string_view machine, uint32_t start, uint32_t fetch, uint32
     assert(e.clock().timings().interruptLength == pulse);
     const auto &ct = e.context().contention;
     const bool plus = machine == "plus2a" || machine == "plus3";
-    const std::array<uint8_t, 8> pattern = plus ? std::array<uint8_t, 8>{1, 0, 7, 6, 5, 4, 3, 2}
-                                                : std::array<uint8_t, 8>{6, 5, 4, 3, 2, 1, 0, 0};
+    const std::array<uint8_t, 8> pattern = plus ? std::array<uint8_t, 8>{ 1, 0, 7, 6, 5, 4, 3, 2 }
+                                                : std::array<uint8_t, 8>{ 6, 5, 4, 3, 2, 1, 0, 0 };
     for (unsigned line = 0; line < 192; ++line) {
         uint32_t t = start + line * e.clock().timings().tstatesPerLine;
         assert(ct.memoryDelay(t - 1) == 0);
@@ -157,7 +160,7 @@ void boundaries(std::string_view machine, uint32_t start, uint32_t fetch, uint32
     e.mmu().poke(0x4001, 0x34);
     e.mmu().poke(0x5800, 0x56);
     e.mmu().poke(0x5801, 0x78);
-    const std::array<uint8_t, 8> bus{0x12, 0x56, 0x34, 0x78, 0xff, 0xff, 0xff, 0xff};
+    const std::array<uint8_t, 8> bus{ 0x12, 0x56, 0x34, 0x78, 0xff, 0xff, 0xff, 0xff };
     for (unsigned x = 0; x < 8; ++x) {
         e.clock().setFrameTstates(fetch + x);
         assert(e.ioBus().read(0xffff) == (plus ? 0xff : bus[x]));
@@ -185,20 +188,23 @@ int main(int argc, char **argv)
     const std::string_view mode = argc > 3 ? argv[3] : "48k";
     bool audit = mode == "--audit";
     if (!audit && mode == "48k") {
-        tapeRegression(fixtures, roms, font, "ZX Spectrum Timing Tests - 48K v1.0 (2010-04-14)", true);
-        tapeRegression(fixtures, roms, font, "ZX Spectrum Timing Tests - 48K v1.0 (2025-05-05)", true);
+        tapeRegression(fixtures, roms, font, "ZX Spectrum Timing Tests - 48K v1.0 (2010-04-14)",
+                       true);
+        tapeRegression(fixtures, roms, font, "ZX Spectrum Timing Tests - 48K v1.0 (2025-05-05)",
+                       true);
         tapeRegression(fixtures, roms, font, "Interrupt Retriggering Test", false);
     }
-    const std::array<ZxKey, 10> digits{ZxKey::Num0, ZxKey::Num1, ZxKey::Num2, ZxKey::Num3, ZxKey::Num4,
-                                       ZxKey::Num5, ZxKey::Num6, ZxKey::Num7, ZxKey::Num8, ZxKey::Num9};
-    for (const auto &machine : {"48k", "128k"}) {
+    const std::array<ZxKey, 10> digits{ ZxKey::Num0, ZxKey::Num1, ZxKey::Num2, ZxKey::Num3,
+                                        ZxKey::Num4, ZxKey::Num5, ZxKey::Num6, ZxKey::Num7,
+                                        ZxKey::Num8, ZxKey::Num9 };
+    for (const auto &machine : { "48k", "128k" }) {
         if (!audit && machine != mode)
             continue;
         auto dir = fixtures / (machine == "48k"sv ? "48k" : "128k-plus2");
         std::filesystem::path snapshot;
         for (const auto &file : std::filesystem::directory_iterator(dir))
-            if (file.path().filename().string().starts_with("ZX Spectrum Timing Tests") &&
-                (file.path().extension() == ".sna" || file.path().extension() == ".szx"))
+            if (file.path().filename().string().starts_with("ZX Spectrum Timing Tests")
+                && (file.path().extension() == ".sna" || file.path().extension() == ".szx"))
                 snapshot = file.path();
         assert(!snapshot.empty());
         for (unsigned n = 1; n <= (machine == "128k"sv ? 34u : 35u); ++n) {
@@ -208,7 +214,9 @@ int main(int argc, char **argv)
                 continue;
             }
             EmulatorConfig cfg;
-            cfg.romResolver = [roms](std::string_view name, std::size_t) { return readFile(roms / name); };
+            cfg.romResolver = [roms](std::string_view name, std::size_t) {
+                return readFile(roms / name);
+            };
             Emulator e(std::move(cfg));
             e.selectMachine(machine);
             e.loadMediaFile(snapshot);

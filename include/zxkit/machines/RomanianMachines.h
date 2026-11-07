@@ -37,7 +37,8 @@ namespace zxkit {
 ///    - D3 (CVS):   Video RAM address select (0 = 0x4000 RAM page 1, 1 = 0xC000 RAM page 3)
 /// 2. Ports 0xC7 (set) and 0xC5 (clear) the CPM signal, which pulls A13 high
 ///    for CPU accesses to 0xC000..0xDFFF, mapping the 0xE000 RAM in at 0xC000.
-class HcMachine : public MachineProfile {
+class HcMachine : public MachineProfile
+{
 public:
     std::string_view id() const noexcept override;
     std::string_view name() const noexcept override;
@@ -53,7 +54,10 @@ public:
 
     uint8_t configPort7e() const noexcept;
     bool isCpmA13Active() const noexcept;
-    HcIf1FdcPeripheral &fdcInterface() noexcept { return m_fdc; }
+    HcIf1FdcPeripheral &fdcInterface() noexcept
+    {
+        return m_fdc;
+    }
 
     void saveState(StateWriter &w) const override;
     void loadState(StateReader &r, MachineContext &ctx, UlaRenderer &ula) override;
@@ -88,7 +92,8 @@ private:
 /// the CP/M configuration, once O5 has been set, the border's 4 character cells left and right
 /// of the screen show the upper half of the video RAM (columns 28-31 and 0-3 of each row), a
 /// 320x192 screen for CP/M's 80 columns of 4 pixel wide characters.
-class CobraMachine : public MachineProfile {
+class CobraMachine : public MachineProfile
+{
 public:
     explicit CobraMachine(bool mode80k = true) noexcept;
 
@@ -102,12 +107,16 @@ public:
     void reset(MachineContext &ctx, UlaRenderer &ula, ResetKind kind) override;
     void onFrameStart(MachineContext &ctx) override;
     void onScanlineStart(uint16_t line, MachineContext &ctx) override;
-    void renderScanline(uint32_t y, const MachineContext &ctx, const UlaRenderer &ula, VideoFrame &frame) override;
+    void renderScanline(uint32_t y, const MachineContext &ctx, const UlaRenderer &ula,
+                        VideoFrame &frame) override;
     void renderFullFrame(MachineContext &ctx, UlaRenderer &ula, VideoFrame &frame) override;
     void saveState(StateWriter &w) const override;
     void loadState(StateReader &r, MachineContext &ctx, UlaRenderer &ula) override;
 
-    std::size_t diskDriveCount() const noexcept override { return 4; }
+    std::size_t diskDriveCount() const noexcept override
+    {
+        return 4;
+    }
     OptionalRef<DiskImage> diskDrive(std::size_t idx) noexcept override;
 
     uint8_t poFlipFlop() const noexcept;
@@ -121,15 +130,19 @@ private:
     // The 8272's INT line into the CTC; `byteMoved`: a data byte moved, the line fell and rises
     // again for the next one
     void updateFdcInterrupt(uint64_t now, bool byteMoved);
-    bool basicConfiguration() const noexcept { return m_po == 0 && m_lo6 == 0; }
+    bool basicConfiguration() const noexcept
+    {
+        return m_po == 0 && m_lo6 == 0;
+    }
     // The 80 characters screen's cells in the border, from the video RAM's upper half
-    void renderWideCells(uint32_t y, const MachineContext &ctx, const UlaRenderer &ula, VideoFrame &frame) const;
+    void renderWideCells(uint32_t y, const MachineContext &ctx, const UlaRenderer &ula,
+                         VideoFrame &frame) const;
 
     Upd765Fdc m_fdc;
     Z80Ctc m_ctc;
     bool m_terminalCount = false; // channel 2 reached zero: the 8272's TC
-    bool m_wideLatch = false;     // the 80 characters modification's latch (set by O5 in CP/M)
-    bool m_wide = false;          // ... and the screen is 320 pixels wide
+    bool m_wideLatch = false; // the 80 characters modification's latch (set by O5 in CP/M)
+    bool m_wide = false; // ... and the screen is 320 pixels wide
     bool m_mode80k = true;
     uint8_t m_8255Ctrl = 0x9B;
     uint8_t m_8255PortC = 0x00;
@@ -146,7 +159,8 @@ private:
 /// - CE = 0, SM = 0: EEPROM mode, the EEPROM at 0x0000, the video RAM at 0xC000
 /// - CE = 1, SM = 0: 64KB DRAM mode, DRAM at 0x0000 (A15 inverted: the video RAM stays at 0xC000)
 /// - SM = 1: Spectrum mode (CE set too, until a reset), the read-only DRAM copy of the ROM at 0x0000
-class Cobra2Machine : public MachineProfile {
+class Cobra2Machine : public MachineProfile
+{
 public:
     std::string_view id() const noexcept override;
     std::string_view name() const noexcept override;
@@ -167,7 +181,7 @@ private:
     static constexpr uint8_t kEepromDisabled = 0x20;
     static constexpr uint8_t kSpectrumMode = 0x40;
 
-    uint8_t m_portFe = 0;  // F5 register
+    uint8_t m_portFe = 0; // F5 register
     uint8_t m_latched = 0; // the CE / SM flops (kEepromDisabled, kSpectrumMode), loaded by any IN
 };
 

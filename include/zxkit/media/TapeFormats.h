@@ -27,50 +27,53 @@ namespace zxkit {
 
 /// The tape block kinds. Values below 0xF0 are the TZX block ids.
 enum class TapeBlockType : uint8_t {
-    StandardData    = 0x10, ///< ROM timings (TAP blocks, TZX 0x10)
-    TurboData       = 0x11,
-    PureTone        = 0x12,
-    PulseSeq        = 0x13,
-    PureData        = 0x14,
+    StandardData = 0x10, ///< ROM timings (TAP blocks, TZX 0x10)
+    TurboData = 0x11,
+    PureTone = 0x12,
+    PulseSeq = 0x13,
+    PureData = 0x14,
     DirectRecording = 0x15,
-    CswRecording    = 0x18,
+    CswRecording = 0x18,
     GeneralizedData = 0x19,
-    Pause           = 0x20, ///< a 0 ms pause stops the tape
-    GroupStart      = 0x21,
-    GroupEnd        = 0x22,
-    JumpTo          = 0x23,
-    LoopStart       = 0x24,
-    LoopEnd         = 0x25,
-    CallSequence    = 0x26,
+    Pause = 0x20, ///< a 0 ms pause stops the tape
+    GroupStart = 0x21,
+    GroupEnd = 0x22,
+    JumpTo = 0x23,
+    LoopStart = 0x24,
+    LoopEnd = 0x25,
+    CallSequence = 0x26,
     ReturnFromSequence = 0x27,
-    SelectBlock     = 0x28,
-    StopIf48k       = 0x2A,
-    SetSignalLevel  = 0x2B,
-    TextDesc        = 0x30,
-    Message         = 0x31,
-    ArchiveInfo     = 0x32,
-    HardwareType    = 0x33,
-    CustomInfo      = 0x35,
-    Glue            = 0x5A,
-    PzxPulses       = 0xF0, ///< `pulses`: (duration, repeat count) pairs; initially low
-    PzxData         = 0xF1, ///< two dataSymbols (zero pulses are real edges), bit count, initial level in value
-    PzxPause        = 0xF2  ///< one pulse in `pulses`, initial level in value; zero does not stop
+    SelectBlock = 0x28,
+    StopIf48k = 0x2A,
+    SetSignalLevel = 0x2B,
+    TextDesc = 0x30,
+    Message = 0x31,
+    ArchiveInfo = 0x32,
+    HardwareType = 0x33,
+    CustomInfo = 0x35,
+    Glue = 0x5A,
+    PzxPulses = 0xF0, ///< `pulses`: (duration, repeat count) pairs; initially low
+    PzxData =
+            0xF1, ///< two dataSymbols (zero pulses are real edges), bit count, initial level in value
+    PzxPause = 0xF2 ///< one pulse in `pulses`, initial level in value; zero does not stop
 };
 
 /// A symbol of a generalized data block (TZX 0x19): how its first pulse starts, and its pulses.
-struct TapeSymbol {
+struct TapeSymbol
+{
     enum class Start : uint8_t {
         Toggle = 0, ///< an edge (the usual)
-        Keep   = 1, ///< no edge: the first pulse continues the previous level
-        Low    = 2, ///< force the level low
-        High   = 3  ///< force the level high
+        Keep = 1, ///< no edge: the first pulse continues the previous level
+        Low = 2, ///< force the level low
+        High = 3 ///< force the level high
     };
     Start start = Start::Toggle;
     std::vector<uint16_t> pulses; ///< T-states; a zero length ends the symbol early
 };
 
 /// `repeat` times the symbol `symbol` (a generalized data block's pilot and sync stream).
-struct TapeSymbolRun {
+struct TapeSymbolRun
+{
     uint8_t symbol = 0;
     uint16_t repeat = 0;
 };
@@ -91,7 +94,8 @@ struct TapeSymbolRun {
 /// - JumpTo, LoopStart, SetSignalLevel: `value` (relative jump, repetitions, level).
 /// - CallSequence: `offsets` (relative to the call block). SelectBlock: `offsets` and `labels`.
 /// - The text blocks: `description`.
-struct TapeBlock {
+struct TapeBlock
+{
     TapeBlockType type = TapeBlockType::StandardData;
     uint16_t pauseAfterMs = 1000;
     std::string description;
@@ -129,15 +133,17 @@ struct TapeBlock {
 };
 
 /// One step of the tape signal: the level changes as `transition` says, then holds for `length` T-states.
-struct TapeEdge {
+struct TapeEdge
+{
     enum class Transition : uint8_t { Toggle, None, Low, High };
-    struct Flags {
-        static constexpr uint8_t BlockEnd   = 0x01; ///< the last step of a block
-        static constexpr uint8_t Stop       = 0x02; ///< stop the tape after this step
-        static constexpr uint8_t Stop48k    = 0x04; ///< stop the tape after this step, in 48K mode
+    struct Flags
+    {
+        static constexpr uint8_t BlockEnd = 0x01; ///< the last step of a block
+        static constexpr uint8_t Stop = 0x02; ///< stop the tape after this step
+        static constexpr uint8_t Stop48k = 0x04; ///< stop the tape after this step, in 48K mode
         static constexpr uint8_t ShortPulse = 0x08; ///< a data bit's pulse: a 0
-        static constexpr uint8_t LongPulse  = 0x10; ///< a data bit's pulse: a 1
-        static constexpr uint8_t TapeEnd    = 0x20; ///< the end of the tape
+        static constexpr uint8_t LongPulse = 0x10; ///< a data bit's pulse: a 1
+        static constexpr uint8_t TapeEnd = 0x20; ///< the end of the tape
     };
 
     uint32_t length = 0;
@@ -149,34 +155,57 @@ struct TapeEdge {
 /// A position in a tape's signal. It walks the blocks (loops, jumps and calls included)
 /// and produces the signal one edge at a time. The blocks are passed to every call,
 /// so a cursor never refers to a block list that changed.
-class TapeCursor {
+class TapeCursor
+{
 public:
     /// Moves to the start of block `index` (the signal level goes low).
     void seek(std::size_t index) noexcept;
-    std::size_t blockIndex() const noexcept { return m_block; }
+    std::size_t blockIndex() const noexcept
+    {
+        return m_block;
+    }
     /// Moves to the start of block `index`, keeping the signal level (and the loops and calls).
-    void skipTo(std::size_t index) noexcept { advanceBlock(index); }
+    void skipTo(std::size_t index) noexcept
+    {
+        advanceBlock(index);
+    }
     /// Moves to the pause at the end of the current data block.
-    void skipToTail() noexcept { m_phase = Phase::Tail; }
+    void skipToTail() noexcept
+    {
+        m_phase = Phase::Tail;
+    }
     /// At the start of its block, before any edge of it.
-    bool atBlockStart() const noexcept { return m_phase == Phase::Start; }
+    bool atBlockStart() const noexcept
+    {
+        return m_phase == Phase::Start;
+    }
     /// In the pause at the end of a data block.
-    bool inTail() const noexcept { return m_phase == Phase::Tail; }
-    bool level() const noexcept { return m_level; }
-    bool atEnd(std::span<const TapeBlock> blocks) const noexcept { return m_block >= blocks.size(); }
+    bool inTail() const noexcept
+    {
+        return m_phase == Phase::Tail;
+    }
+    bool level() const noexcept
+    {
+        return m_level;
+    }
+    bool atEnd(std::span<const TapeBlock> blocks) const noexcept
+    {
+        return m_block >= blocks.size();
+    }
 
     /// The next step of the signal. At the end of the tape it returns a `TapeEnd | Stop` step.
     TapeEdge next(std::span<const TapeBlock> blocks);
 
 private:
     enum class Phase : uint8_t { Start, Pilot, Sync2, Bit1, Bit2, Pulses, Samples, Symbols, Tail };
-    struct Step {
+    struct Step
+    {
         uint32_t length = 0;
         TapeEdge::Transition transition = TapeEdge::Transition::Toggle;
         uint8_t flags = 0;
         bool blockDone = false; ///< this step is the block's last one
-        bool nextLow = false;   ///< the block ended with a pause: the next one starts low
-        bool noSignal = false;  ///< the block produced nothing: go on with the next one
+        bool nextLow = false; ///< the block ended with a pause: the next one starts low
+        bool noSignal = false; ///< the block produced nothing: go on with the next one
     };
 
     Step dataBlockStep(const TapeBlock &block);
@@ -192,10 +221,11 @@ private:
     std::size_t m_block = 0;
     Phase m_phase = Phase::Start;
     bool m_level = false;
-    bool m_forceLow = true;  ///< the next block's first edge goes low (the tape's start, after a pause)
-    uint32_t m_count = 0;    ///< pulses left / index in the pulse list
+    bool m_forceLow =
+            true; ///< the next block's first edge goes low (the tape's start, after a pause)
+    uint32_t m_count = 0; ///< pulses left / index in the pulse list
     std::size_t m_byte = 0;
-    uint8_t m_bit = 0;       ///< bits of `m_byte` already played
+    uint8_t m_bit = 0; ///< bits of `m_byte` already played
     uint32_t m_bitPulse = 0;
     uint32_t m_bitPulseZero = 0;
     // generalized data

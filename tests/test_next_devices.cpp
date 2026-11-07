@@ -25,7 +25,8 @@
 
 using namespace zxkit;
 
-struct I2c {
+struct I2c
+{
     NextRtc &rtc;
     void start()
     {
@@ -93,8 +94,8 @@ void uartTests()
     uart.tick(9);
     assert(sent.empty());
     uart.tick(10);
-    assert((sent == std::vector<std::pair<unsigned, uint8_t>>{{0, 0xFE}}));
-    uart.write(0x153B, 0x50, 10);       // select Pi, write prescaler MSB
+    assert((sent == std::vector<std::pair<unsigned, uint8_t>>{ { 0, 0xFE } }));
+    uart.write(0x153B, 0x50, 10); // select Pi, write prescaler MSB
     assert(uart.read(0x153B, 10) == 0); // FPGA read does not echo UART select
     uart.write(0x143B, 0x80, 10);
     uart.write(0x143B, 8, 10);
@@ -106,8 +107,8 @@ void uartTests()
     uart.setClearToSend(1, true);
     uart.tick(30);
     uart.tick(37);
-    assert((sent.back() == std::pair<unsigned, uint8_t>{1, 31}));
-    const std::array<uint8_t, 3> bytes{0, 0xFF, 42};
+    assert((sent.back() == std::pair<unsigned, uint8_t>{ 1, 31 }));
+    const std::array<uint8_t, 3> bytes{ 0, 0xFF, 42 };
     assert(uart.receive(0, bytes, 40) == 3);
     uart.write(0x153B, 0, 40);
     assert(!(uart.read(0x133B, 49) & 1));
@@ -147,7 +148,7 @@ void rtcTests()
     NextRtc rtc;
     int64_t now = 1709251199; // 2024-02-29 23:59:59 UTC
     rtc.setTimeSource([&] { return now; });
-    I2c bus{rtc};
+    I2c bus{ rtc };
     bus.start();
     assert(!bus.send(0xA0));
     bus.stop(); // No device at 0x50
@@ -165,7 +166,7 @@ void rtcTests()
     bus.start();
     assert(bus.send(0xD0));
     assert(bus.send(0));
-    for (auto byte : {0x85, 0x04, 0x63, 0x02, 0x01, 0x01, 0x25})
+    for (auto byte : { 0x85, 0x04, 0x63, 0x02, 0x01, 0x01, 0x25 })
         assert(bus.send(byte)); // halt, 3:04:05 PM, 2025
     bus.stop();
     now += 500;
@@ -213,9 +214,9 @@ void nmiAvailabilityTests()
     auto &next = static_cast<ZxNextMachine &>(em.machine());
     auto &nr = next.nextReg();
     // Button enables and device decoders are independent, firmware-controlled gates.
-    for (uint8_t buttons : {0x00, 0x08, 0x10, 0x18}) {
+    for (uint8_t buttons : { 0x00, 0x08, 0x10, 0x18 }) {
         nr.write(0x06, buttons);
-        for (uint8_t devices : {0x00, 0x01, 0x02, 0x03}) {
+        for (uint8_t devices : { 0x00, 0x01, 0x02, 0x03 }) {
             nr.write(0x83, devices);
             assert(core.canTriggerNextNmi(true) == bool((buttons & 8) && (devices & 2)));
             assert(core.canTriggerNextNmi(false) == bool((buttons & 0x10) && (devices & 1)));
@@ -228,8 +229,8 @@ void nmiAvailabilityTests()
     em.ioBus().write(0xE3, 0);
     assert(core.canTriggerNextNmi(true));
     // A paced DMA owns the bus until disabled.
-    for (uint8_t byte : {0xC3, 0x7D, 0x00, 0x80, 0x04, 0x00, 0x14, 0x50, 0x20, 0xFF,
-                         0xCD, 0x00, 0x90, 0xCF, 0x87})
+    for (uint8_t byte : { 0xC3, 0x7D, 0x00, 0x80, 0x04, 0x00, 0x14, 0x50, 0x20, 0xFF, 0xCD, 0x00,
+                          0x90, 0xCF, 0x87 })
         em.ioBus().write(0x6B, byte);
     assert(next.dma().isActive());
     assert(!core.canTriggerNextNmi(true));
@@ -243,14 +244,14 @@ void nmiAvailabilityTests()
 
 void machineTests()
 {
-    Emulator em({.machineId = "next", .romResolver = [](std::string_view name, size_t size) {
+    Emulator em({ .machineId = "next", .romResolver = [](std::string_view name, size_t size) {
                      std::vector<uint8_t> rom(size, 0);
                      if (name == "enNextMf.rom") {
                          rom[0x66] = 0xED;
                          rom[0x67] = 0x45;
                      } // RETN
                      return rom;
-                 }});
+                 } });
     auto &next = static_cast<ZxNextMachine &>(em.machine());
     auto &nr = next.nextReg();
     auto &io = em.ioBus();
@@ -268,7 +269,7 @@ void machineTests()
     assert(nr.read(0xB1) == 0x80);
     nr.write(0x08, 8);
     nr.write(0x84, 0xFF);
-    for (auto [port, channel] : {std::pair{0x1F, 0}, {0xF3, 1}, {0xF9, 2}, {0x5F, 3}}) {
+    for (auto [port, channel] : { std::pair{ 0x1F, 0 }, { 0xF3, 1 }, { 0xF9, 2 }, { 0x5F, 3 } }) {
         io.write(port, 0x90 + channel);
         assert(em.audioMixer().dac().channel(channel) == 0x90 + channel);
     }
@@ -365,26 +366,30 @@ void ioDispatchTests()
 {
     IoBus io;
     int writes = 0;
-    io.registerSimpleHandler("fallback", 0xFF, 0xFE, [](uint16_t) { return uint8_t(0xFF); }, nullptr, -1);
+    io.registerSimpleHandler(
+            "fallback", 0xFF, 0xFE, [](uint16_t) { return uint8_t(0xFF); }, nullptr, -1);
     assert(io.read(0xABFE) == 0xFF); // Warm the decoder before attaching devices.
     io.registerHandler(
-        "matrix", 0xFF, 0xFE, [](uint16_t) -> IoReadResult { return {0xFE, 1}; }, [&](uint16_t, uint8_t) { ++writes; });
+            "matrix", 0xFF, 0xFE, [](uint16_t) -> IoReadResult { return { 0xFE, 1 }; },
+            [&](uint16_t, uint8_t) { ++writes; });
     io.registerHandler(
-        "other", 0xFFFF, 0xABFE, [](uint16_t) -> IoReadResult { return {0xFD, 2}; },
-        [&](uint16_t, uint8_t) { writes += 10; });
+            "other", 0xFFFF, 0xABFE, [](uint16_t) -> IoReadResult { return { 0xFD, 2 }; },
+            [&](uint16_t, uint8_t) { writes += 10; });
     assert(io.read(0xABFE) == 0xFC);
     assert(io.read(0xBCFE) == 0xFE);
     io.write(0xABFE, 0);
     assert(writes == 11);
     // Sorting, vector reallocation and high/low mask overlap must preserve order.
     for (int n = 0; n < 300; ++n)
-        io.registerSimpleHandler("unrelated", 0xFFFF, uint16_t(n), nullptr, [](uint16_t, uint8_t) {});
+        io.registerSimpleHandler("unrelated", 0xFFFF, uint16_t(n), nullptr,
+                                 [](uint16_t, uint8_t) { });
     assert(io.read(0xABFE) == 0xFC);
     io.unregisterOwner("other");
     assert(io.read(0xABFE) == 0xFE);
     io.registerHandler(
-        "exclusive", 0xFFFF, 0xABFE, [](uint16_t) -> IoReadResult { return {0x55, 0xFF, true}; },
-        [&](uint16_t, uint8_t) { writes += 100; }, 100, true);
+            "exclusive", 0xFFFF, 0xABFE,
+            [](uint16_t) -> IoReadResult { return { 0x55, 0xFF, true }; },
+            [&](uint16_t, uint8_t) { writes += 100; }, 100, true);
     assert(io.read(0xABFE) == 0x55);
     io.write(0xABFE, 0);
     assert(writes == 111);

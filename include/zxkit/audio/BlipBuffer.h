@@ -27,7 +27,8 @@ namespace zxkit {
 
 /// Fast band-integrated delta buffer for converting T-state-accurate audio
 /// amplitude transitions into anti-aliased 16-bit PCM samples.
-class BlipBuffer {
+class BlipBuffer
+{
 public:
     void configure(uint32_t clockHz, uint32_t sampleRate, uint32_t tstatesPerFrame);
     void reset() noexcept;

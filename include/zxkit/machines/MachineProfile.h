@@ -36,7 +36,8 @@ namespace zxkit {
 /// Users can define custom Z80 computers (with arbitrary memory banking,
 /// CPU hooks, and I/O decoding) by subclassing `MachineProfile` and registering
 /// it with `MachineRegistry`.
-class MachineProfile {
+class MachineProfile
+{
 public:
     virtual ~MachineProfile() = default;
 
@@ -44,7 +45,10 @@ public:
     virtual std::string_view name() const noexcept = 0;
     virtual FrameTimings timings() const noexcept = 0;
     virtual ContentionPattern contentionPattern() const noexcept;
-    virtual bool usesRasterUla() const noexcept { return false; }
+    virtual bool usesRasterUla() const noexcept
+    {
+        return false;
+    }
     virtual bool hasFloatingBus() const noexcept;
     virtual bool supportsZ80n() const noexcept;
     /// Software sees a 48K Spectrum: a 16K/48K machine (or clone), or a 128K one with its paging
@@ -59,7 +63,8 @@ public:
     /// Called before the CPU runs machine scanline `line` (0 = first line of the frame),
     /// e.g. for raster (line) interrupts.
     virtual void onScanlineStart(uint16_t line, MachineContext &ctx);
-    virtual void renderScanline(uint32_t y, const MachineContext &ctx, const UlaRenderer &ula, VideoFrame &frame);
+    virtual void renderScanline(uint32_t y, const MachineContext &ctx, const UlaRenderer &ula,
+                                VideoFrame &frame);
     /// Redraws the whole frame from the current state (e.g. after loading a snapshot).
     virtual void renderFullFrame(MachineContext &ctx, UlaRenderer &ula, VideoFrame &frame);
     /// Size of the frames this machine renders (320x256 with the usual 32 pixel border).
@@ -71,7 +76,8 @@ public:
     virtual BankId romBankId() const noexcept;
     virtual uint8_t lastPort7ffd() const noexcept;
     virtual uint8_t lastPort1ffd() const noexcept;
-    virtual void setPagingPorts(uint8_t port7ffd, uint8_t port1ffd, MachineContext &ctx, UlaRenderer &ula);
+    virtual void setPagingPorts(uint8_t port7ffd, uint8_t port1ffd, MachineContext &ctx,
+                                UlaRenderer &ula);
 
     /// Built-in floppy drives (e.g. HC-2000), used by `Emulator::insertDisk`.
     virtual std::size_t diskDriveCount() const noexcept;
@@ -85,8 +91,8 @@ public:
 
 protected:
     /// `keyMask`: the keyboard columns read (bits 0-4; 0x3F adds the CoBra's sixth column)
-    void registerStandardUlaPort(MachineContext &ctx, UlaRenderer &ula, uint16_t mask = 0x0001, uint16_t value = 0x0000,
-                                 uint8_t keyMask = 0x1F);
+    void registerStandardUlaPort(MachineContext &ctx, UlaRenderer &ula, uint16_t mask = 0x0001,
+                                 uint16_t value = 0x0000, uint8_t keyMask = 0x1F);
 
     BankId m_ramBank = 0;
     BankId m_romBank = 0;
@@ -94,7 +100,8 @@ protected:
 
 /// The machines an `Emulator` can create by id. A plain value: every emulator owns its
 /// own registry, so custom machines registered for one never leak into another.
-class MachineRegistry {
+class MachineRegistry
+{
 public:
     using FactoryFn = std::function<std::unique_ptr<MachineProfile>()>;
 
@@ -112,8 +119,10 @@ public:
     std::vector<std::string> availableIds() const;
 
 private:
-    struct EmptyTag {};
-    explicit MachineRegistry(EmptyTag) {}
+    struct EmptyTag
+    {
+    };
+    explicit MachineRegistry(EmptyTag) { }
 
     std::vector<std::pair<std::string, FactoryFn>> m_factories;
 };

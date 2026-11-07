@@ -29,7 +29,8 @@ namespace zxkit {
 /// SD / SDHC card in SPI mode, backed by a raw disk image file.
 /// The image is accessed block by block, it is never loaded into memory, so
 /// multi-GB images are fine. Used by the DivMMC and the ZX Spectrum Next.
-class SdCard {
+class SdCard
+{
 public:
     static constexpr std::size_t kBlockSize = 512;
 
@@ -37,14 +38,29 @@ public:
     void insert(const std::filesystem::path &image, bool readOnly = false);
     void eject();
 
-    bool isInserted() const noexcept { return m_file.is_open(); }
-    bool isReadOnly() const noexcept { return m_readOnly; }
-    const std::filesystem::path &imagePath() const noexcept { return m_path; }
-    uint64_t sizeBytes() const noexcept { return m_size; }
+    bool isInserted() const noexcept
+    {
+        return m_file.is_open();
+    }
+    bool isReadOnly() const noexcept
+    {
+        return m_readOnly;
+    }
+    const std::filesystem::path &imagePath() const noexcept
+    {
+        return m_path;
+    }
+    uint64_t sizeBytes() const noexcept
+    {
+        return m_size;
+    }
 
     /// Chip select (true = selected, i.e. /CS low). Deselecting aborts any transfer.
     void setSelected(bool selected) noexcept;
-    bool isSelected() const noexcept { return m_selected; }
+    bool isSelected() const noexcept
+    {
+        return m_selected;
+    }
 
     /// One full-duplex SPI byte exchange: sends `mosi`, returns MISO.
     uint8_t transfer(uint8_t mosi);
@@ -53,7 +69,10 @@ public:
     bool readBlock(uint64_t lba, std::span<uint8_t, kBlockSize> out);
     bool writeBlock(uint64_t lba, std::span<const uint8_t, kBlockSize> in);
     /// Bumped at every block read or written (activity LEDs).
-    uint64_t accessCount() const noexcept { return m_accesses; }
+    uint64_t accessCount() const noexcept
+    {
+        return m_accesses;
+    }
 
 private:
     enum class State : uint8_t {
@@ -68,7 +87,10 @@ private:
     void queueDataBlock(uint64_t lba);
     void queueRegister(std::span<const uint8_t, 16> reg);
     uint64_t blockFromArg(uint32_t arg) const noexcept;
-    uint8_t r1Status() const noexcept { return m_initialized ? 0x00 : 0x01; }
+    uint8_t r1Status() const noexcept
+    {
+        return m_initialized ? 0x00 : 0x01;
+    }
     void buildCsd(std::array<uint8_t, 16> &csd) const noexcept;
 
     std::fstream m_file;

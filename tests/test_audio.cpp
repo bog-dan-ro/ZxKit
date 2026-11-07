@@ -40,7 +40,8 @@ void tone(Ay8912 &ay, uint16_t period = 113)
     write(ay, 7, 0x3e); // A tone only, no noise
     write(ay, 8, 15);
 }
-std::vector<int32_t> render(Ay8912 &ay, std::size_t frames, uint32_t rate = 48000, uint32_t clock = 1773450)
+std::vector<int32_t> render(Ay8912 &ay, std::size_t frames, uint32_t rate = 48000,
+                            uint32_t clock = 1773450)
 {
     std::vector<int32_t> pcm(frames * 2);
     ay.renderSamples(pcm, rate, clock);
@@ -59,15 +60,15 @@ double acRms(const std::vector<int32_t> &pcm, std::size_t skip = 128)
 }
 void testSpectra()
 {
-    for (uint32_t rate : {44100u, 48000u, 96000u}) {
+    for (uint32_t rate : { 44100u, 48000u, 96000u }) {
         Ay8912 low, ultrasonic;
         tone(low, 48); // 2 kHz at the chosen clock
         tone(ultrasonic, 3); // 32 kHz at 48 kHz output, aliases to 16 kHz unfiltered
         const uint32_t clock = rate * 32;
         const double audible = acRms(render(low, 8192, rate, clock));
         const double alias = acRms(render(ultrasonic, 8192, rate, clock));
-        std::printf("%u Hz: passband RMS %.3f, ultrasonic alias RMS %.3f (%.1f dB)\n",
-                    rate, audible, alias, 20 * std::log10(std::max(.001, alias) / audible));
+        std::printf("%u Hz: passband RMS %.3f, ultrasonic alias RMS %.3f (%.1f dB)\n", rate,
+                    audible, alias, 20 * std::log10(std::max(.001, alias) / audible));
         assert(audible > 3400 && audible < 3800);
         assert(alias < audible / 200); // more than 46 dB rejection
         // Non-integral clock/sample ratios exercise the fractional edge phases.
@@ -98,17 +99,17 @@ void testSpectra()
     };
     const double signal = amplitude(fundamental);
     const double alias = amplitude(48000 - 3 * fundamental);
-    std::printf("Audible fundamental %.3f, aliased harmonic %.3f (%.1f dB)\n",
-                signal, alias, 20 * std::log10(std::max(.001, alias) / signal));
+    std::printf("Audible fundamental %.3f, aliased harmonic %.3f (%.1f dB)\n", signal, alias,
+                20 * std::log10(std::max(.001, alias) / signal));
     assert(signal > 4500);
     assert(alias < signal / 200);
 }
 void testChunkingResetAndState()
 {
-    for (auto model : {AyModel::AY8912, AyModel::YM2149}) {
-        for (uint32_t rate : {44100u, 48000u, 96000u}) {
+    for (auto model : { AyModel::AY8912, AyModel::YM2149 }) {
+        for (uint32_t rate : { 44100u, 48000u, 96000u }) {
             Ay8912 whole, chunks;
-            for (auto *ay : {&whole, &chunks}) {
+            for (auto *ay : { &whole, &chunks }) {
                 ay->setModel(model);
                 tone(*ay, 73);
                 write(*ay, 7, 0x30); // tone+noise A/B, tone C
@@ -119,7 +120,7 @@ void testChunkingResetAndState()
             }
             const auto expected = render(whole, 10037, rate);
             std::vector<int32_t> actual;
-            for (std::size_t count : {1, 7, 960, 3, 1024, 11, 8031}) {
+            for (std::size_t count : { 1, 7, 960, 3, 1024, 11, 8031 }) {
                 const auto part = render(chunks, count, rate);
                 actual.insert(actual.end(), part.begin(), part.end());
             }
@@ -144,18 +145,18 @@ void testChunkingResetAndState()
 void testDacAndPanning()
 {
     // Independently rounded measurements (Ayumi DAC curves), full-scale 7422.
-    for (auto model : {AyModel::AY8912, AyModel::YM2149}) {
+    for (auto model : { AyModel::AY8912, AyModel::YM2149 }) {
         Ay8912 ay;
         ay.setModel(model);
         write(ay, 7, 0x3f);
-        for (const auto [volume, expectedAy, expectedYm] : {
-                 std::array{0, 0, 0}, std::array{1, 74, 57},
-                 std::array{7, 797, 577}, std::array{15, 7422, 7422}}) {
+        for (const auto [volume, expectedAy, expectedYm] :
+             { std::array{ 0, 0, 0 }, std::array{ 1, 74, 57 }, std::array{ 7, 797, 577 },
+               std::array{ 15, 7422, 7422 } }) {
             write(ay, 8, volume);
             const auto pcm = render(ay, 128);
             assert(pcm[pcm.size() - 2] == (model == AyModel::AY8912 ? expectedAy : expectedYm));
         }
-        for (auto stereo : {AyStereoMode::Mono, AyStereoMode::ACB, AyStereoMode::ABC}) {
+        for (auto stereo : { AyStereoMode::Mono, AyStereoMode::ACB, AyStereoMode::ABC }) {
             for (int c = 0; c < 3; ++c) {
                 for (int other = 0; other < 3; ++other)
                     write(ay, 8 + other, c == other ? 15 : 0);
@@ -182,21 +183,29 @@ int envelopeLevel(int shape, int step)
     if (!(shape & 8))
         return 0;
     switch (shape) {
-    case 8: return 31 - step % 32;
-    case 9: return 0;
-    case 10: return (step / 32) & 1 ? step % 32 : 31 - step % 32;
-    case 11: return 31;
-    case 12: return step % 32;
-    case 13: return 31;
-    case 14: return (step / 32) & 1 ? 31 - step % 32 : step % 32;
-    case 15: return 0;
+    case 8:
+        return 31 - step % 32;
+    case 9:
+        return 0;
+    case 10:
+        return (step / 32) & 1 ? step % 32 : 31 - step % 32;
+    case 11:
+        return 31;
+    case 12:
+        return step % 32;
+    case 13:
+        return 31;
+    case 14:
+        return (step / 32) & 1 ? 31 - step % 32 : step % 32;
+    case 15:
+        return 0;
     }
     assert(false);
     return 0;
 }
 void testEnvelopes()
 {
-    for (auto model : {AyModel::AY8912, AyModel::YM2149}) {
+    for (auto model : { AyModel::AY8912, AyModel::YM2149 }) {
         std::array<int32_t, 32> levels{};
         // A slow ramp supplies stable observed DAC levels, including YM's
         // intermediate levels. Shape trajectories below are independent.
@@ -275,7 +284,7 @@ void testSilentAdvancement()
 {
     for (int shape = 0; shape < 16; ++shape) {
         Ay8912 bulk, individual;
-        for (auto *ay : {&bulk, &individual}) {
+        for (auto *ay : { &bulk, &individual }) {
             ay->setModel(AyModel::YM2149);
             write(*ay, 0, 3);
             write(*ay, 2, 79);
@@ -292,18 +301,18 @@ void testSilentAdvancement()
         bulk.saveState(a);
         individual.saveState(b);
         assert(std::ranges::equal(a.data(), b.data()));
-        for (auto *ay : {&bulk, &individual}) {
+        for (auto *ay : { &bulk, &individual }) {
             write(*ay, 8, 16);
             write(*ay, 9, 15);
         }
         assert(render(bulk, 1027) == render(individual, 1027));
-        for (auto *ay : {&bulk, &individual}) {
+        for (auto *ay : { &bulk, &individual }) {
             write(*ay, 8, 0);
             write(*ay, 9, 0);
         }
         const auto tail = render(bulk, 257);
         std::vector<int32_t> pieces;
-        for (std::size_t count : {1, 3, 7, 80, 166}) {
+        for (std::size_t count : { 1, 3, 7, 80, 166 }) {
             const auto part = render(individual, count);
             pieces.insert(pieces.end(), part.begin(), part.end());
         }
@@ -313,7 +322,7 @@ void testSilentAdvancement()
 }
 void testSpeakerResponses()
 {
-    for (uint32_t rate : {44100u, 48000u, 96000u}) {
+    for (uint32_t rate : { 44100u, 48000u, 96000u }) {
         const auto gain = [rate](SpeakerModel model, double hz, bool ay) {
             SpeakerFilter filter;
             filter.setModel(model);
@@ -335,8 +344,8 @@ void testSpeakerResponses()
         const double beeperLow = gain(SpeakerModel::Beeper, 50, false);
         const double beeperMid = gain(SpeakerModel::Beeper, 1500, false);
         const double beeperHigh = gain(SpeakerModel::Beeper, 18000, false);
-        std::printf("Speaker %u Hz: TV %.3f/%.3f/%.3f, beeper %.3f/%.3f/%.3f\n",
-                    rate, tvLow, tvMid, tvHigh, beeperLow, beeperMid, beeperHigh);
+        std::printf("Speaker %u Hz: TV %.3f/%.3f/%.3f, beeper %.3f/%.3f/%.3f\n", rate, tvLow, tvMid,
+                    tvHigh, beeperLow, beeperMid, beeperHigh);
         assert(tvLow < .35 && tvMid > .9 && tvMid < 1.05 && tvHigh < .8);
         assert(beeperLow < .01 && beeperMid > .65 && beeperHigh < .4);
         assert(std::abs(gain(SpeakerModel::Beeper, 1000, true) - 1) < 1e-5);
@@ -355,8 +364,10 @@ void testSpeakerTransitionsAndState()
     double previous = 1000;
     for (int i = 0; i < 480; ++i) {
         // Rapid changes are deferred until the current crossfade finishes.
-        if (i == 50) filter.setModel(SpeakerModel::Unfiltered);
-        if (i == 100) filter.setModel(SpeakerModel::Beeper);
+        if (i == 50)
+            filter.setModel(SpeakerModel::Unfiltered);
+        if (i == 100)
+            filter.setModel(SpeakerModel::Beeper);
         const auto output = filter.process(0, 1000, -1000);
         assert(std::abs(output.left - previous) <= 5);
         assert(output.right == -output.left);
@@ -392,9 +403,9 @@ void testSpeakerTransitionsAndState()
 
 void testSpeakerRoutingAndMixerState()
 {
-    for (auto model : {SpeakerModel::Unfiltered, SpeakerModel::TV, SpeakerModel::Beeper}) {
+    for (auto model : { SpeakerModel::Unfiltered, SpeakerModel::TV, SpeakerModel::Beeper }) {
         AudioMixer split, joined;
-        for (auto *mixer : {&split, &joined}) {
+        for (auto *mixer : { &split, &joined }) {
             mixer->setAyChipCount(0);
             mixer->setSpeakerModel(model);
             mixer->reset();
@@ -403,7 +414,7 @@ void testSpeakerRoutingAndMixerState()
             mixer->writeTapeEar(69950, true);
         }
         std::vector<int16_t> actual;
-        for (uint32_t length : {69888u, 1000u}) {
+        for (uint32_t length : { 69888u, 1000u }) {
             const auto pcm = split.endFrame(length);
             actual.insert(actual.end(), pcm.begin(), pcm.end());
         }
@@ -411,7 +422,7 @@ void testSpeakerRoutingAndMixerState()
     }
     // External DACs stay direct for every speaker choice, including stereo.
     std::vector<int16_t> reference;
-    for (auto model : {SpeakerModel::Unfiltered, SpeakerModel::TV, SpeakerModel::Beeper}) {
+    for (auto model : { SpeakerModel::Unfiltered, SpeakerModel::TV, SpeakerModel::Beeper }) {
         AudioMixer mixer;
         mixer.setAyChipCount(0);
         mixer.setSpeakerModel(model);
@@ -419,10 +430,12 @@ void testSpeakerRoutingAndMixerState()
         mixer.dac().writeChannel(0, 0, 200, mixer.leftBlip(), mixer.rightBlip());
         mixer.dac().writeChannel(10000, 2, 40, mixer.leftBlip(), mixer.rightBlip());
         const auto pcm = mixer.endFrame(69888);
-        if (reference.empty()) reference.assign(pcm.begin(), pcm.end());
-        else assert(std::ranges::equal(pcm, reference));
+        if (reference.empty())
+            reference.assign(pcm.begin(), pcm.end());
+        else
+            assert(std::ranges::equal(pcm, reference));
     }
-    for (auto model : {SpeakerModel::Unfiltered, SpeakerModel::TV, SpeakerModel::Beeper}) {
+    for (auto model : { SpeakerModel::Unfiltered, SpeakerModel::TV, SpeakerModel::Beeper }) {
         AudioMixer mixer;
         mixer.setSpeakerModel(model);
         mixer.reset();
@@ -446,7 +459,8 @@ void testSpeakerRoutingAndMixerState()
         assert(std::ranges::equal(mixer.endFrame(69888), expected));
         mixer.reset();
         assert(mixer.speakerModel() == model);
-        for (const auto sample : mixer.endFrame(69888)) assert(sample == 0);
+        for (const auto sample : mixer.endFrame(69888))
+            assert(sample == 0);
     }
     // An inactive AY cannot leak through a selected speaker route.
     AudioMixer disabled;
@@ -454,7 +468,8 @@ void testSpeakerRoutingAndMixerState()
     write(disabled.activeAy(), 7, 0x3f);
     disabled.activeAy().selectRegister(8);
     disabled.writeAyRegister(30000, 15);
-    for (auto sample : disabled.endFrame(69888)) assert(sample == 0);
+    for (auto sample : disabled.endFrame(69888))
+        assert(sample == 0);
 }
 
 void testWritesAndHeadroom()
@@ -476,7 +491,7 @@ void testWritesAndHeadroom()
     assert(std::all_of(pcm.begin(), pcm.end(), [](auto s) { return s >= -5000; }));
     // A late register write's ringing/filter tail must survive the video boundary.
     AudioMixer partitioned, single;
-    for (auto *mix : {&partitioned, &single}) {
+    for (auto *mix : { &partitioned, &single }) {
         mix->configure(3500000, 48000, 69888);
         write(mix->activeAy(), 7, 0x3f);
         mix->activeAy().selectRegister(8);
@@ -490,7 +505,7 @@ void testWritesAndHeadroom()
     const auto joined = single.endFrame(70888);
     assert(std::equal(split.begin(), split.end(), joined.begin(), joined.end()));
 }
-}
+} // namespace
 int main()
 {
     testSpectra();

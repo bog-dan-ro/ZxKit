@@ -22,9 +22,7 @@
 #include <limits>
 #include "xbrz_config.h"
 
-
-namespace zxkit::detail::xbrz
-{
+namespace zxkit::detail::xbrz {
 /*
 -------------------------------------------------------------------------
 | xBRZ: "Scale by rules" - high quality image upscaling filter by Zenju |
@@ -42,7 +40,7 @@ http://board.byuu.org/viewtopic.php?f=10&t=2248
 
 enum class ColorFormat //from high bits -> low bits, 8 bit per channel
 {
-    RGB,  //8 bit for each red, green, blue, upper 8 bits unused
+    RGB, //8 bit for each red, green, blue, upper 8 bits unused
     ARGB, //including alpha channel, BGRA byte order on little-endian machines
     ARGB_UNBUFFERED, //like ARGB, but without the one-time buffer creation overhead (ca. 100 - 300 ms) at the expense of a slightly slower scaling time
 };
@@ -60,20 +58,19 @@ THREAD-SAFETY: - parts of the same image may be scaled by multiple threads as lo
                - there is a minor inefficiency for the first row of a slice, so avoid processing single rows only; suggestion: process at least 8-16 rows
 */
 void scale(size_t factor, //valid range: 2 - SCALE_FACTOR_MAX
-           const uint32_t* src, uint32_t* trg, int srcWidth, int srcHeight,
-           ColorFormat colFmt,
-           const ScalerCfg& cfg = ScalerCfg(),
-           int yFirst = 0, int yLast = std::numeric_limits<int>::max()); //slice of source image
+           const uint32_t *src, uint32_t *trg, int srcWidth, int srcHeight, ColorFormat colFmt,
+           const ScalerCfg &cfg = ScalerCfg(), int yFirst = 0,
+           int yLast = std::numeric_limits<int>::max()); //slice of source image
 
-void bilinearScale(const uint32_t* src, int srcWidth, int srcHeight,
-                   /**/  uint32_t* trg, int trgWidth, int trgHeight);
+void bilinearScale(const uint32_t *src, int srcWidth, int srcHeight,
+                   /**/ uint32_t *trg, int trgWidth, int trgHeight);
 
-void nearestNeighborScale(const uint32_t* src, int srcWidth, int srcHeight,
-                          /**/  uint32_t* trg, int trgWidth, int trgHeight);
-
+void nearestNeighborScale(const uint32_t *src, int srcWidth, int srcHeight,
+                          /**/ uint32_t *trg, int trgWidth, int trgHeight);
 
 //parameter tuning
-bool equalColorTest(uint32_t col1, uint32_t col2, ColorFormat colFmt, double luminanceWeight, double equalColorTolerance);
-}
+bool equalColorTest(uint32_t col1, uint32_t col2, ColorFormat colFmt, double luminanceWeight,
+                    double equalColorTolerance);
+} // namespace zxkit::detail::xbrz
 
 #endif

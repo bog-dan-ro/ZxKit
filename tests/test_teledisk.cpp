@@ -36,18 +36,20 @@ uint16_t crc(std::span<const uint8_t> data)
 }
 void word(std::vector<uint8_t> &data, uint16_t value)
 {
-    data.push_back(uint8_t(value)); data.push_back(uint8_t(value >> 8));
+    data.push_back(uint8_t(value));
+    data.push_back(uint8_t(value >> 8));
 }
 std::vector<uint8_t> image(uint8_t flags, std::span<const uint8_t> encoded, bool fm = false)
 {
-    std::vector<uint8_t> bytes{'T', 'D', 0, 0, 0x15, 0, 3, 0, 0, 1};
+    std::vector<uint8_t> bytes{ 'T', 'D', 0, 0, 0x15, 0, 3, 0, 0, 1 };
     bytes.reserve(25 + encoded.size());
     word(bytes, crc(bytes));
-    const std::array track{uint8_t{1}, uint8_t{2}, uint8_t(fm ? 0x80 : 0)};
-    bytes.insert(bytes.end(), track.begin(), track.end()); bytes.push_back(uint8_t(crc(track)));
+    const std::array track{ uint8_t{ 1 }, uint8_t{ 2 }, uint8_t(fm ? 0x80 : 0) };
+    bytes.insert(bytes.end(), track.begin(), track.end());
+    bytes.push_back(uint8_t(crc(track)));
     // Deliberately different physical and ID addresses.
     const std::vector<uint8_t> sector(128, 0xE5);
-    bytes.insert(bytes.end(), {3, 1, 7, 0, flags, uint8_t(crc(sector))});
+    bytes.insert(bytes.end(), { 3, 1, 7, 0, flags, uint8_t(crc(sector)) });
     if (!(flags & 0x30)) {
         word(bytes, uint16_t(encoded.size()));
         bytes.insert(bytes.end(), encoded.begin(), encoded.end());
@@ -59,18 +61,23 @@ void reject(std::span<const uint8_t> bytes)
 {
     DiskImage disk;
     bool failed = false;
-    try { disk.loadFromBytes(bytes, ".td0"); }
-    catch (const FormatException &) { failed = true; }
+    try {
+        disk.loadFromBytes(bytes, ".td0");
+    } catch (const FormatException &) {
+        failed = true;
+    }
     assert(failed && disk.empty());
 }
 void testEncodingsAndFlags()
 {
-    const std::array<uint8_t, 5> repeated{1, 64, 0, 0xE5, 0xE5};
-    const std::array<uint8_t, 7> patterns{2, 0, 2, 0xE5, 0xE5, 1, 63};
+    const std::array<uint8_t, 5> repeated{ 1, 64, 0, 0xE5, 0xE5 };
+    const std::array<uint8_t, 7> patterns{ 2, 0, 2, 0xE5, 0xE5, 1, 63 };
     std::vector<uint8_t> pattern(patterns.begin(), patterns.end());
-    pattern.insert(pattern.end(), {0xE5, 0xE5});
-    std::vector<uint8_t> literal(129, 0xE5); literal[0] = 0;
-    for (const auto &encoded : {literal, std::vector<uint8_t>(repeated.begin(), repeated.end()), pattern}) {
+    pattern.insert(pattern.end(), { 0xE5, 0xE5 });
+    std::vector<uint8_t> literal(129, 0xE5);
+    literal[0] = 0;
+    for (const auto &encoded :
+         { literal, std::vector<uint8_t>(repeated.begin(), repeated.end()), pattern }) {
         DiskImage disk;
         disk.loadFromBytes(image(6, encoded, true), ".td0");
         const auto &sector = disk.findSector(2, 0, 7)->get();
@@ -94,12 +101,23 @@ void testEncodingsAndFlags()
     for (std::size_t n = 0; n < good.size(); ++n)
         reject(std::span(good).first(n));
     auto bad = good;
-    bad[10] ^= 1; reject(bad); // main header CRC
-    bad = good; bad[15] ^= 1; reject(bad); // track CRC
-    bad = good; bad[21] ^= 1; reject(bad); // decoded sector CRC
-    bad = good; bad[24] = 3; reject(bad); // unknown encoding
-    bad = good; bad[25] = 65; reject(bad); // output overrun
-    bad = good; bad[25] = 63; reject(bad); // incomplete sector
+    bad[10] ^= 1;
+    reject(bad); // main header CRC
+    bad = good;
+    bad[15] ^= 1;
+    reject(bad); // track CRC
+    bad = good;
+    bad[21] ^= 1;
+    reject(bad); // decoded sector CRC
+    bad = good;
+    bad[24] = 3;
+    reject(bad); // unknown encoding
+    bad = good;
+    bad[25] = 65;
+    reject(bad); // output overrun
+    bad = good;
+    bad[25] = 63;
+    reject(bad); // incomplete sector
 }
 void testAdvanced(const std::filesystem::path &fixtures)
 {
@@ -113,18 +131,21 @@ void testAdvanced(const std::filesystem::path &fixtures)
             assert(data == normal.findSector(track, 0, id)->get().data);
             assert(data.size() == 1024);
             for (std::size_t i = 0; i < data.size(); ++i) {
-                const uint8_t expected = track == 0 && id == 1 && i < 256 ? 0 : uint8_t(i * 37 + id * 11 + track * 71);
+                const uint8_t expected = track == 0 && id == 1 && i < 256
+                        ? 0
+                        : uint8_t(i * 37 + id * 11 + track * 71);
                 assert(data[i] == expected);
             }
         }
     }
     // A second instance must not inherit adaptive trees/dictionary state.
-    DiskImage second; second.loadFromBytes(bytes);
+    DiskImage second;
+    second.loadFromBytes(bytes);
     assert(second.findSector(1, 0, 32)->get().data == advanced.findSector(1, 0, 32)->get().data);
     reject(std::span(bytes).first(bytes.size() / 2));
     assert(classifyMediaFile("archive.TD0") == MediaClass::Disk);
     assert(classifyMediaFile("unknown", bytes) == MediaClass::Disk);
-    Emulator emulator({.machineId = "cobra1_80k"});
+    Emulator emulator({ .machineId = "cobra1_80k" });
     emulator.loadMedia(MediaFile::fromBytes(bytes, ".TD0"));
     assert(emulator.diskDrive(0)->get().trackCount() == 2);
 }

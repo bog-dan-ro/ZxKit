@@ -27,11 +27,18 @@ namespace zxkit {
 /// The two Next UARTs. All times are in base 3.5 MHz T-states, independent
 /// of CPU turbo. Host callbacks run synchronously on the caller's thread.
 /// Host sockets/protocols belong in the consumer. No host code is serialized.
-class NextUart {
-  public:
+class NextUart
+{
+public:
     using Transmit = std::function<void(unsigned channel, uint8_t byte)>;
-    bool hasTransmitHandler() const noexcept { return bool(m_transmit); }
-    void setTransmitHandler(Transmit handler) { m_transmit = std::move(handler); }
+    bool hasTransmitHandler() const noexcept
+    {
+        return bool(m_transmit);
+    }
+    void setTransmitHandler(Transmit handler)
+    {
+        m_transmit = std::move(handler);
+    }
     void reset(bool hard);
     uint8_t read(uint16_t port, uint64_t now);
     void write(uint16_t port, uint8_t value, uint64_t now);
@@ -40,19 +47,33 @@ class NextUart {
     size_t receive(unsigned channel, std::span<const uint8_t> bytes, uint64_t now);
     void setClearToSend(unsigned channel, bool ready) noexcept;
     void tick(uint64_t now);
-    bool active() const noexcept { return m_active; }
-    uint64_t generation() const noexcept { return m_generation; }
-    uint32_t prescaler(unsigned channel) const { return m_channels.at(channel).prescaler; }
-    uint8_t framing(unsigned channel) const { return m_channels.at(channel).frame; }
+    bool active() const noexcept
+    {
+        return m_active;
+    }
+    uint64_t generation() const noexcept
+    {
+        return m_generation;
+    }
+    uint32_t prescaler(unsigned channel) const
+    {
+        return m_channels.at(channel).prescaler;
+    }
+    uint8_t framing(unsigned channel) const
+    {
+        return m_channels.at(channel).frame;
+    }
     void saveState(StateWriter &w) const;
     void loadState(StateReader &r);
 
-  private:
-    struct Byte {
+private:
+    struct Byte
+    {
         uint64_t time;
         uint8_t value;
     };
-    struct Channel {
+    struct Channel
+    {
         uint32_t prescaler = 243; // FPGA power-on value, uart.vhd
         uint8_t frame = 0x18;
         std::deque<uint8_t> rx, tx;

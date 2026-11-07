@@ -59,7 +59,8 @@ namespace zxkit {
 
 class ZxNextMachine;
 
-struct EmulatorConfig {
+struct EmulatorConfig
+{
     std::string machineId = "48k";
     uint32_t audioSampleRate = 48'000;
     RomResolverFn romResolver;
@@ -75,12 +76,14 @@ struct EmulatorConfig {
     /// the machine id also follows switches made by snapshot loading. Called
     /// with the emulator locked: preload host files and do not acquire its lock.
     std::function<std::vector<uint8_t>(std::string_view machineId, std::string_view romName,
-                                       std::size_t expectedSize)> machineRomResolver;
+                                       std::size_t expectedSize)>
+            machineRomResolver;
 };
 
 /// A media file's content, ready to be loaded. Reading (and unzipping) it is the
 /// slow part: do it before taking the emulator's lock.
-struct MediaFile {
+struct MediaFile
+{
     std::vector<uint8_t> data;
     std::string extension; ///< ".tap", ".z80", ... (lower case, the zip entry's for zip files)
 
@@ -91,9 +94,9 @@ struct MediaFile {
 
 /// What `Emulator::runScanline()` got to.
 enum class RunStatus : uint8_t {
-    LineDone,  ///< the scanline ran, the frame goes on
+    LineDone, ///< the scanline ran, the frame goes on
     FrameDone, ///< the frame's last scanline ran: `lastFrame()` / `audioSamples()` hold the frame's output
-    Stopped    ///< the CPU stopped in the middle of the scanline (breakpoint, watchpoint), see `takePauseEvent()`
+    Stopped ///< the CPU stopped in the middle of the scanline (breakpoint, watchpoint), see `takePauseEvent()`
 };
 
 /// A complete emulated computer: CPU, memory, ULA, machine, peripherals, media and debugger.
@@ -104,7 +107,8 @@ enum class RunStatus : uint8_t {
 /// `readLock()`: the Engine holds the lock for one scanline at a time.
 ///
 /// Instances are independent: as many emulators as needed can live in the same process.
-class Emulator {
+class Emulator
+{
 public:
     explicit Emulator(EmulatorConfig config = {});
     ~Emulator();
@@ -113,16 +117,31 @@ public:
     Emulator &operator=(const Emulator &) = delete;
 
     // ── Machine & peripherals ─────────────────────────────────────────────
-    MachineRegistry &machines() noexcept { return m_config.machines; }
-    const MachineRegistry &machines() const noexcept { return m_config.machines; }
-    MediaRegistry &mediaFormats() noexcept { return m_config.mediaFormats; }
+    MachineRegistry &machines() noexcept
+    {
+        return m_config.machines;
+    }
+    const MachineRegistry &machines() const noexcept
+    {
+        return m_config.machines;
+    }
+    MediaRegistry &mediaFormats() noexcept
+    {
+        return m_config.mediaFormats;
+    }
 
     /// Replaces the machine. When the new one fails to start (e.g. a missing ROM)
     /// the previous machine is restored and the error is rethrown.
     void selectMachine(std::string_view machineId);
     void selectMachine(std::unique_ptr<MachineProfile> machine);
-    MachineProfile &machine() noexcept { return *m_machine; }
-    const MachineProfile &machine() const noexcept { return *m_machine; }
+    MachineProfile &machine() noexcept
+    {
+        return *m_machine;
+    }
+    const MachineProfile &machine() const noexcept
+    {
+        return *m_machine;
+    }
 
     void attachPeripheral(std::unique_ptr<Peripheral> peripheral);
     void detachPeripheral(std::string_view peripheralId);
@@ -150,26 +169,44 @@ public:
 
     /// The last complete frame. Frames are never written again once published, so
     /// hosts can keep them for as long as they need (they are recycled afterwards).
-    const VideoFramePtr &lastFrame() const noexcept { return m_lastFrame; }
+    const VideoFramePtr &lastFrame() const noexcept
+    {
+        return m_lastFrame;
+    }
     /// Renders the current machine state into a new frame and publishes it as `lastFrame()`
     /// (e.g. to show a loaded snapshot while the emulation is paused).
     const VideoFramePtr &refreshFrame();
     /// The stereo samples of the last complete frame, valid until the next `runScanline()`.
-    std::span<const int16_t> audioSamples() const noexcept { return m_audioSamples; }
-    uint32_t audioSampleRate() const noexcept { return m_audioMixer.sampleRate(); }
+    std::span<const int16_t> audioSamples() const noexcept
+    {
+        return m_audioSamples;
+    }
+    uint32_t audioSampleRate() const noexcept
+    {
+        return m_audioMixer.sampleRate();
+    }
     double frameRateHz() const noexcept;
 
     /// Why the CPU stopped (breakpoint, watchpoint, magic breakpoint), once.
-    std::optional<PauseEvent> takePauseEvent() noexcept { return std::exchange(m_pendingPause, std::nullopt); }
+    std::optional<PauseEvent> takePauseEvent() noexcept
+    {
+        return std::exchange(m_pendingPause, std::nullopt);
+    }
 
     void setRewindEnabled(bool enabled, std::size_t maxFrames = 300);
-    bool isRewindEnabled() const noexcept { return m_rewindEnabled; }
+    bool isRewindEnabled() const noexcept
+    {
+        return m_rewindEnabled;
+    }
     void rewind(std::size_t framesBack = 1);
 
     // ── Media ─────────────────────────────────────────────────────────────
     /// Loads any supported media: snapshots, tapes, disks, RZX recordings, SCR screens.
     void loadMedia(const MediaFile &file);
-    void loadMediaFile(const std::filesystem::path &path) { loadMedia(MediaFile::read(path)); }
+    void loadMediaFile(const std::filesystem::path &path)
+    {
+        loadMedia(MediaFile::read(path));
+    }
     /// Saves a snapshot (.sna, .z80, .szx), a Next program (.nex), the tape (.tap, .tzx) or a screenshot (.png).
     std::vector<uint8_t> saveMedia(std::string_view extension);
     void saveMediaFile(const std::filesystem::path &path);
@@ -200,11 +237,16 @@ public:
     MediaActivity mediaActivity() const noexcept;
 
     // ── Debugger ──────────────────────────────────────────────────────────
-    Z80Registers registers() const noexcept { return m_cpu.registers(); }
+    Z80Registers registers() const noexcept
+    {
+        return m_cpu.registers();
+    }
     void setRegisters(const Z80Registers &regs) noexcept;
     std::vector<uint8_t> readMemory(uint16_t address, std::size_t length) const;
-    void writeMemory(uint16_t address, std::span<const uint8_t> data, bool allowRomWrite = false) noexcept;
-    void writeMemory(uint16_t address, std::initializer_list<uint8_t> data, bool allowRomWrite = false) noexcept
+    void writeMemory(uint16_t address, std::span<const uint8_t> data,
+                     bool allowRomWrite = false) noexcept;
+    void writeMemory(uint16_t address, std::initializer_list<uint8_t> data,
+                     bool allowRomWrite = false) noexcept
     {
         writeMemory(address, std::span<const uint8_t>(data.begin(), data.size()), allowRomWrite);
     }
@@ -218,14 +260,21 @@ public:
     bool stepOut();
     /// Runs to the currently mapped instruction at address; false if already there.
     bool runTo(uint16_t address);
-    void cancelRunControl() noexcept { m_debugRun.reset(); }
-    bool hasRunControl() const noexcept { return m_debugRun.has_value(); }
+    void cancelRunControl() noexcept
+    {
+        m_debugRun.reset();
+    }
+    bool hasRunControl() const noexcept
+    {
+        return m_debugRun.has_value();
+    }
     uint32_t addBreakpoint(Breakpoint breakpoint);
     bool removeBreakpoint(uint32_t id);
     bool setBreakpointEnabled(uint32_t id, bool enabled);
     void clearBreakpoints();
     std::vector<DisasmInstruction> disassemble(uint16_t address, std::size_t count) const;
-    std::vector<uint8_t> assembleAndPatch(uint16_t address, std::string_view mnemonic, bool allowRomWrite = false);
+    std::vector<uint8_t> assembleAndPatch(uint16_t address, std::string_view mnemonic,
+                                          bool allowRomWrite = false);
 
     std::size_t pokeFinderReset();
     std::vector<PokeCandidate> pokeFinderSearch(uint8_t value);
@@ -233,22 +282,70 @@ public:
     std::vector<PokeCandidate> pokeFinderSearchDecremented();
 
     // ── Components ────────────────────────────────────────────────────────
-    Clock &clock() noexcept { return m_clock; }
-    const Clock &clock() const noexcept { return m_clock; }
-    Scheduler &scheduler() noexcept { return m_scheduler; }
-    Mmu &mmu() noexcept { return m_mmu; }
-    const Mmu &mmu() const noexcept { return m_mmu; }
-    ContentionModel &contention() noexcept { return m_contention; }
-    IoBus &ioBus() noexcept { return m_ioBus; }
-    RomcsStack &romcs() noexcept { return m_romcs; }
-    Im2Controller &im2() noexcept { return m_im2; }
-    Z80Cpu &cpu() noexcept { return m_cpu; }
-    const Z80Cpu &cpu() const noexcept { return m_cpu; }
-    AudioMixer &audioMixer() noexcept { return m_audioMixer; }
-    KeyboardMatrix &keyboard() noexcept { return m_keyboard; }
-    UlaRenderer &ula() noexcept { return m_ula; }
-    TapeDeck &tapeDeck() noexcept { return m_tapeDeck; }
-    const TapeDeck &tapeDeck() const noexcept { return m_tapeDeck; }
+    Clock &clock() noexcept
+    {
+        return m_clock;
+    }
+    const Clock &clock() const noexcept
+    {
+        return m_clock;
+    }
+    Scheduler &scheduler() noexcept
+    {
+        return m_scheduler;
+    }
+    Mmu &mmu() noexcept
+    {
+        return m_mmu;
+    }
+    const Mmu &mmu() const noexcept
+    {
+        return m_mmu;
+    }
+    ContentionModel &contention() noexcept
+    {
+        return m_contention;
+    }
+    IoBus &ioBus() noexcept
+    {
+        return m_ioBus;
+    }
+    RomcsStack &romcs() noexcept
+    {
+        return m_romcs;
+    }
+    Im2Controller &im2() noexcept
+    {
+        return m_im2;
+    }
+    Z80Cpu &cpu() noexcept
+    {
+        return m_cpu;
+    }
+    const Z80Cpu &cpu() const noexcept
+    {
+        return m_cpu;
+    }
+    AudioMixer &audioMixer() noexcept
+    {
+        return m_audioMixer;
+    }
+    KeyboardMatrix &keyboard() noexcept
+    {
+        return m_keyboard;
+    }
+    UlaRenderer &ula() noexcept
+    {
+        return m_ula;
+    }
+    TapeDeck &tapeDeck() noexcept
+    {
+        return m_tapeDeck;
+    }
+    const TapeDeck &tapeDeck() const noexcept
+    {
+        return m_tapeDeck;
+    }
     void startRzxRecording();
     std::vector<uint8_t> stopRzxRecording();
     void stopRzxPlayback() noexcept;
@@ -256,19 +353,46 @@ public:
     void beginRzxSeekFrame(std::size_t frame);
     void beginRzxSeek(uint64_t milliseconds);
     bool advanceRzxSeek(uint32_t maxVideoFrames = 2);
-    bool isRzxSeeking() const noexcept { return m_rzxSeekTarget.has_value(); }
-    void cancelRzxSeek() noexcept { m_rzxSeekTarget.reset(); }
+    bool isRzxSeeking() const noexcept
+    {
+        return m_rzxSeekTarget.has_value();
+    }
+    void cancelRzxSeek() noexcept
+    {
+        m_rzxSeekTarget.reset();
+    }
     void resumeRzxRecording();
     uint64_t rzxPositionMilliseconds() const;
     uint64_t rzxDurationMilliseconds() const;
 
-    RzxStream &rzx() noexcept { return m_rzx; }
-    const RzxStream &rzx() const noexcept { return m_rzx; }
-    Debugger &debugger() noexcept { return m_debugger; }
-    const Debugger &debugger() const noexcept { return m_debugger; }
-    SdCard &sdCard() noexcept { return m_sdCard; }
-    const SdCard &sdCard() const noexcept { return m_sdCard; }
-    MachineContext &context() noexcept { return m_context; }
+    RzxStream &rzx() noexcept
+    {
+        return m_rzx;
+    }
+    const RzxStream &rzx() const noexcept
+    {
+        return m_rzx;
+    }
+    Debugger &debugger() noexcept
+    {
+        return m_debugger;
+    }
+    const Debugger &debugger() const noexcept
+    {
+        return m_debugger;
+    }
+    SdCard &sdCard() noexcept
+    {
+        return m_sdCard;
+    }
+    const SdCard &sdCard() const noexcept
+    {
+        return m_sdCard;
+    }
+    MachineContext &context() noexcept
+    {
+        return m_context;
+    }
 
 private:
     void installMachine(std::unique_ptr<MachineProfile> machine);
@@ -308,7 +432,8 @@ private:
     UlaRenderer m_ula;
     TapeDeck m_tapeDeck;
     RzxStream m_rzx;
-    struct RzxCheckpoint {
+    struct RzxCheckpoint
+    {
         std::size_t frame = 0, command = 0, bytes = 0;
         std::string machine;
         std::vector<std::string> peripherals;
@@ -350,7 +475,8 @@ private:
     uint64_t m_sdBusyUntil = 0;
     MediaActivity m_mediaActivity;
 
-    struct DebugRun {
+    struct DebugRun
+    {
         enum class Kind { Target, Out, Returning } kind = Kind::Target;
         uint16_t address = 0;
         std::optional<uint16_t> stack;
@@ -365,7 +491,8 @@ private:
     bool m_interruptDebugArmed = false;
     bool checkRunControl(uint16_t pc);
     std::optional<PauseEvent> m_pendingPause;
-    std::optional<uint16_t> m_stoppedAtBreakpoint; // the next instruction there runs without breaking again
+    std::optional<uint16_t>
+            m_stoppedAtBreakpoint; // the next instruction there runs without breaking again
     bool m_rewindEnabled = false;
 };
 

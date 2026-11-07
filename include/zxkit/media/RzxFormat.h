@@ -36,7 +36,8 @@ uint8_t rzxSnapshotAyFlags(std::span<const uint8_t> data, std::string_view exten
 
 enum class RzxState : uint8_t { Idle, Playing, Recording, Completed, Stopped, Error, Reviewing };
 
-struct RzxProgress {
+struct RzxProgress
+{
     RzxState state = RzxState::Idle;
     uint64_t completedFrames = 0;
     uint64_t totalFrames = 0;
@@ -44,7 +45,8 @@ struct RzxProgress {
     bool operator==(const RzxProgress &) const = default;
 };
 
-struct RzxCommand {
+struct RzxCommand
+{
     enum class Type { Snapshot, Position };
     Type type = Type::Position;
     std::size_t frame = 0;
@@ -55,7 +57,8 @@ struct RzxCommand {
 
 /// RZX 0.12/0.13 input stream. Execution/timing belongs to Emulator; direct
 /// consumers supply M1 fetch counts (excluding interrupt acknowledge cycles).
-class RzxStream {
+class RzxStream
+{
 public:
     RzxStream() = default;
     RzxStream(const RzxStream &) = delete;
@@ -67,8 +70,14 @@ public:
     void endRecordedFrame(uint32_t fetches);
     void resumeRecording(IoBus &bus);
     void setPlaybackPosition(std::size_t frame, std::size_t command, bool reviewing, IoBus &bus);
-    std::size_t commandPosition() const noexcept { return m_nextCommand; }
-    uint64_t ticksAt(std::size_t frame) const { return m_ticks.at(frame); }
+    std::size_t commandPosition() const noexcept
+    {
+        return m_nextCommand;
+    }
+    uint64_t ticksAt(std::size_t frame) const
+    {
+        return m_ticks.at(frame);
+    }
     std::size_t frameAtTick(uint64_t tick) const;
     std::vector<uint8_t> stopRecording(IoBus &ioBus);
     void loadRzx(std::span<const uint8_t> raw, IoBus &ioBus);
@@ -76,28 +85,54 @@ public:
     void advancePlaybackFrame(IoBus &ioBus);
     [[noreturn]] void fail(std::string message);
 
-    bool isRecording() const noexcept { return m_state == RzxState::Recording; }
-    bool isPlaying() const noexcept { return (m_state == RzxState::Playing || m_state == RzxState::Reviewing) && m_currentFrame < m_frames.size(); }
-    bool isReviewing() const noexcept { return m_state == RzxState::Reviewing; }
-    RzxState state() const noexcept { return m_state; }
-    std::size_t frameCount() const noexcept { return m_frames.size(); }
-    std::size_t playbackFrame() const noexcept { return m_currentFrame; }
+    bool isRecording() const noexcept
+    {
+        return m_state == RzxState::Recording;
+    }
+    bool isPlaying() const noexcept
+    {
+        return (m_state == RzxState::Playing || m_state == RzxState::Reviewing)
+                && m_currentFrame < m_frames.size();
+    }
+    bool isReviewing() const noexcept
+    {
+        return m_state == RzxState::Reviewing;
+    }
+    RzxState state() const noexcept
+    {
+        return m_state;
+    }
+    std::size_t frameCount() const noexcept
+    {
+        return m_frames.size();
+    }
+    std::size_t playbackFrame() const noexcept
+    {
+        return m_currentFrame;
+    }
     uint16_t playbackFetches() const noexcept;
     RzxProgress progress() const;
     /// Ordered snapshot/position commands before the current input frame.
     std::span<const RzxCommand> pendingCommands() const noexcept;
-    void consumeCommands(std::size_t count) noexcept { m_nextCommand += count; }
+    void consumeCommands(std::size_t count) noexcept
+    {
+        m_nextCommand += count;
+    }
     std::span<const uint8_t> embeddedSnapshot() const noexcept;
     std::string_view embeddedSnapshotExt() const noexcept;
 
 private:
-    struct Frame { uint16_t fetches, inputs; uint32_t offset; };
+    struct Frame
+    {
+        uint16_t fetches, inputs;
+        uint32_t offset;
+    };
     std::vector<uint8_t> serializeRzx() const;
     void connectRecording(IoBus &bus);
     void truncateAtCursor();
 
     std::vector<Frame> m_frames;
-    std::vector<uint64_t> m_ticks{0};
+    std::vector<uint64_t> m_ticks{ 0 };
     std::vector<uint8_t> m_inputs;
     std::vector<RzxCommand> m_commands;
     std::string m_snapshotExt;

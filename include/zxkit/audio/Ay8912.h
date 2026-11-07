@@ -25,27 +25,23 @@
 
 namespace zxkit {
 
-enum class AyStereoMode : uint8_t {
-    Mono = 0,
-    ACB,
-    ABC
-};
+enum class AyStereoMode : uint8_t { Mono = 0, ACB, ABC };
 
 enum class AyModel : uint8_t { AY8912, YM2149 };
 
 /// Cycle-stepped AY-3-8912 / YM2149 programmable sound generator.
-class Ay8912 {
+class Ay8912
+{
 public:
     // Measured AY DAC curve, scaled to the existing mix headroom.
     // Derived from Ayumi (Peter Sovietov, MIT), see LICENSES/ayumi.txt.
-    static constexpr std::array<int16_t, 16> kVolumeLevels = {
-        0, 74, 107, 156, 228, 338, 479, 797, 940, 1521, 2169, 2767, 3656, 4715, 5979, 7422
-    };
+    static constexpr std::array<int16_t, 16> kVolumeLevels = { 0,    74,   107,  156,  228,  338,
+                                                               479,  797,  940,  1521, 2169, 2767,
+                                                               3656, 4715, 5979, 7422 };
 
-    static constexpr std::array<uint8_t, 16> kRegMasks = {
-        0xFF, 0x0F, 0xFF, 0x0F, 0xFF, 0x0F, 0x1F, 0xFF,
-        0x1F, 0x1F, 0x1F, 0xFF, 0xFF, 0x0F, 0xFF, 0xFF
-    };
+    static constexpr std::array<uint8_t, 16> kRegMasks = { 0xFF, 0x0F, 0xFF, 0x0F, 0xFF, 0x0F,
+                                                           0x1F, 0xFF, 0x1F, 0x1F, 0x1F, 0xFF,
+                                                           0xFF, 0x0F, 0xFF, 0xFF };
 
     Ay8912();
 
@@ -62,16 +58,25 @@ public:
     void writeRegister(uint8_t val) noexcept;
 
     /// Host sound preference, retained across hardware reset and rewind.
-    void setModel(AyModel model) noexcept { m_model = model; m_dirty = true; }
-    AyModel model() const noexcept { return m_model; }
+    void setModel(AyModel model) noexcept
+    {
+        m_model = model;
+        m_dirty = true;
+    }
+    AyModel model() const noexcept
+    {
+        return m_model;
+    }
 
     /// Renders `sampleCount` stereo sample pairs into `stereoAccum` (interleaved L, R).
-    void renderSamples(std::span<int32_t> stereoAccum,
-                       uint32_t sampleRate,
+    void renderSamples(std::span<int32_t> stereoAccum, uint32_t sampleRate,
                        uint32_t psgClockHz = 1'773'400,
                        AyStereoMode stereoMode = AyStereoMode::ACB) noexcept;
 
-    const std::array<uint8_t, 16> &registers() const noexcept { return m_regs; }
+    const std::array<uint8_t, 16> &registers() const noexcept
+    {
+        return m_regs;
+    }
 
     void saveState(StateWriter &w) const;
     void loadState(StateReader &r);
@@ -88,8 +93,8 @@ private:
     uint8_t m_selectedReg = 0;
     std::array<uint8_t, 16> m_regs{};
     std::array<uint16_t, 3> m_toneCount{};
-    std::array<uint8_t, 3> m_toneOut{1, 1, 1};
-    std::array<uint16_t, 3> m_tonePeriod{1, 1, 1};
+    std::array<uint8_t, 3> m_toneOut{ 1, 1, 1 };
+    std::array<uint16_t, 3> m_tonePeriod{ 1, 1, 1 };
     uint8_t m_toneMask = 7;
     uint8_t m_outputMask = 0;
     uint8_t m_outputEnvelope = 0;

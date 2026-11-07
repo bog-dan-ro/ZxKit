@@ -33,7 +33,8 @@ namespace zxkit {
 using ClientId = uint32_t;
 inline constexpr ClientId kLocalDebugClient = 1;
 
-struct TraceEntry {
+struct TraceEntry
+{
     uint64_t cycle = 0;
     uint16_t pc = 0;
     uint16_t af = 0;
@@ -43,25 +44,56 @@ struct TraceEntry {
     uint16_t sp = 0;
 };
 
-class Debugger {
+class Debugger
+{
 public:
-    BreakpointManager &breakpoints() noexcept { return m_breakpoints; }
-    const BreakpointManager &breakpoints() const noexcept { return m_breakpoints; }
+    BreakpointManager &breakpoints() noexcept
+    {
+        return m_breakpoints;
+    }
+    const BreakpointManager &breakpoints() const noexcept
+    {
+        return m_breakpoints;
+    }
 
-    PokeFinder &pokeFinder() noexcept { return m_pokeFinder; }
-    const PokeFinder &pokeFinder() const noexcept { return m_pokeFinder; }
+    PokeFinder &pokeFinder() noexcept
+    {
+        return m_pokeFinder;
+    }
+    const PokeFinder &pokeFinder() const noexcept
+    {
+        return m_pokeFinder;
+    }
 
-    RewindBuffer &rewindBuffer() noexcept { return m_rewindBuffer; }
-    const RewindBuffer &rewindBuffer() const noexcept { return m_rewindBuffer; }
+    RewindBuffer &rewindBuffer() noexcept
+    {
+        return m_rewindBuffer;
+    }
+    const RewindBuffer &rewindBuffer() const noexcept
+    {
+        return m_rewindBuffer;
+    }
 
     void setTraceEnabled(bool enabled, std::size_t maxEntries = 4096) noexcept;
-    bool isTraceEnabled() const noexcept { return m_traceEnabled; }
+    bool isTraceEnabled() const noexcept
+    {
+        return m_traceEnabled;
+    }
 
     void recordTrace(uint64_t cycle, const Z80Registers &regs);
-    const std::deque<TraceEntry> &traceLog() const noexcept { return m_traceLog; }
+    const std::deque<TraceEntry> &traceLog() const noexcept
+    {
+        return m_traceLog;
+    }
 
-    SymbolTable &symbolTable() noexcept { return m_symbolTable; }
-    const SymbolTable &symbolTable() const noexcept { return m_symbolTable; }
+    SymbolTable &symbolTable() noexcept
+    {
+        return m_symbolTable;
+    }
+    const SymbolTable &symbolTable() const noexcept
+    {
+        return m_symbolTable;
+    }
 
     void setSymbol(uint16_t address, std::string label);
 

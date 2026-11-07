@@ -25,9 +25,10 @@
 
 namespace zxkit {
 
-class NextReg {
+class NextReg
+{
 public:
-    using ReadCallback  = std::function<uint8_t(uint8_t reg, uint8_t storedVal)>;
+    using ReadCallback = std::function<uint8_t(uint8_t reg, uint8_t storedVal)>;
     using WriteCallback = std::function<void(uint8_t reg, uint8_t val)>;
     using WatchCallback = std::function<void(uint8_t reg, uint8_t oldVal, uint8_t newVal)>;
 

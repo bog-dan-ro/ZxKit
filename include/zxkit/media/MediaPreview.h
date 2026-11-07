@@ -38,7 +38,8 @@ enum class MediaClass : uint8_t {
 };
 
 /// Classifies a media file by filename extension and/or magic bytes.
-MediaClass classifyMediaFile(std::string_view fileName, std::span<const uint8_t> data = {}) noexcept;
+MediaClass classifyMediaFile(std::string_view fileName,
+                             std::span<const uint8_t> data = {}) noexcept;
 
 /// Renders a standard 6912-byte ZX Spectrum screen (256x192 bitmap + 768 attributes)
 /// into a 256x192 RGBA8888 VideoFrame without needing a running Engine instance.

@@ -27,7 +27,8 @@
 
 namespace zxkit {
 
-struct Beta128Options {
+struct Beta128Options
+{
     /// The TR-DOS ROM as a 16K page of the machine's own ROM bank (Pentagon, Scorpion).
     /// Without it, the interface loads `trdos.rom` into a bank of its own.
     std::optional<BankId> machineRomBank;
@@ -47,33 +48,53 @@ bool insertTrDosBootLoader(DiskImage &disk);
 /// The Beta 128 disk interface (TR-DOS): a WD1793, four drives, and the TR-DOS ROM that pages
 /// in at 0x3Dxx. Its ports (0x1F, 0x3F, 0x5F, 0x7F and the system port 0xFF) answer only while
 /// the TR-DOS ROM is paged in. The Pentagon and the Scorpion have one built in.
-class Beta128Peripheral : public Peripheral {
+class Beta128Peripheral : public Peripheral
+{
 public:
     Beta128Peripheral() = default;
-    explicit Beta128Peripheral(Beta128Options options)
-        : m_options(std::move(options))
-    {}
+    explicit Beta128Peripheral(Beta128Options options) : m_options(std::move(options)) { }
 
-    std::string_view id() const noexcept override { return "beta128"; }
-    std::string_view name() const noexcept override { return "Beta 128 (TR-DOS)"; }
+    std::string_view id() const noexcept override
+    {
+        return "beta128";
+    }
+    std::string_view name() const noexcept override
+    {
+        return "Beta 128 (TR-DOS)";
+    }
 
     void onAttach(MachineContext &ctx) override;
     void onDetach(MachineContext &ctx) override;
     void reset(MachineContext &ctx, ResetKind kind) override;
 
-    std::size_t diskDriveCount() const noexcept override { return Wd1793::kDriveCount; }
+    std::size_t diskDriveCount() const noexcept override
+    {
+        return Wd1793::kDriveCount;
+    }
     OptionalRef<DiskImage> diskDrive(std::size_t idx) noexcept override;
 
     /// The TR-DOS ROM is paged in (and the ports answer).
-    bool isPaged() const noexcept { return m_paged; }
+    bool isPaged() const noexcept
+    {
+        return m_paged;
+    }
     /// Pages the TR-DOS ROM in or out, e.g. to start TR-DOS: page it in and jump to 0.
     void setPaged(MachineContext &ctx, bool paged);
 
-    Wd1793 &fdc() noexcept { return m_fdc; }
-    const Wd1793 &fdc() const noexcept { return m_fdc; }
+    Wd1793 &fdc() noexcept
+    {
+        return m_fdc;
+    }
+    const Wd1793 &fdc() const noexcept
+    {
+        return m_fdc;
+    }
 
 private:
-    bool basicRomSelected() const { return !m_options.basicRomSelected || m_options.basicRomSelected(); }
+    bool basicRomSelected() const
+    {
+        return !m_options.basicRomSelected || m_options.basicRomSelected();
+    }
     static Z80Cpu::PcPages hookPages(bool paged) noexcept;
     void writeSystem(uint8_t value) noexcept;
 

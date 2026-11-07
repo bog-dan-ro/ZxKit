@@ -28,7 +28,8 @@
 
 namespace zxkit {
 
-struct IoReadResult {
+struct IoReadResult
+{
     uint8_t value = 0xFF;
     uint8_t attachedMask = 0xFF; // 0xFF = all bits driven, 0x00 = unattached
     /// The device owns the port: the handlers after it (lower priority) aren't asked, e.g. the
@@ -36,10 +37,14 @@ struct IoReadResult {
     bool exclusive = false;
 };
 
-class IoBus {
-  public:
+class IoBus
+{
+public:
     IoBus() = default;
-    IoBus(const IoBus &other) { *this = other; }
+    IoBus(const IoBus &other)
+    {
+        *this = other;
+    }
     IoBus &operator=(const IoBus &other);
     IoBus(IoBus &&) noexcept = default;
     IoBus &operator=(IoBus &&) noexcept = default;
@@ -51,7 +56,8 @@ class IoBus {
     using WatchpointCb = std::function<void(uint16_t port, uint8_t value, bool isWrite)>;
     using NextRegOpcodeCb = std::function<void(uint8_t reg, uint8_t value)>;
 
-    struct HandlerEntry {
+    struct HandlerEntry
+    {
         uint64_t id = 0;
         std::string ownerId;
         uint16_t mask = 0;
@@ -67,18 +73,20 @@ class IoBus {
     /// `priority` orders the handlers (0: by the number of decoded address bits).
     /// A negative priority makes a default read responder, used only when no
     /// other handler answers the port.
-    uint64_t registerHandler(std::string ownerId, uint16_t mask, uint16_t value, ReadHandler rd, WriteHandler wr,
-                             int priority = 0, bool exclusiveWrite = false);
+    uint64_t registerHandler(std::string ownerId, uint16_t mask, uint16_t value, ReadHandler rd,
+                             WriteHandler wr, int priority = 0, bool exclusiveWrite = false);
 
-    uint64_t registerSimpleHandler(std::string ownerId, uint16_t mask, uint16_t value, SimpleReadFn rd, WriteHandler wr,
-                                   int priority = 0, bool exclusiveWrite = false);
+    uint64_t registerSimpleHandler(std::string ownerId, uint16_t mask, uint16_t value,
+                                   SimpleReadFn rd, WriteHandler wr, int priority = 0,
+                                   bool exclusiveWrite = false);
 
     void unregisterOwner(std::string_view ownerId);
     void addObserver(IoObserver observer);
     void setFloatingBusCallback(FloatingBusFn fn);
     void setWatchpointCallback(WatchpointCb cb);
     void setNextRegOpcodeCallback(NextRegOpcodeCb cb);
-    void setRzxCallbacks(std::function<std::optional<uint8_t>(uint16_t)> playbackOverride, std::function<void(uint8_t)> recordHook);
+    void setRzxCallbacks(std::function<std::optional<uint8_t>(uint16_t)> playbackOverride,
+                         std::function<void(uint8_t)> recordHook);
 
     /// Called by a write handler when its hardware decode gate is currently disabled.
     void declineWrite() noexcept;
@@ -92,11 +100,12 @@ class IoBus {
     void write(uint16_t port, uint8_t value);
     void writeNextRegOpcode(uint8_t reg, uint8_t value);
 
-  private:
+private:
     // Address decoding changes only when peripherals attach/detach. Index by
     // low address byte so unrelated devices add no cost to a hot port.
     void rebuildCandidates() const;
-    struct DispatchCache {
+    struct DispatchCache
+    {
         std::array<std::vector<const HandlerEntry *>, 256> reads, writes;
     };
     mutable std::unique_ptr<DispatchCache> m_dispatch;

@@ -33,12 +33,14 @@ namespace zxkit {
 /// ROMs) and, with a block writer, writing them (a host adding files to the card). Understands MBR
 /// partitioned and unpartitioned images, and long file names. Paths use '/' (or '\'), names are
 /// UTF-8 and lookups are case-insensitive (ASCII).
-class FatVolume {
+class FatVolume
+{
 public:
     using BlockReader = std::function<bool(uint64_t lba, std::span<uint8_t, 512> out)>;
     using BlockWriter = std::function<bool(uint64_t lba, std::span<const uint8_t, 512> in)>;
 
-    struct DirEntry {
+    struct DirEntry
+    {
         std::string name; ///< the long name, or the 8.3 one
         uint32_t size = 0;
         bool isDirectory = false;
@@ -51,8 +53,14 @@ public:
     /// Throws FormatException if there is none.
     explicit FatVolume(BlockReader reader, BlockWriter writer = {});
 
-    uint8_t fatBits() const noexcept { return m_fatBits; }
-    bool isWritable() const noexcept { return static_cast<bool>(m_write); }
+    uint8_t fatBits() const noexcept
+    {
+        return m_fatBits;
+    }
+    bool isWritable() const noexcept
+    {
+        return static_cast<bool>(m_write);
+    }
     uint64_t totalBytes() const noexcept;
     /// Counts the free clusters (reads the whole FAT).
     uint64_t freeBytes() const;
@@ -82,7 +90,8 @@ private:
     using ShortName = std::array<uint8_t, 11>;
     using RawEntry = std::array<uint8_t, 32>;
 
-    struct Entry {
+    struct Entry
+    {
         ShortName rawName{};
         std::string shortName;
         std::string longName;
@@ -90,23 +99,27 @@ private:
         uint32_t size = 0;
         bool isDir = false;
         uint8_t attributes = 0;
-        std::size_t slot = 0;      // the 32-byte slot of the 8.3 entry in its directory
+        std::size_t slot = 0; // the 32-byte slot of the 8.3 entry in its directory
         std::size_t firstSlot = 0; // its first long name slot (`slot` without a long name)
     };
 
-    struct Directory {
-        uint32_t cluster = 0;          // 0: the root
+    struct Directory
+    {
+        uint32_t cluster = 0; // 0: the root
         std::vector<uint64_t> sectors; // in order
         std::vector<Entry> entries;
-        std::vector<bool> used;        // per slot
-        std::size_t end = 0;           // the slot of the end marker (all slots from it on are free)
+        std::vector<bool> used; // per slot
+        std::size_t end = 0; // the slot of the end marker (all slots from it on are free)
     };
 
     bool mountAt(uint64_t lba);
     uint32_t fatEntry(uint32_t cluster) const;
     bool isEndOfChain(uint32_t cluster) const noexcept;
     uint64_t clusterLba(uint32_t cluster) const noexcept;
-    uint32_t clusterBytes() const noexcept { return m_sectorsPerCluster * 512; }
+    uint32_t clusterBytes() const noexcept
+    {
+        return m_sectorsPerCluster * 512;
+    }
     std::vector<uint32_t> chain(uint32_t firstCluster) const;
     std::vector<uint8_t> readChain(uint32_t firstCluster, std::size_t maxBytes) const;
     Directory readDirectory(uint32_t cluster) const;
@@ -127,8 +140,9 @@ private:
     bool hasFreeClusters(std::size_t count) const;
     void freeChain(uint32_t firstCluster);
     void writeClusters(std::span<const uint32_t> clusters, std::span<const uint8_t> data);
-    std::vector<RawEntry> makeEntries(const Directory &dir, std::string_view name, uint8_t attributes,
-                                      uint32_t firstCluster, uint32_t size) const;
+    std::vector<RawEntry> makeEntries(const Directory &dir, std::string_view name,
+                                      uint8_t attributes, uint32_t firstCluster,
+                                      uint32_t size) const;
     void addEntries(Directory &dir, std::span<const RawEntry> entries);
     void removeEntry(const Directory &dir, const Entry &entry);
 
@@ -136,23 +150,24 @@ private:
     BlockWriter m_write;
     uint8_t m_fatBits = 0;
     uint32_t m_sectorsPerCluster = 0;
-    uint64_t m_fatLba = 0;     // the FAT in use (the first one when they are mirrored)
+    uint64_t m_fatLba = 0; // the FAT in use (the first one when they are mirrored)
     uint32_t m_fatSectors = 0; // per FAT
-    uint32_t m_fatCopies = 1;  // written by the write operations
+    uint32_t m_fatCopies = 1; // written by the write operations
     uint64_t m_rootDirLba = 0; // FAT12/16 fixed root directory
     uint32_t m_rootDirSectors = 0;
     uint32_t m_rootCluster = 0; // FAT32 root directory cluster
     uint64_t m_dataLba = 0;
     uint32_t m_clusterCount = 0;
     uint64_t m_fsInfoLba = 0; // FAT32: the free cluster count and hint (0: none)
-    uint32_t m_nextFree = 2;  // where to look for free clusters
+    uint32_t m_nextFree = 2; // where to look for free clusters
 
-    struct CachedSector {
+    struct CachedSector
+    {
         Sector data;
         bool dirty = false;
     };
     mutable std::map<uint64_t, CachedSector> m_fat; // by sector index in the FAT
-    int64_t m_freeDelta = 0;                        // clusters freed minus allocated, for the FSInfo
+    int64_t m_freeDelta = 0; // clusters freed minus allocated, for the FSInfo
 };
 
 } // namespace zxkit

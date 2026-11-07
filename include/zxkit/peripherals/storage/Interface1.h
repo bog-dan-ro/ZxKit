@@ -27,12 +27,15 @@
 namespace zxkit {
 
 /// Sinclair ZX Interface 1 & Microdrive (.mdr) Peripheral
-class Interface1Peripheral : public Peripheral {
+class Interface1Peripheral : public Peripheral
+{
 public:
     static constexpr std::size_t kMaxCartridges = 8;
-    static constexpr std::size_t kMdrBlockSize = 543; // 15 header + 15 record + 512 data + 1 checksum
+    static constexpr std::size_t kMdrBlockSize =
+            543; // 15 header + 15 record + 512 data + 1 checksum
 
-    struct Cartridge {
+    struct Cartridge
+    {
         std::vector<uint8_t> data;
         std::size_t headPos = 0;
         bool writeProtected = false;

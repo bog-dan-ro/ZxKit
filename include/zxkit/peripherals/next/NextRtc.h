@@ -25,22 +25,35 @@ namespace zxkit {
 /// DS1307-compatible RTC at I2C address 0x68. Open-drain SDA, repeated START,
 /// ACK/NACK, sequential access, BCD date/time, 12/24h, CH and battery RAM.
 /// Uses UTC by default; a host can supply local calendar seconds or a test clock.
-class NextRtc {
-  public:
+class NextRtc
+{
+public:
     using TimeSource = std::function<int64_t()>;
     NextRtc();
-    void setTimeSource(TimeSource source) { m_now = std::move(source); }
+    void setTimeSource(TimeSource source)
+    {
+        m_now = std::move(source);
+    }
     void resetBus() noexcept;
     void setScl(bool high);
     void setSda(bool high);
-    bool scl() const noexcept { return m_scl; }
-    bool sda() const noexcept { return m_sda && !m_driveLow; }
-    std::span<const uint8_t, 56> nvram() const noexcept { return std::span(m_regs).subspan<8>(); }
+    bool scl() const noexcept
+    {
+        return m_scl;
+    }
+    bool sda() const noexcept
+    {
+        return m_sda && !m_driveLow;
+    }
+    std::span<const uint8_t, 56> nvram() const noexcept
+    {
+        return std::span(m_regs).subspan<8>();
+    }
     void setNvram(std::span<const uint8_t, 56> bytes);
     void saveState(StateWriter &w) const;
     void loadState(StateReader &r);
 
-  private:
+private:
     enum class Phase : uint8_t { Idle, Receive, Ack, Send, MasterAck };
     void received();
     void prepareSend();

@@ -41,7 +41,8 @@ namespace zxkit {
 /// over and starts at 0x0000. The built-in DivMMC (port 0xE3, NR 0xB8..0xBB
 /// automap entry points) and the SPI SD card interface (ports 0xE7 / 0xEB) give
 /// NextZXOS its SD card.
-class ZxNextMachine : public MachineProfile {
+class ZxNextMachine : public MachineProfile
+{
 public:
     std::string_view id() const noexcept override;
     std::string_view name() const noexcept override;
@@ -55,16 +56,21 @@ public:
 
     void onFrameStart(MachineContext &ctx) override;
     void onScanlineStart(uint16_t line, MachineContext &ctx) override;
-    void renderScanline(uint32_t y, const MachineContext &ctx, const UlaRenderer &ula, VideoFrame &frame) override;
+    void renderScanline(uint32_t y, const MachineContext &ctx, const UlaRenderer &ula,
+                        VideoFrame &frame) override;
     void renderFullFrame(MachineContext &ctx, UlaRenderer &ula, VideoFrame &frame) override;
     uint32_t frameWidth() const noexcept override;
     uint32_t frameHeight() const noexcept override;
     void onFrameEnd(MachineContext &ctx, UlaRenderer &ula) override;
 
     uint8_t lastPort7ffd() const noexcept override;
-    bool is48kMode() const noexcept override { return (m_port7ffd & 0x20) != 0; }
+    bool is48kMode() const noexcept override
+    {
+        return (m_port7ffd & 0x20) != 0;
+    }
     uint8_t lastPort1ffd() const noexcept override;
-    void setPagingPorts(uint8_t port7ffd, uint8_t port1ffd, MachineContext &ctx, UlaRenderer &ula) override;
+    void setPagingPorts(uint8_t port7ffd, uint8_t port1ffd, MachineContext &ctx,
+                        UlaRenderer &ula) override;
 
     NextReg &nextReg() noexcept;
     const NextReg &nextReg() const noexcept;
@@ -75,84 +81,96 @@ public:
     NextVideo &nextVideo() noexcept;
     const NextVideo &nextVideo() const noexcept;
 
-    NextUart &uart() noexcept { return m_uart; }
-    NextRtc &rtc() noexcept { return m_rtc; }
+    NextUart &uart() noexcept
+    {
+        return m_uart;
+    }
+    NextRtc &rtc() noexcept
+    {
+        return m_rtc;
+    }
     void setExtendedKey(NextKey key, bool pressed) noexcept;
     bool canRequestNmi(bool multiface) const noexcept;
     /// Physical buttons respect NextREG 06 enables; software requests set NR02 causes.
     bool requestNmi(MachineContext &ctx, bool multiface, bool button = true);
     uint64_t uartTime(const MachineContext &ctx) const noexcept;
 
-    bool isDivMmcMapped() const noexcept { return m_divMmcMapped; }
+    bool isDivMmcMapped() const noexcept
+    {
+        return m_divMmcMapped;
+    }
 
     void saveState(StateWriter &w) const override;
     void loadState(StateReader &r, MachineContext &ctx, UlaRenderer &ula) override;
 
 private:
-  void armMultifaceEntry(MachineContext &ctx);
-  void rebuildExtendedMatrix() noexcept;
-  void wireMultiface(MachineContext &ctx, UlaRenderer &ula);
-  void loadRoms(MachineContext &ctx);
-  void wireNextRegs(MachineContext &ctx, UlaRenderer &ula);
-  void wirePorts(MachineContext &ctx, UlaRenderer &ula);
-  void wireDivMmc(MachineContext &ctx);
-  void handOverState(bool hard);
+    void armMultifaceEntry(MachineContext &ctx);
+    void rebuildExtendedMatrix() noexcept;
+    void wireMultiface(MachineContext &ctx, UlaRenderer &ula);
+    void loadRoms(MachineContext &ctx);
+    void wireNextRegs(MachineContext &ctx, UlaRenderer &ula);
+    void wirePorts(MachineContext &ctx, UlaRenderer &ula);
+    void wireDivMmc(MachineContext &ctx);
+    void handOverState(bool hard);
 
-  // Memory
-  void updateMemoryMap(MachineContext &ctx, UlaRenderer &ula);
-  void mapSlot(MachineContext &ctx, uint8_t slot);
-  void mapRomSlot(MachineContext &ctx, uint8_t slot);
-  void updateLayer2MemoryMapping(MachineContext &ctx);
-  void updateLegacyPaging(MachineContext &ctx, UlaRenderer &ula, bool rebuildTop = true);
-  uint8_t machineType() const noexcept { return m_machineType; }
-  uint8_t romNumber() const noexcept;
-  uint8_t altRomHalf() const noexcept;
-  bool isRom3Paged() const noexcept;
-  void writeNr8e(MachineContext &ctx, UlaRenderer &ula, uint8_t val);
-  uint8_t readNr8e() const noexcept;
+    // Memory
+    void updateMemoryMap(MachineContext &ctx, UlaRenderer &ula);
+    void mapSlot(MachineContext &ctx, uint8_t slot);
+    void mapRomSlot(MachineContext &ctx, uint8_t slot);
+    void updateLayer2MemoryMapping(MachineContext &ctx);
+    void updateLegacyPaging(MachineContext &ctx, UlaRenderer &ula, bool rebuildTop = true);
+    uint8_t machineType() const noexcept
+    {
+        return m_machineType;
+    }
+    uint8_t romNumber() const noexcept;
+    uint8_t altRomHalf() const noexcept;
+    bool isRom3Paged() const noexcept;
+    void writeNr8e(MachineContext &ctx, UlaRenderer &ula, uint8_t val);
+    uint8_t readNr8e() const noexcept;
 
-  // DivMMC
-  bool divMmcEntry(uint16_t pc, bool instant) const noexcept;
-  void updateDivMmc(MachineContext &ctx);
+    // DivMMC
+    bool divMmcEntry(uint16_t pc, bool instant) const noexcept;
+    void updateDivMmc(MachineContext &ctx);
 
-  // SPI
-  bool isSdCardSelected() const noexcept;
+    // SPI
+    bool isSdCardSelected() const noexcept;
 
-  void scheduleReset(MachineContext &ctx, UlaRenderer &ula, ResetKind kind);
-  void raiseInterrupt(MachineContext &ctx, uint8_t im2Vector);
+    void scheduleReset(MachineContext &ctx, UlaRenderer &ula, ResetKind kind);
+    void raiseInterrupt(MachineContext &ctx, uint8_t im2Vector);
 
-  NextReg m_nextReg;
-  NextUart m_uart;
-  NextRtc m_rtc;
-  uint16_t m_extendedKeys = 0;
-  std::array<uint8_t, 8> m_extendedRows{0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F};
-  BankId m_mfRomBank = 0, m_mfRamBank = 0;
-  bool m_mfActive = false, m_mfMapped = false, m_mfInvisible = true;
-  bool m_mfAwaitingEntry = false;
+    NextReg m_nextReg;
+    NextUart m_uart;
+    NextRtc m_rtc;
+    uint16_t m_extendedKeys = 0;
+    std::array<uint8_t, 8> m_extendedRows{ 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F };
+    BankId m_mfRomBank = 0, m_mfRamBank = 0;
+    bool m_mfActive = false, m_mfMapped = false, m_mfInvisible = true;
+    bool m_mfAwaitingEntry = false;
 
-  Copper m_copper;
-  ZxnDma m_dma;
-  ZxnCtc m_ctc;
-  NextVideo m_nextVideo;
-  BankId m_altRomBank = 0; // two 16KB alt ROMs (enAltZX.rom), writable through NR 0x8C
-  BankId m_divRomBank = 0; // DivMMC 8KB ROM (enNxtmmc.rom)
-  BankId m_divRamBank = 0; // DivMMC 128KB RAM (16 x 8KB)
+    Copper m_copper;
+    ZxnDma m_dma;
+    ZxnCtc m_ctc;
+    NextVideo m_nextVideo;
+    BankId m_altRomBank = 0; // two 16KB alt ROMs (enAltZX.rom), writable through NR 0x8C
+    BankId m_divRomBank = 0; // DivMMC 8KB ROM (enNxtmmc.rom)
+    BankId m_divRamBank = 0; // DivMMC 128KB RAM (16 x 8KB)
 
-  uint8_t m_machineType = 3; // NR 0x03: 1 = 48K, 2 = 128K, 3 = +3, 4 = Pentagon
-  uint8_t m_timing = 3;
-  uint8_t m_resetType = 0x02; // NR 0x02 read: 2 = hard, 1 = soft reset
-  uint8_t m_port7ffd = 0;
-  uint8_t m_port1ffd = 0;
-  uint8_t m_portDffd = 0;
-  bool m_specialPaging = false;
+    uint8_t m_machineType = 3; // NR 0x03: 1 = 48K, 2 = 128K, 3 = +3, 4 = Pentagon
+    uint8_t m_timing = 3;
+    uint8_t m_resetType = 0x02; // NR 0x02 read: 2 = hard, 1 = soft reset
+    uint8_t m_port7ffd = 0;
+    uint8_t m_port1ffd = 0;
+    uint8_t m_portDffd = 0;
+    bool m_specialPaging = false;
 
-  uint8_t m_portE3 = 0;
-  bool m_divAutomap = false;
-  bool m_divNmiLatched = false;
-  bool m_divMmcMapped = false;
+    uint8_t m_portE3 = 0;
+    bool m_divAutomap = false;
+    bool m_divNmiLatched = false;
+    bool m_divMmcMapped = false;
 
-  uint8_t m_spiCs = 0xFF;
-  uint8_t m_spiLatch = 0xFF;
+    uint8_t m_spiCs = 0xFF;
+    uint8_t m_spiLatch = 0xFF;
 };
 
 } // namespace zxkit

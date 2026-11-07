@@ -27,15 +27,12 @@ namespace zxkit {
 
 /// An object shared between threads: its spin lock lives next to it and the
 /// only way in is a lock guard, `writeLock()` or `readLock()` (see SafeCpp).
-template <typename T>
-using Shared = safe::SharedPtr<T, SpinSharedMutex>;
+template <typename T> using Shared = safe::SharedPtr<T, SpinSharedMutex>;
 
 /// Observes a `Shared` object without keeping it alive; `lock()` it to use it.
-template <typename T>
-using Weak = safe::WeakPtr<T, SpinSharedMutex>;
+template <typename T> using Weak = safe::WeakPtr<T, SpinSharedMutex>;
 
-template <typename T, typename... Args>
-Shared<T> makeShared(Args &&...args)
+template <typename T, typename... Args> Shared<T> makeShared(Args &&...args)
 {
     return safe::makeShared<T, SpinSharedMutex>(std::forward<Args>(args)...);
 }

@@ -46,7 +46,9 @@ inline EmulatorConfig romConfig(const std::filesystem::path &romDir, std::string
 {
     EmulatorConfig config;
     config.machineId = std::move(machineId);
-    config.romResolver = [romDir](std::string_view name, std::size_t) { return readFile(romDir / name); };
+    config.romResolver = [romDir](std::string_view name, std::size_t) {
+        return readFile(romDir / name);
+    };
     return config;
 }
 
@@ -67,23 +69,25 @@ inline void type(Emulator &emulator, std::string_view text)
     static constexpr std::array<ZxKey, 26> kLetters{
         ZxKey::A, ZxKey::B, ZxKey::C, ZxKey::D, ZxKey::E, ZxKey::F, ZxKey::G, ZxKey::H, ZxKey::I,
         ZxKey::J, ZxKey::K, ZxKey::L, ZxKey::M, ZxKey::N, ZxKey::O, ZxKey::P, ZxKey::Q, ZxKey::R,
-        ZxKey::S, ZxKey::T, ZxKey::U, ZxKey::V, ZxKey::W, ZxKey::X, ZxKey::Y, ZxKey::Z};
-    static constexpr std::array<ZxKey, 10> kDigits{
-        ZxKey::Num0, ZxKey::Num1, ZxKey::Num2, ZxKey::Num3, ZxKey::Num4,
-        ZxKey::Num5, ZxKey::Num6, ZxKey::Num7, ZxKey::Num8, ZxKey::Num9};
+        ZxKey::S, ZxKey::T, ZxKey::U, ZxKey::V, ZxKey::W, ZxKey::X, ZxKey::Y, ZxKey::Z
+    };
+    static constexpr std::array<ZxKey, 10> kDigits{ ZxKey::Num0, ZxKey::Num1, ZxKey::Num2,
+                                                    ZxKey::Num3, ZxKey::Num4, ZxKey::Num5,
+                                                    ZxKey::Num6, ZxKey::Num7, ZxKey::Num8,
+                                                    ZxKey::Num9 };
     for (char c : text) {
         if (c >= 'a' && c <= 'z')
-            tap(emulator, {kLetters[static_cast<std::size_t>(c - 'a')]});
+            tap(emulator, { kLetters[static_cast<std::size_t>(c - 'a')] });
         else if (c >= '0' && c <= '9')
-            tap(emulator, {kDigits[static_cast<std::size_t>(c - '0')]});
+            tap(emulator, { kDigits[static_cast<std::size_t>(c - '0')] });
         else if (c == ' ')
-            tap(emulator, {ZxKey::Space});
+            tap(emulator, { ZxKey::Space });
         else if (c == '.')
-            tap(emulator, {ZxKey::SymbolShift, ZxKey::M});
+            tap(emulator, { ZxKey::SymbolShift, ZxKey::M });
         else if (c == '+')
-            tap(emulator, {ZxKey::SymbolShift, ZxKey::K});
+            tap(emulator, { ZxKey::SymbolShift, ZxKey::K });
         else if (c == '\n')
-            tap(emulator, {ZxKey::Enter});
+            tap(emulator, { ZxKey::Enter });
     }
 }
 

@@ -23,7 +23,8 @@
 
 namespace zxkit {
 
-class KempstonMousePeripheral : public Peripheral {
+class KempstonMousePeripheral : public Peripheral
+{
 public:
     std::string_view id() const noexcept override;
     std::string_view name() const noexcept override;

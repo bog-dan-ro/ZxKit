@@ -24,23 +24,36 @@
 namespace zxkit {
 
 /// Ring buffer of serialized machine states for instant frame-level time travel / rewind.
-class RewindBuffer {
+class RewindBuffer
+{
 public:
-    explicit RewindBuffer(std::size_t maxFrames = 300) noexcept
-        : m_maxFrames(maxFrames)
-    {
-    }
+    explicit RewindBuffer(std::size_t maxFrames = 300) noexcept : m_maxFrames(maxFrames) { }
 
     void setCapacity(std::size_t maxFrames);
     /// Upper bound for the memory used by the stored states; the oldest frames
     /// are dropped first (a ZX Next state is ~2MB, a 48K one ~50KB).
     void setMemoryBudget(std::size_t bytes);
 
-    std::size_t capacity() const noexcept { return m_maxFrames; }
-    std::size_t memoryBudget() const noexcept { return m_maxBytes; }
-    std::size_t memoryUsed() const noexcept { return m_totalBytes; }
-    std::size_t size() const noexcept { return m_frames.size(); }
-    bool empty() const noexcept { return m_frames.empty(); }
+    std::size_t capacity() const noexcept
+    {
+        return m_maxFrames;
+    }
+    std::size_t memoryBudget() const noexcept
+    {
+        return m_maxBytes;
+    }
+    std::size_t memoryUsed() const noexcept
+    {
+        return m_totalBytes;
+    }
+    std::size_t size() const noexcept
+    {
+        return m_frames.size();
+    }
+    bool empty() const noexcept
+    {
+        return m_frames.empty();
+    }
 
     void clear() noexcept;
     void pushSnapshot(std::vector<uint8_t> stateBytes);

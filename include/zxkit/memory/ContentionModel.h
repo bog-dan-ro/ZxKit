@@ -26,22 +26,33 @@ namespace zxkit {
 
 enum class ContentionPattern : uint8_t {
     None = 0,
-    Sinclair48K,       // 6, 5, 4, 3, 2, 1, 0, 0
-    SinclairPlus2A_3,  // 1, 0, 7, 6, 5, 4, 3, 2
-    ZxNext             // VHDL ULA counter contention (48K/128K/+3 selectable)
+    Sinclair48K, // 6, 5, 4, 3, 2, 1, 0, 0
+    SinclairPlus2A_3, // 1, 0, 7, 6, 5, 4, 3, 2
+    ZxNext // VHDL ULA counter contention (48K/128K/+3 selectable)
 };
 
-class ContentionModel {
+class ContentionModel
+{
 public:
     static constexpr std::size_t kMaxFrameTstates = 80'000;
 
     ContentionModel() = default;
 
-    void configure(ContentionPattern pattern, const FrameTimings &timings, bool ulaContendsPortLowBit = true) noexcept;
+    void configure(ContentionPattern pattern, const FrameTimings &timings,
+                   bool ulaContendsPortLowBit = true) noexcept;
 
-    void setDisabled(bool disabled) noexcept { m_disabled = disabled; }
-    bool isDisabled() const noexcept { return m_disabled || m_pattern == ContentionPattern::None; }
-    ContentionPattern pattern() const noexcept { return m_pattern; }
+    void setDisabled(bool disabled) noexcept
+    {
+        m_disabled = disabled;
+    }
+    bool isDisabled() const noexcept
+    {
+        return m_disabled || m_pattern == ContentionPattern::None;
+    }
+    ContentionPattern pattern() const noexcept
+    {
+        return m_pattern;
+    }
 
     /// Returns wait T-states for a memory MREQ or contended I/O cycle at `frameTstate`.
     uint8_t memoryDelay(uint32_t frameTstate, CpuSpeed speed = CpuSpeed::Mhz3_5) const noexcept
@@ -55,7 +66,8 @@ public:
 
     uint8_t noMreqDelay(uint32_t frameTstate, CpuSpeed speed = CpuSpeed::Mhz3_5) const noexcept
     {
-        if (isDisabled() || speed != CpuSpeed::Mhz3_5 || m_pattern == ContentionPattern::SinclairPlus2A_3)
+        if (isDisabled() || speed != CpuSpeed::Mhz3_5
+            || m_pattern == ContentionPattern::SinclairPlus2A_3)
             return 0;
         if (frameTstate < m_tableSize)
             return m_delayTable[frameTstate];

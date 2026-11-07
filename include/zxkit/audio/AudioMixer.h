@@ -31,7 +31,8 @@
 
 namespace zxkit {
 
-class AudioMixer {
+class AudioMixer
+{
 public:
     static constexpr std::size_t kMaxAyChips = 3;
 
@@ -41,23 +42,47 @@ public:
     void reset() noexcept;
 
     void setAyChipCount(uint8_t count) noexcept;
-    uint8_t ayChipCount() const noexcept { return m_ayChipCount; }
+    uint8_t ayChipCount() const noexcept
+    {
+        return m_ayChipCount;
+    }
 
     void setActiveAyChip(uint8_t index) noexcept;
-    uint8_t activeAyChipIndex() const noexcept { return m_activeAyIndex; }
+    uint8_t activeAyChipIndex() const noexcept
+    {
+        return m_activeAyIndex;
+    }
 
-    Ay8912 &activeAy() noexcept { return m_ayChips[m_activeAyIndex]; }
-    const Ay8912 &activeAy() const noexcept { return m_ayChips[m_activeAyIndex]; }
-    Ay8912 &ayChip(std::size_t idx) noexcept { return m_ayChips[idx % kMaxAyChips]; }
-    const Ay8912 &ayChip(std::size_t idx) const noexcept { return m_ayChips[idx % kMaxAyChips]; }
+    Ay8912 &activeAy() noexcept
+    {
+        return m_ayChips[m_activeAyIndex];
+    }
+    const Ay8912 &activeAy() const noexcept
+    {
+        return m_ayChips[m_activeAyIndex];
+    }
+    Ay8912 &ayChip(std::size_t idx) noexcept
+    {
+        return m_ayChips[idx % kMaxAyChips];
+    }
+    const Ay8912 &ayChip(std::size_t idx) const noexcept
+    {
+        return m_ayChips[idx % kMaxAyChips];
+    }
 
     /// Writes the selected register of the active AY at `frameTstate` (base clock T-states
     /// into the frame): the chip plays its old settings up to that moment. Sound changing
     /// many times a frame (sampled speech, digidrums) needs this timing.
     void writeAyRegister(uint32_t frameTstate, uint8_t value) noexcept;
 
-    Beeper &beeper() noexcept { return m_beeper; }
-    const Beeper &beeper() const noexcept { return m_beeper; }
+    Beeper &beeper() noexcept
+    {
+        return m_beeper;
+    }
+    const Beeper &beeper() const noexcept
+    {
+        return m_beeper;
+    }
 
     /// Routed ULA/tape writes. Direct writes to left/rightBlip are external audio.
     void writeBeeper(uint32_t tstate, bool ear, bool mic) noexcept
@@ -69,26 +94,56 @@ public:
         m_beeper.setTapeEar(tstate, ear, m_beeperBlip);
     }
 
-    Dac &dac() noexcept { return m_dac; }
-    const Dac &dac() const noexcept { return m_dac; }
+    Dac &dac() noexcept
+    {
+        return m_dac;
+    }
+    const Dac &dac() const noexcept
+    {
+        return m_dac;
+    }
 
-    BlipBuffer &leftBlip() noexcept { return m_leftBlip; }
-    BlipBuffer &rightBlip() noexcept { return m_rightBlip; }
+    BlipBuffer &leftBlip() noexcept
+    {
+        return m_leftBlip;
+    }
+    BlipBuffer &rightBlip() noexcept
+    {
+        return m_rightBlip;
+    }
 
-    void setStereoMode(AyStereoMode mode) noexcept { m_stereoMode = mode; }
-    AyStereoMode stereoMode() const noexcept { return m_stereoMode; }
+    void setStereoMode(AyStereoMode mode) noexcept
+    {
+        m_stereoMode = mode;
+    }
+    AyStereoMode stereoMode() const noexcept
+    {
+        return m_stereoMode;
+    }
 
     void setAyModel(AyModel model) noexcept
     {
         for (auto &ay : m_ayChips)
             ay.setModel(model);
     }
-    AyModel ayModel() const noexcept { return m_ayChips.front().model(); }
+    AyModel ayModel() const noexcept
+    {
+        return m_ayChips.front().model();
+    }
 
-    void setSpeakerModel(SpeakerModel model) noexcept { m_speaker.setModel(model); }
-    SpeakerModel speakerModel() const noexcept { return m_speaker.model(); }
+    void setSpeakerModel(SpeakerModel model) noexcept
+    {
+        m_speaker.setModel(model);
+    }
+    SpeakerModel speakerModel() const noexcept
+    {
+        return m_speaker.model();
+    }
 
-    uint32_t sampleRate() const noexcept { return m_sampleRate; }
+    uint32_t sampleRate() const noexcept
+    {
+        return m_sampleRate;
+    }
 
     /// Finalizes the current video frame's audio and returns interleaved stereo int16 PCM samples.
     std::span<const int16_t> endFrame(uint32_t frameTstates) noexcept;

@@ -28,12 +28,14 @@
 namespace zxkit {
 
 std::vector<uint8_t> zlibCompress(std::span<const uint8_t> input, int level = -1);
-std::vector<uint8_t> zlibDecompress(std::span<const uint8_t> input, std::size_t expectedSize = 16384);
+std::vector<uint8_t> zlibDecompress(std::span<const uint8_t> input,
+                                    std::size_t expectedSize = 16384);
 /// Bounded variant for untrusted variable-length media payloads.
 std::vector<uint8_t> zlibDecompressBounded(std::span<const uint8_t> input, std::size_t maxSize);
 uint32_t computeCrc32(std::span<const uint8_t> data) noexcept;
 
-struct ZipExtractedEntry {
+struct ZipExtractedEntry
+{
     std::string filename;
     std::vector<uint8_t> data;
 };
@@ -48,8 +50,7 @@ using ZipProgressFn = std::function<bool(uint64_t done, uint64_t total)>;
 /// is `entryName` out of the ZIP file `zipPath` into `outPath`, without
 /// holding it in memory (e.g. a 1GB SD card image). The CRC is verified.
 /// Throws IoException / FormatException; a cancelled extraction removes `outPath`.
-void extractZipEntryToFile(const std::filesystem::path &zipPath,
-                           std::string_view entryName,
+void extractZipEntryToFile(const std::filesystem::path &zipPath, std::string_view entryName,
                            const std::filesystem::path &outPath,
                            const ZipProgressFn &progress = {});
 

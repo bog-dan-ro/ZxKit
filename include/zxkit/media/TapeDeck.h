@@ -28,7 +28,8 @@ namespace zxkit {
 
 struct MachineContext;
 
-struct TapeOptions {
+struct TapeOptions
+{
     /// Loads (and saves) the standard blocks instantly, trapping the ROM's LD-BYTES and
     /// SA-BYTES routines. Other blocks always play in real time.
     bool romTraps = true;
@@ -49,33 +50,70 @@ struct TapeOptions {
 /// the machine asks for the EAR level when the CPU reads it (`readEar()`). The ROM traps
 /// load the standard blocks instantly; everything else (turbo blocks, custom loaders)
 /// plays in real time, and the loaders' edge searching loops can be accelerated.
-class TapeDeck {
+class TapeDeck
+{
 public:
     // ── The tape ──────────────────────────────────────────────────────────
     void clear();
     /// Replaces the tape (the deck stops at its start).
     void load(std::vector<TapeBlock> blocks);
-    void loadTap(std::span<const uint8_t> raw) { load(TapeFormats::parseTap(raw)); }
-    void loadTzx(std::span<const uint8_t> raw) { load(TapeFormats::parseTzx(raw)); }
-    void loadPzx(std::span<const uint8_t> raw) { load(TapeFormats::parsePzx(raw)); }
-    void loadCsw(std::span<const uint8_t> raw) { load(TapeFormats::parseCsw(raw)); }
-    std::vector<uint8_t> saveTap() const { return TapeFormats::writeTap(m_blocks); }
-    std::vector<uint8_t> saveTzx() const { return TapeFormats::writeTzx(m_blocks); }
+    void loadTap(std::span<const uint8_t> raw)
+    {
+        load(TapeFormats::parseTap(raw));
+    }
+    void loadTzx(std::span<const uint8_t> raw)
+    {
+        load(TapeFormats::parseTzx(raw));
+    }
+    void loadPzx(std::span<const uint8_t> raw)
+    {
+        load(TapeFormats::parsePzx(raw));
+    }
+    void loadCsw(std::span<const uint8_t> raw)
+    {
+        load(TapeFormats::parseCsw(raw));
+    }
+    std::vector<uint8_t> saveTap() const
+    {
+        return TapeFormats::writeTap(m_blocks);
+    }
+    std::vector<uint8_t> saveTzx() const
+    {
+        return TapeFormats::writeTzx(m_blocks);
+    }
 
-    const std::vector<TapeBlock> &blocks() const noexcept { return m_blocks; }
-    std::size_t currentBlockIndex() const noexcept { return m_cursor.blockIndex(); }
+    const std::vector<TapeBlock> &blocks() const noexcept
+    {
+        return m_blocks;
+    }
+    std::size_t currentBlockIndex() const noexcept
+    {
+        return m_cursor.blockIndex();
+    }
     /// Moves to the start of a block (`blocks().size()` is the end of the tape).
     void seekBlock(std::size_t index) noexcept;
-    void rewind() noexcept { seekBlock(0); }
+    void rewind() noexcept
+    {
+        seekBlock(0);
+    }
 
     // ── Playback ──────────────────────────────────────────────────────────
-    bool isPlaying() const noexcept { return m_playing; }
+    bool isPlaying() const noexcept
+    {
+        return m_playing;
+    }
     /// Play / stop, like the deck's buttons.
     void setPlaying(bool playing) noexcept;
     /// The signal on the EAR input.
-    bool earLevel() const noexcept { return m_level; }
+    bool earLevel() const noexcept
+    {
+        return m_level;
+    }
 
-    const TapeOptions &options() const noexcept { return m_options; }
+    const TapeOptions &options() const noexcept
+    {
+        return m_options;
+    }
     void setOptions(const TapeOptions &options) noexcept;
 
     // ── Driven by the emulated machine ────────────────────────────────────
@@ -99,7 +137,14 @@ public:
     void machineChanged() noexcept;
 
 private:
-    enum class Acceleration : uint8_t { None, Increasing, Decreasing, SoftwareProjects, GremlinRising, GremlinFalling };
+    enum class Acceleration : uint8_t {
+        None,
+        Increasing,
+        Decreasing,
+        SoftwareProjects,
+        GremlinRising,
+        GremlinFalling
+    };
 
     void play(bool autoPlay) noexcept;
     void stop() noexcept;
@@ -125,7 +170,7 @@ private:
     bool m_playing = false;
     bool m_autoPlaying = false; ///< started by the loader detection
     bool m_level = false;
-    bool m_soundLevel = false;  ///< what the beeper was told
+    bool m_soundLevel = false; ///< what the beeper was told
     bool m_stopPending = false;
     bool m_is48kMode = true;
     bool m_rzxActive = false;
@@ -138,7 +183,7 @@ private:
     uint64_t m_micOffAt = 0;
     uint64_t m_pausedRemaining = 0; ///< what was left of the pulse when the tape stopped
     uint64_t m_scaleRemainder = 0;
-    uint32_t m_edgeSpeed = 1;       ///< the CPU speed multiplier `m_nextEdgeAt` was computed with
+    uint32_t m_edgeSpeed = 1; ///< the CPU speed multiplier `m_nextEdgeAt` was computed with
 
     // Loader detection (after FUSE's loader.c)
     int m_successiveReads = 0;

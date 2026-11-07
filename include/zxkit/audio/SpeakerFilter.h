@@ -30,26 +30,41 @@ enum class SpeakerModel : uint8_t { Unfiltered, TV, Beeper };
 /// TV: ULA + AY through 100 Hz high-pass / 10 kHz low-pass.
 /// Beeper: ULA electrical response + 750 Hz acoustic high-pass; AY stays direct.
 /// External DACs are mixed by the caller after this stage.
-class SpeakerFilter {
+class SpeakerFilter
+{
 public:
-    struct Stereo { double left, right; };
+    struct Stereo
+    {
+        double left, right;
+    };
 
-    SpeakerFilter() noexcept { configure(48000); }
+    SpeakerFilter() noexcept
+    {
+        configure(48000);
+    }
 
     void configure(uint32_t sampleRate) noexcept;
     void reset() noexcept;
-    void setModel(SpeakerModel model) noexcept { m_model = model; }
-    SpeakerModel model() const noexcept { return m_model; }
+    void setModel(SpeakerModel model) noexcept
+    {
+        m_model = model;
+    }
+    SpeakerModel model() const noexcept
+    {
+        return m_model;
+    }
     bool bypassed() const noexcept
     {
-        return m_model == SpeakerModel::Unfiltered && m_current.model == m_model && !m_fadeRemaining;
+        return m_model == SpeakerModel::Unfiltered && m_current.model == m_model
+                && !m_fadeRemaining;
     }
     Stereo process(double ula, double ayLeft, double ayRight) noexcept;
     void saveState(StateWriter &writer) const;
     void loadState(StateReader &reader);
 
 private:
-    struct Path {
+    struct Path
+    {
         SpeakerModel model = SpeakerModel::Unfiltered;
         bool initialized = false;
         std::array<double, 2> previous{}, highPass{}, lowPass{};

@@ -25,54 +25,64 @@
 
 namespace zxkit {
 
-class Exception : public std::runtime_error {
+class Exception : public std::runtime_error
+{
 public:
     explicit Exception(std::string_view message,
                        std::source_location location = std::source_location::current())
-        : std::runtime_error(std::format("{} [{}:{}:{}]",
-                                         message,
-                                         location.file_name(),
-                                         location.line(),
-                                         location.function_name()))
-        , m_message(message)
-        , m_location(location)
+        : std::runtime_error(std::format("{} [{}:{}:{}]", message, location.file_name(),
+                                         location.line(), location.function_name())),
+          m_message(message),
+          m_location(location)
     {
     }
 
-    std::string_view rawMessage() const noexcept { return m_message; }
-    const std::source_location &where() const noexcept { return m_location; }
+    std::string_view rawMessage() const noexcept
+    {
+        return m_message;
+    }
+    const std::source_location &where() const noexcept
+    {
+        return m_location;
+    }
 
 private:
     std::string m_message;
     std::source_location m_location;
 };
 
-class IoException : public Exception {
+class IoException : public Exception
+{
 public:
     using Exception::Exception;
 };
 
-class FormatException : public Exception {
+class FormatException : public Exception
+{
 public:
     using Exception::Exception;
 };
 
-class RomMissingException : public Exception {
+class RomMissingException : public Exception
+{
 public:
     using Exception::Exception;
 };
 
-class PeripheralException : public Exception {
+class PeripheralException : public Exception
+{
 public:
     using Exception::Exception;
 };
 
-class DebuggerException : public Exception {
+class DebuggerException : public Exception
+{
 public:
     using Exception::Exception;
 };
 
-class CancelledException : public Exception {
+class CancelledException : public Exception
+{
 public:
     explicit CancelledException(std::string_view message = "Operation cancelled",
                                 std::source_location location = std::source_location::current())
@@ -81,7 +91,8 @@ public:
     }
 };
 
-class InvalidArgumentException : public Exception {
+class InvalidArgumentException : public Exception
+{
 public:
     using Exception::Exception;
 };

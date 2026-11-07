@@ -31,28 +31,60 @@ namespace zxkit {
 
 using BankId = uint16_t;
 
-class MemoryBank {
+class MemoryBank
+{
 public:
     static constexpr std::size_t kUnitPageSize = 1024; // 1 KB base unit
 
     MemoryBank();
-    MemoryBank(BankId id, std::string name, std::size_t sizeBytes, bool writable, bool saveToSnapshot = true);
+    MemoryBank(BankId id, std::string name, std::size_t sizeBytes, bool writable,
+               bool saveToSnapshot = true);
 
     void resize(std::size_t sizeBytes, uint8_t fillVal = 0x00);
     void fill(uint8_t value = 0x00) noexcept;
     void loadData(std::size_t offset, std::span<const uint8_t> src);
 
-    BankId id() const noexcept { return m_id; }
-    std::string_view name() const noexcept { return m_name; }
-    bool isWritable() const noexcept { return m_writable; }
-    void setWritable(bool w) noexcept { m_writable = w; }
-    bool saveToSnapshot() const noexcept { return m_saveToSnapshot; }
-    void setSaveToSnapshot(bool s) noexcept { m_saveToSnapshot = s; }
+    BankId id() const noexcept
+    {
+        return m_id;
+    }
+    std::string_view name() const noexcept
+    {
+        return m_name;
+    }
+    bool isWritable() const noexcept
+    {
+        return m_writable;
+    }
+    void setWritable(bool w) noexcept
+    {
+        m_writable = w;
+    }
+    bool saveToSnapshot() const noexcept
+    {
+        return m_saveToSnapshot;
+    }
+    void setSaveToSnapshot(bool s) noexcept
+    {
+        m_saveToSnapshot = s;
+    }
 
-    std::size_t size() const noexcept { return m_data.size(); }
-    std::size_t count1kPages() const noexcept { return m_data.size() / kUnitPageSize; }
-    std::size_t count8kPages() const noexcept { return m_data.size() / (8 * kUnitPageSize); }
-    std::size_t count16kPages() const noexcept { return m_data.size() / (16 * kUnitPageSize); }
+    std::size_t size() const noexcept
+    {
+        return m_data.size();
+    }
+    std::size_t count1kPages() const noexcept
+    {
+        return m_data.size() / kUnitPageSize;
+    }
+    std::size_t count8kPages() const noexcept
+    {
+        return m_data.size() / (8 * kUnitPageSize);
+    }
+    std::size_t count16kPages() const noexcept
+    {
+        return m_data.size() / (16 * kUnitPageSize);
+    }
 
     std::span<uint8_t, kUnitPageSize> page1k(std::size_t page1kIdx)
     {
@@ -73,8 +105,14 @@ public:
     std::span<uint8_t> span8k(std::size_t page8kIdx);
     std::span<const uint8_t> span8k(std::size_t page8kIdx) const;
 
-    std::span<uint8_t> bytes() noexcept { return m_data; }
-    std::span<const uint8_t> bytes() const noexcept { return m_data; }
+    std::span<uint8_t> bytes() noexcept
+    {
+        return m_data;
+    }
+    std::span<const uint8_t> bytes() const noexcept
+    {
+        return m_data;
+    }
 
     void saveState(StateWriter &w) const;
     void loadState(StateReader &r);

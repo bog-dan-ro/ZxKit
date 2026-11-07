@@ -28,7 +28,8 @@ namespace zxkit {
 
 /// ZX Spectrum Next Copper Co-Processor (2 KB instruction RAM = 1024 x 16-bit instructions).
 /// Executes WAIT(vpos, hpos) and MOVE(nextreg, value) synchronized to the video raster.
-class Copper {
+class Copper
+{
 public:
     static constexpr std::size_t kRamBytes = 2048;
 

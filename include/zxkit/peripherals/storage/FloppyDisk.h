@@ -31,35 +31,41 @@ namespace zxkit {
 
 /// Universal Floppy Disk Image container supporting raw sector images (.trd, .scl, .mgt, .img, .opd, .d40, .d80)
 /// as well as CPC/Spectrum .dsk / .edsk and Teledisk .td0 (normal and advanced compression).
-class DiskImage {
+class DiskImage
+{
 public:
-    struct Sector {
+    struct Sector
+    {
         uint8_t physTrack = 0; // where the sector physically is
         uint8_t physSide = 0;
-        uint8_t track = 0;     // ID field: C, H, R, N
+        uint8_t track = 0; // ID field: C, H, R, N
         uint8_t side = 0;
         uint8_t sectorId = 1;
-        uint8_t sizeCode = 2;  // 128 << sizeCode
+        uint8_t sizeCode = 2; // 128 << sizeCode
         uint8_t st1 = 0;
         uint8_t st2 = 0;
-        bool mfm = true;      ///< false for a single-density FM track
-        std::vector<uint8_t> data;  ///< several copies of a weak sector (an EDSK can store them)
-        uint32_t reads = 0;         ///< reads so far: the copy the next one returns
+        bool mfm = true; ///< false for a single-density FM track
+        std::vector<uint8_t> data; ///< several copies of a weak sector (an EDSK can store them)
+        uint32_t reads = 0; ///< reads so far: the copy the next one returns
     };
 
     void clear();
-    void formatBlank(uint8_t tracks = 80, uint8_t sides = 2, uint8_t sectorsPerTrack = 9, uint16_t sectorSize = 512, uint8_t firstId = 1);
+    void formatBlank(uint8_t tracks = 80, uint8_t sides = 2, uint8_t sectorsPerTrack = 9,
+                     uint16_t sectorSize = 512, uint8_t firstId = 1);
     void loadFromBytes(std::span<const uint8_t> raw, std::string_view ext = ".dsk");
 
     /// Finds sector `sectorId` (R) on physical track `track`, side `side`.
     OptionalRef<Sector> findSector(uint8_t track, uint8_t side, uint8_t sectorId) noexcept;
-    OptionalRef<const Sector> findSector(uint8_t track, uint8_t side, uint8_t sectorId) const noexcept;
+    OptionalRef<const Sector> findSector(uint8_t track, uint8_t side,
+                                         uint8_t sectorId) const noexcept;
     OptionalRef<const Sector> firstSectorOnTrack(uint8_t track, uint8_t side) const noexcept;
     /// The sectors of a track in their physical order, from the index hole.
-    std::vector<std::reference_wrapper<const Sector>> trackSectors(uint8_t track, uint8_t side) const;
+    std::vector<std::reference_wrapper<const Sector>> trackSectors(uint8_t track,
+                                                                   uint8_t side) const;
     /// Finds the sector on physical `track`/`side` whose ID field is exactly C/H/R/N,
     /// as the FDC does when reading or writing.
-    OptionalRef<Sector> findSectorById(uint8_t track, uint8_t side, uint8_t c, uint8_t h, uint8_t r, uint8_t n) noexcept;
+    OptionalRef<Sector> findSectorById(uint8_t track, uint8_t side, uint8_t c, uint8_t h, uint8_t r,
+                                       uint8_t n) noexcept;
     /// Replaces a whole physical track (used by FORMAT TRACK).
     void replaceTrack(uint8_t track, uint8_t side, std::vector<Sector> sectors);
 
@@ -72,11 +78,18 @@ public:
     void setWriteProtected(bool wp) noexcept;
 
     /// Bumped by the disk controller at every command on this drive (activity LEDs).
-    uint64_t accessCount() const noexcept { return m_accesses; }
-    void noteAccess() noexcept { ++m_accesses; }
+    uint64_t accessCount() const noexcept
+    {
+        return m_accesses;
+    }
+    void noteAccess() noexcept
+    {
+        ++m_accesses;
+    }
 
 private:
-    void loadRawGeometry(std::span<const uint8_t> raw, uint8_t tracks, uint8_t sides, uint8_t spt, uint16_t secSize, uint8_t firstId);
+    void loadRawGeometry(std::span<const uint8_t> raw, uint8_t tracks, uint8_t sides, uint8_t spt,
+                         uint16_t secSize, uint8_t firstId);
     void parseScl(std::span<const uint8_t> raw);
     void parseDsk(std::span<const uint8_t> raw);
     void parseTeledisk(std::span<const uint8_t> raw);
@@ -89,16 +102,23 @@ private:
 
 /// NEC uPD765A / Intel 8272 Floppy Disk Controller in non-DMA (polled) mode.
 /// Used by ZX Spectrum +3, HC Interface 1 FDC (HC-2000), and CoBra FDC.
-class Upd765Fdc {
+class Upd765Fdc
+{
 public:
     void reset() noexcept;
-    void setClockHz(uint32_t hz) noexcept { m_clockHz = hz; }
+    void setClockHz(uint32_t hz) noexcept
+    {
+        m_clockHz = hz;
+    }
 
     DiskImage &drive(std::size_t idx) noexcept;
     const DiskImage &drive(std::size_t idx) const noexcept;
     /// Mask applied to the US unit select bits, e.g. 1 when only two drives are
     /// wired (units 2 and 3 then address drives 0 and 1).
-    void setUnitMask(uint8_t mask) noexcept { m_unitMask = mask & 3; }
+    void setUnitMask(uint8_t mask) noexcept
+    {
+        m_unitMask = mask & 3;
+    }
 
     // `now` is the CPU's T-state (`Clock::totalTstates()`): a CPU too slow to move the
     // bytes of a transfer makes the controller end it with an overrun, like the real one.
@@ -129,7 +149,8 @@ private:
 
     static std::size_t commandLength(uint8_t cmd) noexcept;
     void enterResultPhase() noexcept;
-    void setResult(uint8_t st0, uint8_t st1, uint8_t st2, uint8_t c, uint8_t h, uint8_t r, uint8_t n);
+    void setResult(uint8_t st0, uint8_t st1, uint8_t st2, uint8_t c, uint8_t h, uint8_t r,
+                   uint8_t n);
     void executeCommand(uint8_t cmd);
     void startRead(uint8_t cmd);
     void startWrite(uint8_t cmd);
@@ -145,16 +166,16 @@ private:
 
     uint32_t m_clockHz = 3'500'000;
     uint16_t m_stepMs = 6, m_headLoadMs = 0, m_headUnloadMs = 256;
-    std::array<uint64_t,4> m_headLoadedUntil{};
-    std::array<uint64_t,4> m_seekStarted{};
-    std::array<uint8_t,4> m_seekOrigin{}, m_seekTarget{};
+    std::array<uint64_t, 4> m_headLoadedUntil{};
+    std::array<uint64_t, 4> m_seekStarted{};
+    std::array<uint8_t, 4> m_seekOrigin{}, m_seekTarget{};
     std::array<DiskImage, 4> m_drives;
     std::array<uint8_t, 4> m_currentTrack{};
     std::array<uint8_t, 4> m_readIdIndex{}; // emulates the disk rotating under the head
     uint8_t m_unitMask = 3;
     uint8_t m_msr = 0x80;
-    uint8_t m_driveBusy = 0;     // MSR bits 0..3: seeking until SENSE INTERRUPT
-    uint8_t m_pendingInts = 0;   // drives with a pending seek interrupt
+    uint8_t m_driveBusy = 0; // MSR bits 0..3: seeking until SENSE INTERRUPT
+    uint8_t m_pendingInts = 0; // drives with a pending seek interrupt
     Phase m_phase = PhaseCommand;
 
     std::vector<uint8_t> m_cmdBuf;
@@ -162,15 +183,16 @@ private:
     std::vector<uint8_t> m_resBuf;
     std::size_t m_resPos = 0;
     bool m_tcCanNormalize = false; // TC right after the last byte still ends normally
-    bool m_nonDma = false;         // SPECIFY's ND bit
-    std::array<uint64_t, 4> m_seekIntFrom{}; // seek completion cannot interrupt before the caller can HALT
-    bool m_resultInt = false;      // the result phase's interrupt, until its first byte is read
-    uint64_t m_resultIntFrom = 0;  // ... which rises after the CRC bytes
-    uint64_t m_lastAccess = 0;     // the T-state of the last register access
-    uint64_t m_execIntFrom = 0;    // the first data byte's interrupt (the sector comes under the head)
+    bool m_nonDma = false; // SPECIFY's ND bit
+    std::array<uint64_t, 4>
+            m_seekIntFrom{}; // seek completion cannot interrupt before the caller can HALT
+    bool m_resultInt = false; // the result phase's interrupt, until its first byte is read
+    uint64_t m_resultIntFrom = 0; // ... which rises after the CRC bytes
+    uint64_t m_lastAccess = 0; // the T-state of the last register access
+    uint64_t m_execIntFrom = 0; // the first data byte's interrupt (the sector comes under the head)
     std::size_t m_tcStop = SIZE_MAX; // a TC came in the middle of a sector: the transfer ends here
-    bool m_readTrack = false;      // the transfer is a READ TRACK
-    int m_speedlock = 0;           // FUSE's Speedlock weak sector emulation: re-reads of C0 H0 R2
+    bool m_readTrack = false; // the transfer is a READ TRACK
+    int m_speedlock = 0; // FUSE's Speedlock weak sector emulation: re-reads of C0 H0 R2
     uint32_t m_lastSectorRead = 0;
 
     // Execution phase transfer state
@@ -192,7 +214,8 @@ private:
 /// out after the fetch at 0x0700), with its 1KB RAM at 0x2800 (mirrored at
 /// 0x2C00, 0x3800 and 0x3C00). FDC: status 0x85, data 0x87, control 0x05/0x07
 /// (D0 = TC, D1/D2 = drive A/B select + motor, D3 = enable, D4 = /reset).
-class HcIf1FdcPeripheral : public Peripheral {
+class HcIf1FdcPeripheral : public Peripheral
+{
 public:
     static constexpr std::size_t kDriveCount = 2;
 
@@ -210,7 +233,10 @@ public:
     const Upd765Fdc &fdc() const noexcept;
     BankId romBankId() const noexcept;
     BankId ramBankId() const noexcept;
-    bool isMotorOn() const noexcept { return m_motorOn != 0; }
+    bool isMotorOn() const noexcept
+    {
+        return m_motorOn != 0;
+    }
 
 private:
     void writeControl(MachineContext &ctx, uint8_t val);
@@ -221,6 +247,5 @@ private:
     uint8_t m_motorOn = 0; // bit per drive
     EventId m_motorOffEvent = 0;
 };
-
 
 } // namespace zxkit

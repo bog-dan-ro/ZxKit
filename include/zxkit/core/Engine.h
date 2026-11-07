@@ -31,7 +31,8 @@
 namespace zxkit {
 
 /// Where an Engine reports to. Every callback is optional.
-struct EngineCallbacks {
+struct EngineCallbacks
+{
     Weak<VideoFrameCallback> videoFrame;
     Weak<AudioCallback> audio;
     Weak<PauseCallback> paused;
@@ -41,7 +42,8 @@ struct EngineCallbacks {
     Weak<AudioClockCallback> audioClock;
 };
 
-struct EngineConfig {
+struct EngineConfig
+{
     bool startPaused = false;
     /// Emulation speed, in percent of the machine's real speed.
     uint32_t speedPercent = 100;
@@ -52,7 +54,8 @@ struct EngineConfig {
     /// emulator locked; use the supplied reference, never acquire its lock again.
     /// Construct thread-affine objects in started, destroy them in stopped.
     /// poll runs once per frame (also on refresh while paused), never per opcode.
-    struct ThreadHooks {
+    struct ThreadHooks
+    {
         std::function<void(Emulator &)> started;
         std::function<void(Emulator &)> poll;
         std::function<void(Emulator &)> stopped;
@@ -70,7 +73,8 @@ struct EngineConfig {
 /// Frames, audio, pauses and errors are reported through `Weak` callbacks, called
 /// from the Engine thread with no emulator lock held. While paused the Engine thread
 /// sleeps (it doesn't spin).
-class Engine {
+class Engine
+{
 public:
     explicit Engine(EmulatorConfig emulatorConfig = {}, EngineConfig config = {});
     explicit Engine(Shared<Emulator> emulator, EngineConfig config = {});
@@ -80,23 +84,35 @@ public:
     Engine &operator=(const Engine &) = delete;
 
     /// The emulated computer. The pointer itself never changes, lock it to use it.
-    const Shared<Emulator> &emulator() const noexcept { return m_emulator; }
+    const Shared<Emulator> &emulator() const noexcept
+    {
+        return m_emulator;
+    }
 
     /// Pauses at the end of the current frame. Breakpoints pause on their own.
     void setPaused(bool paused) noexcept;
-    bool isPaused() const noexcept { return m_state.load(std::memory_order_acquire) & kPaused; }
+    bool isPaused() const noexcept
+    {
+        return m_state.load(std::memory_order_acquire) & kPaused;
+    }
     /// Emulation speed in percent of the machine's real speed (e.g. 50 = half speed).
     void setSpeed(uint32_t percent) noexcept;
-    uint32_t speed() const noexcept { return m_speedPercent.load(std::memory_order_relaxed); }
+    uint32_t speed() const noexcept
+    {
+        return m_speedPercent.load(std::memory_order_relaxed);
+    }
     /// Fast forward: runs as fast as possible, whatever the speed.
     void setTurbo(bool turbo) noexcept;
     bool isTurbo() const noexcept
     {
         return (m_state.load(std::memory_order_acquire) & kTurbo)
-               || m_tapeTurbo.load(std::memory_order_relaxed);
+                || m_tapeTurbo.load(std::memory_order_relaxed);
     }
     /// Running in real time (100% speed, no turbo): only then the audio plays at its pitch.
-    bool isRealTime() const noexcept { return speed() == 100 && !isTurbo(); }
+    bool isRealTime() const noexcept
+    {
+        return speed() == 100 && !isTurbo();
+    }
 
     /// Makes a paused Engine publish a frame of the current state, e.g. after a
     /// snapshot was loaded or memory was edited. (A running Engine does it anyway.)
@@ -131,7 +147,8 @@ private:
     void run();
     void setFlag(uint32_t flag, bool on) noexcept;
     void wakePacing() noexcept;
-    std::optional<AudioPacingInfo::Clock::time_point> audioDeadline(const AudioPacingInfo &info) noexcept;
+    std::optional<AudioPacingInfo::Clock::time_point>
+    audioDeadline(const AudioPacingInfo &info) noexcept;
 
     template <typename Function, typename... Args>
     void notify(Weak<Function> EngineCallbacks::*callback, Args &&...args) noexcept;
@@ -139,9 +156,9 @@ private:
     Shared<Emulator> m_emulator;
     Shared<EngineCallbacks> m_callbacks;
     EngineConfig::ThreadHooks m_threadHooks;
-    std::atomic<uint32_t> m_state{0};
-    std::atomic<uint32_t> m_speedPercent{100};
-    std::atomic_bool m_tapeTurbo{false};
+    std::atomic<uint32_t> m_state{ 0 };
+    std::atomic<uint32_t> m_speedPercent{ 100 };
+    std::atomic_bool m_tapeTurbo{ false };
     std::mutex m_pacingMutex;
     std::condition_variable m_pacingChanged;
     uint64_t m_pacingRevision = 0; // protected by m_pacingMutex

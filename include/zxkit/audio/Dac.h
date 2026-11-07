@@ -27,13 +27,15 @@ namespace zxkit {
 
 /// 4-channel 8-bit DAC supporting SpecDrum, Covox, Soundrive, and ZX Next DAC A/B/C/D.
 /// Channels 0 (A) and 1 (B) feed Left; Channels 2 (C) and 3 (D) feed Right.
-class Dac {
+class Dac
+{
 public:
     static constexpr int32_t kDacScale = 48;
 
     void reset() noexcept;
 
-    void writeChannel(uint32_t frameTstate, uint8_t ch, uint8_t val, BlipBuffer &left, BlipBuffer &right) noexcept;
+    void writeChannel(uint32_t frameTstate, uint8_t ch, uint8_t val, BlipBuffer &left,
+                      BlipBuffer &right) noexcept;
     void writeMono(uint32_t frameTstate, uint8_t val, BlipBuffer &left, BlipBuffer &right) noexcept;
     uint8_t channel(uint8_t ch) const noexcept;
 
@@ -43,7 +45,7 @@ public:
 private:
     void flush(uint32_t frameTstate, BlipBuffer &left, BlipBuffer &right) noexcept;
 
-    std::array<uint8_t, 4> m_channels{0x80, 0x80, 0x80, 0x80};
+    std::array<uint8_t, 4> m_channels{ 0x80, 0x80, 0x80, 0x80 };
     int32_t m_lastLeft = 0;
     int32_t m_lastRight = 0;
 };

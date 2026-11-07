@@ -27,7 +27,8 @@ namespace zxkit {
 /// Romantic Robot Multiface 1 / 128 / 3 Peripheral
 /// Supports NMI button activation, 8KB ROM + 8KB RAM overlay at 0x0000..0x3FFF,
 /// M1 page-in at 0x0066, RETN unmap, and model-specific I/O ports.
-class MultifacePeripheral : public Peripheral {
+class MultifacePeripheral : public Peripheral
+{
 public:
     enum class Model { Multiface1, Multiface128, Multiface3 };
 
@@ -55,7 +56,8 @@ private:
 };
 
 /// Currah uSource Peripheral (2KB ROM toggled by M1 fetch at 0x2BAE)
-class UsourcePeripheral : public Peripheral {
+class UsourcePeripheral : public Peripheral
+{
 public:
     std::string_view id() const noexcept override;
     std::string_view name() const noexcept override;
@@ -72,7 +74,8 @@ private:
 };
 
 /// Sinclair ZX Printer Peripheral (Port 0xFB)
-class ZxPrinterPeripheral : public Peripheral {
+class ZxPrinterPeripheral : public Peripheral
+{
 public:
     std::string_view id() const noexcept override;
     std::string_view name() const noexcept override;
@@ -86,7 +89,8 @@ private:
 };
 
 /// Sinclair ZX Interface 2 ROM Cartridge Peripheral (16KB ROM at 0x0000..0x3FFF)
-class Interface2Peripheral : public Peripheral {
+class Interface2Peripheral : public Peripheral
+{
 public:
     std::string_view id() const noexcept override;
     std::string_view name() const noexcept override;
@@ -105,7 +109,8 @@ private:
 };
 
 /// Cheetah SpecDrum 8-bit DAC Peripheral (Port 0xDF)
-class SpecDrumPeripheral : public Peripheral {
+class SpecDrumPeripheral : public Peripheral
+{
 public:
     std::string_view id() const noexcept override;
     std::string_view name() const noexcept override;
@@ -116,7 +121,8 @@ public:
 };
 
 /// Covox 8-bit Mono DAC Peripheral (Port 0xFB or 0xDD)
-class CovoxPeripheral : public Peripheral {
+class CovoxPeripheral : public Peripheral
+{
 public:
     explicit CovoxPeripheral(uint8_t port = 0xFB) noexcept;
 
@@ -132,7 +138,8 @@ private:
 };
 
 /// Fuller Box AY + Joystick Peripheral (AY on 0x3F/0x5F, Joystick on 0x7F)
-class FullerBoxPeripheral : public Peripheral {
+class FullerBoxPeripheral : public Peripheral
+{
 public:
     std::string_view id() const noexcept override;
     std::string_view name() const noexcept override;
@@ -143,11 +150,15 @@ public:
 
     /// The joystick, as `JoystickButtons` bits (Fire1 is its fire button).
     void setButtons(uint8_t buttons) noexcept;
-    uint8_t buttons() const noexcept { return m_buttons; }
+    uint8_t buttons() const noexcept
+    {
+        return m_buttons;
+    }
 
 private:
     uint8_t m_buttons = 0;
-    uint8_t m_joyState = 0xFF; // port 0x7F, active low: up 0x01, down 0x02, left 0x04, right 0x08, fire 0x80
+    uint8_t m_joyState =
+            0xFF; // port 0x7F, active low: up 0x01, down 0x02, left 0x04, right 0x08, fire 0x80
 };
 
 } // namespace zxkit

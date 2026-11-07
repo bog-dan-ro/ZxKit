@@ -26,64 +26,56 @@
 
 namespace zxkit {
 
-inline constexpr FrameTimings kTimingsPentagon = {
-    .baseClockHz = 3'584'000,
-    .leftBorderTstates = 36,
-    .screenTstates = 128,
-    .rightBorderTstates = 28,
-    .retraceTstates = 32,
-    .tstatesPerLine = 224,
-    .topBorderLines = 80,
-    .screenLines = 192,
-    .bottomBorderLines = 48,
-    .linesPerFrame = 320,
-    .interruptLength = 36
-};
+inline constexpr FrameTimings kTimingsPentagon = { .baseClockHz = 3'584'000,
+                                                   .leftBorderTstates = 36,
+                                                   .screenTstates = 128,
+                                                   .rightBorderTstates = 28,
+                                                   .retraceTstates = 32,
+                                                   .tstatesPerLine = 224,
+                                                   .topBorderLines = 80,
+                                                   .screenLines = 192,
+                                                   .bottomBorderLines = 48,
+                                                   .linesPerFrame = 320,
+                                                   .interruptLength = 36 };
 
-inline constexpr FrameTimings kTimingsScorpion = {
-    .baseClockHz = 3'500'000,
-    .leftBorderTstates = 24,
-    .screenTstates = 128,
-    .rightBorderTstates = 32,
-    .retraceTstates = 40,
-    .tstatesPerLine = 224,
-    .topBorderLines = 64,
-    .screenLines = 192,
-    .bottomBorderLines = 56,
-    .linesPerFrame = 312,
-    .interruptLength = 36
-};
+inline constexpr FrameTimings kTimingsScorpion = { .baseClockHz = 3'500'000,
+                                                   .leftBorderTstates = 24,
+                                                   .screenTstates = 128,
+                                                   .rightBorderTstates = 32,
+                                                   .retraceTstates = 40,
+                                                   .tstatesPerLine = 224,
+                                                   .topBorderLines = 64,
+                                                   .screenLines = 192,
+                                                   .bottomBorderLines = 56,
+                                                   .linesPerFrame = 312,
+                                                   .interruptLength = 36 };
 
 // FUSE's Timex SCLD frames: the 48K's and the 60Hz ones, the first pixel 15 T-states earlier
-inline constexpr FrameTimings kTimingsTimex50 = {
-    .baseClockHz = 3'500'000,
-    .leftBorderTstates = 24,
-    .screenTstates = 128,
-    .rightBorderTstates = 24,
-    .retraceTstates = 48,
-    .tstatesPerLine = 224,
-    .topBorderLines = 64,
-    .screenLines = 192,
-    .bottomBorderLines = 56,
-    .linesPerFrame = 312,
-    .interruptLength = 32,
-    .screenStartOffset = -15
-};
+inline constexpr FrameTimings kTimingsTimex50 = { .baseClockHz = 3'500'000,
+                                                  .leftBorderTstates = 24,
+                                                  .screenTstates = 128,
+                                                  .rightBorderTstates = 24,
+                                                  .retraceTstates = 48,
+                                                  .tstatesPerLine = 224,
+                                                  .topBorderLines = 64,
+                                                  .screenLines = 192,
+                                                  .bottomBorderLines = 56,
+                                                  .linesPerFrame = 312,
+                                                  .interruptLength = 32,
+                                                  .screenStartOffset = -15 };
 
-inline constexpr FrameTimings kTimingsTimex60 = {
-    .baseClockHz = 3'528'000,
-    .leftBorderTstates = 24,
-    .screenTstates = 128,
-    .rightBorderTstates = 24,
-    .retraceTstates = 48,
-    .tstatesPerLine = 224,
-    .topBorderLines = 41,
-    .screenLines = 192,
-    .bottomBorderLines = 29,
-    .linesPerFrame = 262,
-    .interruptLength = 32,
-    .screenStartOffset = -15
-};
+inline constexpr FrameTimings kTimingsTimex60 = { .baseClockHz = 3'528'000,
+                                                  .leftBorderTstates = 24,
+                                                  .screenTstates = 128,
+                                                  .rightBorderTstates = 24,
+                                                  .retraceTstates = 48,
+                                                  .tstatesPerLine = 224,
+                                                  .topBorderLines = 41,
+                                                  .screenLines = 192,
+                                                  .bottomBorderLines = 29,
+                                                  .linesPerFrame = 262,
+                                                  .interruptLength = 32,
+                                                  .screenStartOffset = -15 };
 
 /// Timex TC2048 / TC2068 / TS2068 and the ZX Spectrum SE, as FUSE models them.
 ///
@@ -93,13 +85,17 @@ inline constexpr FrameTimings kTimingsTimex60 = {
 /// EXROM (seen in every chunk), an empty DOCK (no cartridges yet) and the AY on 0xF5/0xF6; the
 /// TC2048 has neither. The SE adds the 128K's 0x7FFD paging (without its lock) over nine RAM
 /// pages, 64K of DOCK and 64K of EXROM RAM, and the AY on 0xFFFD/0xBFFD too.
-class TimexMachine : public MachineProfile {
+class TimexMachine : public MachineProfile
+{
 public:
     enum class Variant { Tc2048, Tc2068, Ts2068, SpecSe };
 
     explicit TimexMachine(Variant variant = Variant::Tc2048) noexcept;
 
-    bool hasTimexJoysticks() const noexcept { return m_variant == Variant::Tc2068 || m_variant == Variant::Ts2068; }
+    bool hasTimexJoysticks() const noexcept
+    {
+        return m_variant == Variant::Tc2068 || m_variant == Variant::Ts2068;
+    }
     /// Host input, in JoystickButtons bits; player is 0 (left) or 1 (right).
     /// Like the keyboard, these live inputs are not part of serialized state.
     void setJoystickButtons(unsigned player, uint8_t buttons) noexcept;
@@ -113,26 +109,31 @@ public:
     void onFrameStart(MachineContext &ctx) override;
 
     uint8_t lastPort7ffd() const noexcept override;
-    void setPagingPorts(uint8_t port7ffd, uint8_t port1ffd, MachineContext &ctx, UlaRenderer &ula) override;
+    void setPagingPorts(uint8_t port7ffd, uint8_t port1ffd, MachineContext &ctx,
+                        UlaRenderer &ula) override;
 
     void saveState(StateWriter &w) const override;
     void loadState(StateReader &r, MachineContext &ctx, UlaRenderer &ula) override;
 
 private:
-    bool isSe() const noexcept { return m_variant == Variant::SpecSe; }
+    bool isSe() const noexcept
+    {
+        return m_variant == Variant::SpecSe;
+    }
     void updateMemoryMap(MachineContext &ctx, UlaRenderer &ula);
 
     Variant m_variant = Variant::Tc2048;
     BankId m_dockBank = 0;
     BankId m_exromBank = 0;
-    uint8_t m_portF4 = 0;   // the horizontal select
-    uint8_t m_portFf = 0;   // the SCLD's mode register (the ULA renders its screen modes)
+    uint8_t m_portF4 = 0; // the horizontal select
+    uint8_t m_portFf = 0; // the SCLD's mode register (the ULA renders its screen modes)
     uint8_t m_port7ffd = 0; // the SE's paging
-    std::array<uint8_t, 2> m_joysticks{0xFF, 0xFF}; // active-low AY port A
+    std::array<uint8_t, 2> m_joysticks{ 0xFF, 0xFF }; // active-low AY port A
 };
 
 /// Pentagon 128K / 512K / 1024K
-class PentagonMachine : public MachineProfile {
+class PentagonMachine : public MachineProfile
+{
 public:
     enum class Variant { Pentagon128, Pentagon512, Pentagon1024 };
 
@@ -148,13 +149,26 @@ public:
     void reset(MachineContext &ctx, UlaRenderer &ula, ResetKind kind) override;
 
     uint8_t lastPort7ffd() const noexcept override;
-    void setPagingPorts(uint8_t port7ffd, uint8_t port1ffd, MachineContext &ctx, UlaRenderer &ula) override;
-    bool is48kMode() const noexcept override { return m_locked; }
+    void setPagingPorts(uint8_t port7ffd, uint8_t port1ffd, MachineContext &ctx,
+                        UlaRenderer &ula) override;
+    bool is48kMode() const noexcept override
+    {
+        return m_locked;
+    }
 
     /// The built-in Beta 128: four drives and TR-DOS (the Pentagon starts in it)
-    std::size_t diskDriveCount() const noexcept override { return Wd1793::kDriveCount; }
-    OptionalRef<DiskImage> diskDrive(std::size_t idx) noexcept override { return m_beta->diskDrive(idx); }
-    Beta128Peripheral &beta() noexcept { return *m_beta; }
+    std::size_t diskDriveCount() const noexcept override
+    {
+        return Wd1793::kDriveCount;
+    }
+    OptionalRef<DiskImage> diskDrive(std::size_t idx) noexcept override
+    {
+        return m_beta->diskDrive(idx);
+    }
+    Beta128Peripheral &beta() noexcept
+    {
+        return *m_beta;
+    }
 
 private:
     void updateMemoryMap(MachineContext &ctx, UlaRenderer &ula);
@@ -167,7 +181,8 @@ private:
 };
 
 /// Scorpion ZS 256
-class ScorpionMachine : public MachineProfile {
+class ScorpionMachine : public MachineProfile
+{
 public:
     std::string_view id() const noexcept override;
     std::string_view name() const noexcept override;
@@ -175,15 +190,27 @@ public:
     ContentionPattern contentionPattern() const noexcept override;
     bool hasFloatingBus() const noexcept override;
 
-    bool is48kMode() const noexcept override { return m_locked; }
+    bool is48kMode() const noexcept override
+    {
+        return m_locked;
+    }
 
     void initialize(MachineContext &ctx, UlaRenderer &ula) override;
     void reset(MachineContext &ctx, UlaRenderer &ula, ResetKind kind) override;
 
     /// The built-in Beta 128: four drives and TR-DOS
-    std::size_t diskDriveCount() const noexcept override { return Wd1793::kDriveCount; }
-    OptionalRef<DiskImage> diskDrive(std::size_t idx) noexcept override { return m_beta->diskDrive(idx); }
-    Beta128Peripheral &beta() noexcept { return *m_beta; }
+    std::size_t diskDriveCount() const noexcept override
+    {
+        return Wd1793::kDriveCount;
+    }
+    OptionalRef<DiskImage> diskDrive(std::size_t idx) noexcept override
+    {
+        return m_beta->diskDrive(idx);
+    }
+    Beta128Peripheral &beta() noexcept
+    {
+        return *m_beta;
+    }
 
 private:
     void updateMemoryMap(MachineContext &ctx, UlaRenderer &ula);

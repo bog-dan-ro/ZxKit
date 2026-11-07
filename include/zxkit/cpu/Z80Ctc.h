@@ -31,7 +31,8 @@ namespace zxkit {
 /// its ZC/TO output, can interrupt (IM2, its vector from the vector word) and reloads.
 /// The machine wires the CLK/TRG inputs (`setTrigger`), the ZC/TO outputs (`onZeroCount`)
 /// and the interrupts (`onInterrupt`, e.g. into an `Im2Controller`).
-class Z80Ctc {
+class Z80Ctc
+{
 public:
     static constexpr std::size_t kChannels = 4;
 
@@ -68,19 +69,23 @@ private:
     static constexpr uint8_t kTimeConstantFollows = 0x04;
     static constexpr uint8_t kSoftwareReset = 0x02;
 
-    struct Channel {
+    struct Channel
+    {
         uint8_t control = kSoftwareReset | 1;
         uint8_t timeConstant = 0; // 0 is 256
         uint8_t counter = 0;
-        uint16_t prescale = 0;    // system clocks left until the next timer decrement
+        uint16_t prescale = 0; // system clocks left until the next timer decrement
         bool waitingTimeConstant = false;
         bool running = false;
         bool waitingTrigger = false;
-        bool trigger = false;     // the CLK/TRG level
+        bool trigger = false; // the CLK/TRG level
     };
 
     void decrement(std::size_t channel) noexcept;
-    uint16_t prescaler(const Channel &c) const noexcept { return (c.control & kPrescaler256) ? 256 : 16; }
+    uint16_t prescaler(const Channel &c) const noexcept
+    {
+        return (c.control & kPrescaler256) ? 256 : 16;
+    }
 
     std::array<Channel, kChannels> m_channels{};
     uint8_t m_vector = 0;

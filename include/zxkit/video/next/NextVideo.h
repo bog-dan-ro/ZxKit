@@ -37,7 +37,8 @@ namespace zxkit {
 /// The frame is composited on the Next's 640 cell wide grid (two cells per
 /// 7MHz pixel, so hi-res modes keep their detail) and every line is output
 /// twice: a 640x512 frame with the usual 32 pixel (64 cell) border.
-class NextVideo {
+class NextVideo
+{
 public:
     static constexpr uint32_t kFrameWidth = 640;
     static constexpr uint32_t kFrameHeight = 512;
@@ -50,13 +51,34 @@ public:
     // Layer 2 port 0x123B
     void setLayer2ControlPort(uint8_t val) noexcept;
     uint8_t layer2ControlPort() const noexcept;
-    bool isLayer2Visible() const noexcept { return m_layer2Visible; }
-    void setLayer2Visible(bool visible) noexcept { m_layer2Visible = visible; }
-    bool layer2WriteMapped() const noexcept { return (m_layer2Port & 0x01) != 0; }
-    bool layer2ReadMapped() const noexcept { return (m_layer2Port & 0x04) != 0; }
-    bool layer2UsesShadowBank() const noexcept { return (m_layer2Port & 0x08) != 0; }
-    uint8_t layer2Segment() const noexcept { return (m_layer2Port >> 6) & 0x03; }
-    uint8_t layer2BankOffset() const noexcept { return m_layer2BankOffset; }
+    bool isLayer2Visible() const noexcept
+    {
+        return m_layer2Visible;
+    }
+    void setLayer2Visible(bool visible) noexcept
+    {
+        m_layer2Visible = visible;
+    }
+    bool layer2WriteMapped() const noexcept
+    {
+        return (m_layer2Port & 0x01) != 0;
+    }
+    bool layer2ReadMapped() const noexcept
+    {
+        return (m_layer2Port & 0x04) != 0;
+    }
+    bool layer2UsesShadowBank() const noexcept
+    {
+        return (m_layer2Port & 0x08) != 0;
+    }
+    uint8_t layer2Segment() const noexcept
+    {
+        return (m_layer2Port >> 6) & 0x03;
+    }
+    uint8_t layer2BankOffset() const noexcept
+    {
+        return m_layer2BankOffset;
+    }
 
     // Sprites: ports 0x303B, 0x57, 0x5B and NR 0x34..0x39 / 0x75..0x79
     void writeSpriteControlPort(uint8_t val) noexcept;
@@ -66,17 +88,26 @@ public:
     void selectSpriteNextReg(uint8_t val, bool tieToPorts) noexcept;
     /// NR 0x35..0x39 (`increment` = false) and NR 0x75..0x79 (true): attribute `byte` of the NR 0x34 sprite.
     void writeSpriteAttributeNextReg(uint8_t byte, uint8_t val, bool increment) noexcept;
-    uint8_t spriteNextRegSelection() const noexcept { return m_nrSprite; }
+    uint8_t spriteNextRegSelection() const noexcept
+    {
+        return m_nrSprite;
+    }
 
     // Palettes: NR 0x40, 0x41, 0x43, 0x44
     void setPaletteIndex(uint8_t idx) noexcept;
-    uint8_t paletteIndex() const noexcept { return m_palIndex; }
+    uint8_t paletteIndex() const noexcept
+    {
+        return m_palIndex;
+    }
     void setPaletteControl(uint8_t ctrl) noexcept;
     void writePalette8Bit(uint8_t val) noexcept;
     void writePalette9Bit(uint8_t val) noexcept;
     uint8_t readPalette8Bit() const noexcept;
     uint8_t readPalette9Bit() const noexcept;
-    void resetPaletteSequence() noexcept { m_pal9BitAwaitingSecond = false; }
+    void resetPaletteSequence() noexcept
+    {
+        m_pal9BitAwaitingSecond = false;
+    }
 
     // Clip windows NR 0x18 (Layer 2), 0x19 (sprites), 0x1A (ULA), 0x1B (tilemap), index reset NR 0x1C
     enum ClipLayer : uint8_t { ClipLayer2 = 0, ClipSprites = 1, ClipUla = 2, ClipTilemap = 3 };
@@ -86,8 +117,14 @@ public:
     uint8_t clipIndexes() const noexcept;
 
     // Timex SCLD port 0xFF (mirrored in NR 0x69 bits 5:0)
-    void setTimexPort(uint8_t val) noexcept { m_timexPort = val; }
-    uint8_t timexPort() const noexcept { return m_timexPort; }
+    void setTimexPort(uint8_t val) noexcept
+    {
+        m_timexPort = val;
+    }
+    uint8_t timexPort() const noexcept
+    {
+        return m_timexPort;
+    }
 
     /// Renders frame row `y` (0 .. 255, rows 2y and 2y+1 of the 640x512 frame).
     /// `ramBankId` is the Next RAM (16KB bank N at N * 16KB), `shadowScreen`
@@ -99,25 +136,31 @@ public:
     void loadState(StateReader &r);
 
 private:
-    struct SpriteAttr {
+    struct SpriteAttr
+    {
         std::array<uint8_t, 5> b{};
     };
-    struct Cell {
-        uint16_t rgb = 0;       // 9-bit RGB333
+    struct Cell
+    {
+        uint16_t rgb = 0; // 9-bit RGB333
         bool opaque = false;
-        bool priority = false;  // Layer 2 palette priority bit
-        bool belowUla = false;  // tilemap: below the ULA
-        bool border = false;    // ULA: border pixel
+        bool priority = false; // Layer 2 palette priority bit
+        bool belowUla = false; // tilemap: below the ULA
+        bool border = false; // ULA: border pixel
     };
     using Line = std::array<Cell, kFrameWidth>;
 
-    void renderUla(int32_t y, std::span<const uint8_t> ram, const UlaRenderer &ula, const NextReg &nr,
-                   bool shadowScreen, Line &out) const;
+    void renderUla(int32_t y, std::span<const uint8_t> ram, const UlaRenderer &ula,
+                   const NextReg &nr, bool shadowScreen, Line &out) const;
     void renderLayer2(uint32_t y, std::span<const uint8_t> ram, const NextReg &nr, Line &out) const;
     void renderSprites(uint32_t y, const NextReg &nr, Line &out) const;
-    void renderTilemap(uint32_t y, std::span<const uint8_t> ram, const NextReg &nr, Line &out) const;
+    void renderTilemap(uint32_t y, std::span<const uint8_t> ram, const NextReg &nr,
+                       Line &out) const;
 
-    uint16_t paletteRgb(uint8_t palette, uint8_t index) const noexcept { return m_palettes[palette][index]; }
+    uint16_t paletteRgb(uint8_t palette, uint8_t index) const noexcept
+    {
+        return m_palettes[palette][index];
+    }
     static bool isGloballyTransparent(uint16_t rgb, const NextReg &nr) noexcept;
 
     // Layer 2

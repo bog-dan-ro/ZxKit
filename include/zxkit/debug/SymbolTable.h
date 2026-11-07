@@ -26,14 +26,16 @@
 
 namespace zxkit {
 
-struct SourceLineLocation {
+struct SourceLineLocation
+{
     std::string file;
     uint32_t line = 0;
     uint16_t page = 0;
     uint16_t address = 0;
 };
 
-struct CallStackFrame {
+struct CallStackFrame
+{
     uint16_t callSitePc = 0;
     uint16_t targetPc = 0;
     uint16_t spAtCall = 0;
@@ -42,7 +44,8 @@ struct CallStackFrame {
 
 /// Manages symbols (.sym / .map), SLD source-level debugging locations (sjasmplus),
 /// and the hardware CallStack tracker.
-class SymbolTable {
+class SymbolTable
+{
 public:
     void clear();
     void addSymbol(uint16_t address, std::string name);
@@ -59,7 +62,10 @@ public:
     void pushCallFrame(CallStackFrame frame, std::size_t maxDepth = 128);
     void popCallFrame(uint16_t currentSp) noexcept;
 
-    const std::deque<CallStackFrame> &callStack() const noexcept { return m_callStack; }
+    const std::deque<CallStackFrame> &callStack() const noexcept
+    {
+        return m_callStack;
+    }
 
 private:
     std::unordered_map<uint16_t, std::string> m_addrToSymbol;

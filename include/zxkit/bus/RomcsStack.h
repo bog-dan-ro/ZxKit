@@ -31,11 +31,13 @@ namespace zxkit {
 /// When multiple peripherals (e.g. Interface 1, DivMMC, Multiface, Beta128)
 /// assert /ROMCS simultaneously, the highest-priority active provider wins,
 /// and deactivating one cleanly restores the next active overlay or base MMU map.
-class RomcsStack {
+class RomcsStack
+{
 public:
     using MapCallback = std::function<void(Mmu &mmu)>;
 
-    struct Provider {
+    struct Provider
+    {
         std::string id;
         int priority = 0;
         bool active = false;
@@ -48,11 +50,8 @@ public:
 
     void clear();
 
-    void registerProvider(std::string id,
-                          int priority,
-                          MapCallback applyFn,
-                          uint16_t startAddr = 0x0000,
-                          std::size_t count1k = 16);
+    void registerProvider(std::string id, int priority, MapCallback applyFn,
+                          uint16_t startAddr = 0x0000, std::size_t count1k = 16);
 
     void unregisterProvider(std::string_view id);
     void setActive(std::string_view id, bool active);

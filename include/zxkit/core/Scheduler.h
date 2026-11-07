@@ -27,7 +27,8 @@ namespace zxkit {
 
 using EventId = uint64_t;
 
-class Scheduler {
+class Scheduler
+{
 public:
     using Callback = std::function<void(uint64_t triggerCycle)>;
 
@@ -47,7 +48,8 @@ public:
     void processDue(uint64_t currentCycle);
 
 private:
-    struct Entry {
+    struct Entry
+    {
         uint64_t targetCycle = 0;
         EventId id = 0;
         Callback callback;

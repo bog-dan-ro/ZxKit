@@ -26,9 +26,11 @@
 namespace zxkit {
 
 /// 4-Channel Z80 CTC Counter/Timer (ports 0x183B .. 0x1B3B on ZX Spectrum Next).
-class ZxnCtc {
+class ZxnCtc
+{
 public:
-    struct Channel {
+    struct Channel
+    {
         uint8_t control = 0x03; // Reset state
         uint8_t timeConstant = 0;
         uint8_t downCounter = 0;

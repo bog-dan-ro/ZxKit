@@ -31,16 +31,18 @@ class Emulator;
 
 /// Custom file formats for `Emulator::loadMedia()` / `Emulator::saveMedia()`, checked
 /// before the built-in ones. A plain value: each emulator owns its own registry.
-class MediaRegistry {
+class MediaRegistry
+{
 public:
     using LoaderFn = std::function<void(Emulator &emulator, std::span<const uint8_t> data)>;
-    using SaverFn  = std::function<std::vector<uint8_t>(Emulator &emulator)>;
+    using SaverFn = std::function<std::vector<uint8_t>(Emulator &emulator)>;
 
     void registerLoader(std::string extension, LoaderFn loader);
     void registerSaver(std::string extension, SaverFn saver);
     bool hasLoader(std::string_view extension) const noexcept;
     bool hasSaver(std::string_view extension) const noexcept;
-    void invokeLoader(std::string_view extension, Emulator &emulator, std::span<const uint8_t> data) const;
+    void invokeLoader(std::string_view extension, Emulator &emulator,
+                      std::span<const uint8_t> data) const;
     std::vector<uint8_t> invokeSaver(std::string_view extension, Emulator &emulator) const;
 
 private:

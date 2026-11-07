@@ -22,7 +22,7 @@
 #include <thread>
 
 #if defined(__x86_64__) || defined(__i386__) || defined(_M_X64) || defined(_M_IX86)
-#  include <immintrin.h>
+#include <immintrin.h>
 #endif
 
 namespace zxkit {
@@ -41,7 +41,8 @@ inline void cpuRelax() noexcept
 
 /// Busy wait strategy: spin on the CPU, and only after a long wait (e.g. the
 /// lock owner got preempted) let the scheduler run something else.
-class SpinBackoff {
+class SpinBackoff
+{
 public:
     void pause() noexcept
     {
@@ -71,7 +72,8 @@ private:
 /// Writers are served in FIFO order (ticket lock), and once a writer is waiting
 /// no new readers get in, so neither side can starve: a thread re-locking in a
 /// tight loop (the emulation thread) always lets a waiting thread in first.
-class SpinSharedMutex {
+class SpinSharedMutex
+{
 public:
     SpinSharedMutex() = default;
     SpinSharedMutex(const SpinSharedMutex &) = delete;
@@ -85,7 +87,8 @@ public:
             backoff.pause();
         // Our turn among the writers: wait for the readers to leave
         uint32_t expected = 0;
-        while (!m_state.compare_exchange_weak(expected, kWriter, std::memory_order_acquire, std::memory_order_relaxed)) {
+        while (!m_state.compare_exchange_weak(expected, kWriter, std::memory_order_acquire,
+                                              std::memory_order_relaxed)) {
             expected = 0;
             backoff.pause();
         }
@@ -94,13 +97,15 @@ public:
     bool try_lock() noexcept
     {
         uint32_t ticket = m_nowServing.load(std::memory_order_acquire);
-        if (m_state.load(std::memory_order_relaxed) != 0 ||
-            !m_nextTicket.compare_exchange_strong(ticket, ticket + 1, std::memory_order_acquire, std::memory_order_relaxed))
+        if (m_state.load(std::memory_order_relaxed) != 0
+            || !m_nextTicket.compare_exchange_strong(ticket, ticket + 1, std::memory_order_acquire,
+                                                     std::memory_order_relaxed))
             return false;
         // We hold the next ticket now, the readers in may still have to leave
         uint32_t expected = 0;
         SpinBackoff backoff;
-        while (!m_state.compare_exchange_weak(expected, kWriter, std::memory_order_acquire, std::memory_order_relaxed)) {
+        while (!m_state.compare_exchange_weak(expected, kWriter, std::memory_order_acquire,
+                                              std::memory_order_relaxed)) {
             expected = 0;
             backoff.pause();
         }
@@ -118,10 +123,12 @@ public:
         SpinBackoff backoff;
         for (;;) {
             // Waiting writers go first
-            if (m_nextTicket.load(std::memory_order_acquire) == m_nowServing.load(std::memory_order_acquire)) {
+            if (m_nextTicket.load(std::memory_order_acquire)
+                == m_nowServing.load(std::memory_order_acquire)) {
                 uint32_t state = m_state.load(std::memory_order_relaxed);
-                if (!(state & kWriter) &&
-                    m_state.compare_exchange_weak(state, state + 1, std::memory_order_acquire, std::memory_order_relaxed))
+                if (!(state & kWriter)
+                    && m_state.compare_exchange_weak(state, state + 1, std::memory_order_acquire,
+                                                     std::memory_order_relaxed))
                     return;
             }
             backoff.pause();
@@ -130,11 +137,13 @@ public:
 
     bool try_lock_shared() noexcept
     {
-        if (m_nextTicket.load(std::memory_order_acquire) != m_nowServing.load(std::memory_order_acquire))
+        if (m_nextTicket.load(std::memory_order_acquire)
+            != m_nowServing.load(std::memory_order_acquire))
             return false;
         uint32_t state = m_state.load(std::memory_order_relaxed);
-        return !(state & kWriter) &&
-               m_state.compare_exchange_strong(state, state + 1, std::memory_order_acquire, std::memory_order_relaxed);
+        return !(state & kWriter)
+                && m_state.compare_exchange_strong(state, state + 1, std::memory_order_acquire,
+                                                   std::memory_order_relaxed);
     }
 
     void unlock_shared() noexcept
@@ -145,9 +154,9 @@ public:
 private:
     static constexpr uint32_t kWriter = 0x80000000u;
 
-    std::atomic<uint32_t> m_state{0};      // kWriter, or the number of readers
-    std::atomic<uint32_t> m_nextTicket{0}; // writers queue
-    std::atomic<uint32_t> m_nowServing{0};
+    std::atomic<uint32_t> m_state{ 0 }; // kWriter, or the number of readers
+    std::atomic<uint32_t> m_nextTicket{ 0 }; // writers queue
+    std::atomic<uint32_t> m_nowServing{ 0 };
 };
 
 } // namespace zxkit

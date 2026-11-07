@@ -27,7 +27,8 @@ namespace zxkit {
 /// Supports 8KB EEPROM + up to 64 x 8KB (512KB) banked RAM, port 0xE3 (CONMEM, MAPRAM, BANK),
 /// early M1 automap at 0x3Dxx, late M1 automap at 0x0000/0x0008/0x0038/0x0066/0x04C6/0x0562,
 /// late M1 unmap at 0x1FF8..0x1FFF, and SPI/SD Card ports 0xE7 (CS) and 0xEB (SPI data).
-class DivMmcPeripheral : public Peripheral {
+class DivMmcPeripheral : public Peripheral
+{
 public:
     explicit DivMmcPeripheral(std::size_t ramBanks8k = 16) noexcept;
 

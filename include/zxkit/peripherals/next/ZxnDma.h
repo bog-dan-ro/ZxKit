@@ -31,7 +31,8 @@ namespace zxkit {
 /// Unpaced transfers complete when the DMA is enabled; with a port B
 /// prescaler (e.g. sample playback to a DAC) one byte goes out every
 /// prescaler x 4 base T-states, driven by `tick()`.
-class ZxnDma {
+class ZxnDma
+{
 public:
     void reset() noexcept;
 
@@ -42,7 +43,10 @@ public:
     /// Call at the frame boundary, `frameLength` is the frame length in base T-states.
     void onFrameEnd(uint32_t frameLength) noexcept;
 
-    bool isActive() const noexcept { return m_enabled; }
+    bool isActive() const noexcept
+    {
+        return m_enabled;
+    }
 
     void saveState(StateWriter &w) const;
     void loadState(StateReader &r);
@@ -94,8 +98,8 @@ private:
 
     uint16_t m_srcAddr = 0;
     uint16_t m_dstAddr = 0;
-    uint16_t m_counter = 0;   // bytes transferred in this block
-    uint32_t m_length = 0;    // bytes in this block
+    uint16_t m_counter = 0; // bytes transferred in this block
+    uint32_t m_length = 0; // bytes in this block
     uint32_t m_nextByteTs = 0; // paced transfers: when the next byte is due
 
     bool m_endOfBlock = false;

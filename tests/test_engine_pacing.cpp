@@ -29,7 +29,7 @@ using namespace std::chrono_literals;
 namespace {
 using Clock = AudioPacingInfo::Clock;
 
-template<class Predicate>
+template <class Predicate>
 void waitFor(Predicate predicate, std::chrono::milliseconds timeout = 5000ms)
 {
     const auto end = Clock::now() + timeout;
@@ -52,11 +52,12 @@ EmulatorConfig machine()
     return config;
 }
 
-struct Host {
-    std::atomic<unsigned> frames{0}, queries{0}, pauses{0}, videos{0};
-    std::atomic<uint64_t> produced{0}, consumed{0};
-    std::atomic<uint32_t> observedSpeed{0};
-    std::atomic_bool started{false};
+struct Host
+{
+    std::atomic<unsigned> frames{ 0 }, queries{ 0 }, pauses{ 0 }, videos{ 0 };
+    std::atomic<uint64_t> produced{ 0 }, consumed{ 0 };
+    std::atomic<uint32_t> observedSpeed{ 0 };
+    std::atomic_bool started{ false };
     Engine *engine = nullptr;
     CallbackHandle<AudioCallback> audio;
     CallbackHandle<VideoFrameCallback> video;
@@ -64,13 +65,14 @@ struct Host {
 
     Host()
         : audio([this](std::span<const int16_t> pcm, uint32_t rate, uint8_t channels) {
-            assert(rate == 48000 && channels == 2 && pcm.size() % 2 == 0);
-            produced += pcm.size() / 2;
-            ++frames;
+              assert(rate == 48000 && channels == 2 && pcm.size() % 2 == 0);
+              produced += pcm.size() / 2;
+              ++frames;
           }),
           video([this](const VideoFramePtr &) { ++videos; }),
           pause([this](const PauseEvent &) { ++pauses; })
-    {}
+    {
+    }
 
     EngineConfig config(Weak<AudioClockCallback> clock = {})
     {
@@ -206,20 +208,25 @@ void testClockFallbacks()
 {
     for (int mode = 0; mode < 3; ++mode) {
         Host host;
-        CallbackHandle<AudioClockCallback> clock([&](const AudioPacingInfo &info) -> std::optional<Clock::time_point> {
-            host.check(info);
-            if (mode == 1) throw std::runtime_error("output device disappeared");
-            return std::nullopt;
-        });
+        CallbackHandle<AudioClockCallback> clock(
+                [&](const AudioPacingInfo &info) -> std::optional<Clock::time_point> {
+                    host.check(info);
+                    if (mode == 1)
+                        throw std::runtime_error("output device disappeared");
+                    return std::nullopt;
+                });
         Engine engine(machine(), host.config(clock.weak()));
-        if (mode == 2) clock.reset(); // an expired Weak clock is a normal fallback
+        if (mode == 2)
+            clock.reset(); // an expired Weak clock is a normal fallback
         const auto start = Clock::now();
         host.resume(engine);
         waitFor([&] { return host.frames >= 4; });
         engine.stop();
         assert(Clock::now() - start >= 30ms); // fallback must not become a busy/turbo loop
-        if (mode == 2) assert(host.queries == 0);
-        else assert(host.queries >= 3);
+        if (mode == 2)
+            assert(host.queries == 0);
+        else
+            assert(host.queries >= 3);
     }
 }
 
@@ -237,7 +244,7 @@ void testDetachAndDefaultWait()
     engine.setAudioClockCallback({});
     waitFor([&] { return host.frames >= 3; }, 500ms);
     // setCallbacks must cancel an outstanding deadline just like the specific setter.
-    std::atomic<unsigned> replacementCalls{0};
+    std::atomic<unsigned> replacementCalls{ 0 };
     CallbackHandle<AudioClockCallback> replacement([&](const AudioPacingInfo &info) {
         ++replacementCalls;
         return info.now + 5s;
@@ -283,7 +290,7 @@ void testControlInsideClockCallback()
 
 void testTurboBypassesDeviceClock()
 {
-    for (bool automaticTape : {false, true}) {
+    for (bool automaticTape : { false, true }) {
         Host host;
         CallbackHandle<AudioClockCallback> clock([&](const AudioPacingInfo &info) {
             ++host.queries;
@@ -298,7 +305,7 @@ void testTurboBypassesDeviceClock()
             tone.type = TapeBlockType::PureTone;
             tone.pilotPulse = 4000;
             tone.pilotPulses = 65535;
-            computer->tapeDeck().load({tone});
+            computer->tapeDeck().load({ tone });
             auto tapeOptions = computer->tapeDeck().options();
             tapeOptions.turboWhilePlaying = true;
             computer->tapeDeck().setOptions(tapeOptions);
@@ -310,7 +317,7 @@ void testTurboBypassesDeviceClock()
         assert(host.queries == 0);
     }
 }
-}
+} // namespace
 
 int main()
 {

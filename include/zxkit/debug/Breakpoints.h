@@ -40,7 +40,8 @@ enum class BreakpointType : uint8_t {
 
 enum class DebugEvent : uint16_t { Interrupt = 0, Nmi = 1 };
 
-struct Breakpoint {
+struct Breakpoint
+{
     uint32_t id = 0;
     BreakpointType type = BreakpointType::Execute;
     bool enabled = true;
@@ -53,14 +54,21 @@ struct Breakpoint {
     std::function<bool(const Z80Registers &)> condition;
 };
 
-class BreakpointManager {
+class BreakpointManager
+{
 public:
     uint32_t add(Breakpoint bp, Mmu &mmu);
     bool remove(uint32_t id, Mmu &mmu);
     void clear(Mmu &mmu);
     bool setEnabled(uint32_t id, bool enabled, Mmu &mmu);
-    uint32_t enabledTypes() const noexcept { return m_enabledTypes; }
-    bool has(BreakpointType type) const noexcept { return m_enabledTypes & (1u << unsigned(type)); }
+    uint32_t enabledTypes() const noexcept
+    {
+        return m_enabledTypes;
+    }
+    bool has(BreakpointType type) const noexcept
+    {
+        return m_enabledTypes & (1u << unsigned(type));
+    }
     bool checkExecute(uint16_t pc, const Mmu &mmu, const Z80Registers &regs);
     bool checkMemory(uint16_t addr, bool isWrite, const Z80Registers &regs, Mmu *mmu = nullptr);
     bool checkPort(uint16_t port, bool isWrite, const Z80Registers &regs);
@@ -69,8 +77,14 @@ public:
     bool checkRaster(uint16_t line, const Z80Registers &regs);
     bool checkEvent(DebugEvent event, const Z80Registers &regs);
 
-    const std::vector<Breakpoint> &breakpoints() const noexcept { return m_breakpoints; }
-    bool empty() const noexcept { return m_breakpoints.empty(); }
+    const std::vector<Breakpoint> &breakpoints() const noexcept
+    {
+        return m_breakpoints;
+    }
+    bool empty() const noexcept
+    {
+        return m_breakpoints.empty();
+    }
 
     void syncMmuWatchFlags(Mmu &mmu) const noexcept;
 

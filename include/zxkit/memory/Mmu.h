@@ -39,36 +39,39 @@ namespace zxkit {
 /// - Contended page flags per 1KB slot
 /// - Prioritized /ROMCS & peripheral memory overlays (Interface 1, Multiface, DivMMC, Beta128, etc.)
 /// - Custom per-slot read/write traps and debugger memory watchpoints
-class Mmu {
+class Mmu
+{
 public:
-    static constexpr std::size_t kPageShift = 10;                  // 1 KB = 2^10
-    static constexpr std::size_t kPageSize  = 1u << kPageShift;    // 1024 bytes
-    static constexpr uint16_t    kPageMask  = kPageSize - 1;       // 0x03FF
-    static constexpr std::size_t kSlotCount = 65536 / kPageSize;   // 64 slots
+    static constexpr std::size_t kPageShift = 10; // 1 KB = 2^10
+    static constexpr std::size_t kPageSize = 1u << kPageShift; // 1024 bytes
+    static constexpr uint16_t kPageMask = kPageSize - 1; // 0x03FF
+    static constexpr std::size_t kSlotCount = 65536 / kPageSize; // 64 slots
 
-    struct SlotFlags {
-        static constexpr uint8_t None        = 0x00;
-        static constexpr uint8_t Contended   = 0x01;
-        static constexpr uint8_t Writable    = 0x02;
-        static constexpr uint8_t WatchRead   = 0x04;
-        static constexpr uint8_t WatchWrite  = 0x08;
-        static constexpr uint8_t CustomRead  = 0x10;
+    struct SlotFlags
+    {
+        static constexpr uint8_t None = 0x00;
+        static constexpr uint8_t Contended = 0x01;
+        static constexpr uint8_t Writable = 0x02;
+        static constexpr uint8_t WatchRead = 0x04;
+        static constexpr uint8_t WatchWrite = 0x08;
+        static constexpr uint8_t CustomRead = 0x10;
         static constexpr uint8_t CustomWrite = 0x20;
-        static constexpr uint8_t VideoWrite   = 0x40;
-        static constexpr uint8_t SlowRead    = WatchRead | CustomRead;
-        static constexpr uint8_t SlowWrite   = WatchWrite | CustomWrite | VideoWrite;
+        static constexpr uint8_t VideoWrite = 0x40;
+        static constexpr uint8_t SlowRead = WatchRead | CustomRead;
+        static constexpr uint8_t SlowWrite = WatchWrite | CustomWrite | VideoWrite;
     };
 
-    struct SlotMapping {
-        BankId   bankId     = 0;
+    struct SlotMapping
+    {
+        BankId bankId = 0;
         uint16_t readPage1k = 0;
         uint16_t writeBankId = 0;
         uint16_t writePage1k = 0;
-        bool     writable   = false;
-        bool     contended  = false;
+        bool writable = false;
+        bool contended = false;
     };
 
-    using CustomReadHandler  = std::function<uint8_t(uint16_t addr, uint8_t underlyingByte)>;
+    using CustomReadHandler = std::function<uint8_t(uint16_t addr, uint8_t underlyingByte)>;
     using CustomWriteHandler = std::function<void(uint16_t addr, uint8_t val)>;
     using WatchpointCallback = std::function<void(uint16_t addr, uint8_t val, bool isWrite)>;
 
@@ -77,42 +80,45 @@ public:
     Mmu(const Mmu &) = delete;
     Mmu &operator=(const Mmu &) = delete;
 
-    BankId registerBank(std::string name, std::size_t sizeBytes, bool writable, bool saveToSnapshot = true);
+    BankId registerBank(std::string name, std::size_t sizeBytes, bool writable,
+                        bool saveToSnapshot = true);
     MemoryBank &bank(BankId id);
     const MemoryBank &bank(BankId id) const;
     BankId findBank(std::string_view name) const noexcept;
-    std::span<const MemoryBank> banks() const noexcept { return m_banks; }
+    std::span<const MemoryBank> banks() const noexcept
+    {
+        return m_banks;
+    }
 
     void clear() noexcept;
     void resetMappings() noexcept;
 
     /// Maps `count1k` contiguous 1KB pages starting at `startAddr` for reading and/or writing.
-    void mapPages1k(uint16_t startAddr,
-                    BankId bankId,
-                    std::size_t firstPage1k,
-                    std::size_t count1k,
-                    bool mapRead = true,
-                    bool mapWrite = true,
-                    bool contended = false,
+    void mapPages1k(uint16_t startAddr, BankId bankId, std::size_t firstPage1k, std::size_t count1k,
+                    bool mapRead = true, bool mapWrite = true, bool contended = false,
                     bool forceReadOnly = false);
 
-    void map16k(uint16_t startAddr, BankId bankId, std::size_t page16k, bool contended = false, bool forceReadOnly = false);
-    void map16kReadWrite(uint16_t startAddr, BankId bankId, std::size_t page16k, bool mapRead, bool mapWrite, bool contended = false, bool forceReadOnly = false);
-    void map8k(uint16_t startAddr, BankId bankId, std::size_t page8k, bool contended = false, bool forceReadOnly = false);
-    void map8kReadWrite(uint16_t startAddr, BankId bankId, std::size_t page8k, bool mapRead, bool mapWrite, bool contended = false, bool forceReadOnly = false);
-    void map4k(uint16_t startAddr, BankId bankId, std::size_t page4k, bool contended = false, bool forceReadOnly = false);
-    void map2k(uint16_t startAddr, BankId bankId, std::size_t page2k, bool contended = false, bool forceReadOnly = false);
-    void map1k(uint16_t startAddr, BankId bankId, std::size_t page1k, bool contended = false, bool forceReadOnly = false);
+    void map16k(uint16_t startAddr, BankId bankId, std::size_t page16k, bool contended = false,
+                bool forceReadOnly = false);
+    void map16kReadWrite(uint16_t startAddr, BankId bankId, std::size_t page16k, bool mapRead,
+                         bool mapWrite, bool contended = false, bool forceReadOnly = false);
+    void map8k(uint16_t startAddr, BankId bankId, std::size_t page8k, bool contended = false,
+               bool forceReadOnly = false);
+    void map8kReadWrite(uint16_t startAddr, BankId bankId, std::size_t page8k, bool mapRead,
+                        bool mapWrite, bool contended = false, bool forceReadOnly = false);
+    void map4k(uint16_t startAddr, BankId bankId, std::size_t page4k, bool contended = false,
+               bool forceReadOnly = false);
+    void map2k(uint16_t startAddr, BankId bankId, std::size_t page2k, bool contended = false,
+               bool forceReadOnly = false);
+    void map1k(uint16_t startAddr, BankId bankId, std::size_t page1k, bool contended = false,
+               bool forceReadOnly = false);
 
     /// Unmaps `count1k` pages: reads return 0xFF (floating bus), writes are discarded.
     void unmapPages1k(uint16_t startAddr, std::size_t count1k) noexcept;
 
     /// Peripheral overlay mapping (e.g. /ROMCS for Interface 1, DivMMC, Multiface, Beta128, +D).
-    void mapOverlay1k(uint16_t startAddr,
-                      BankId bankId,
-                      std::size_t firstPage1k,
-                      std::size_t count1k,
-                      bool writable);
+    void mapOverlay1k(uint16_t startAddr, BankId bankId, std::size_t firstPage1k,
+                      std::size_t count1k, bool writable);
 
     void clearOverlay(uint16_t startAddr, std::size_t count1k) noexcept;
     void setContendedRange(uint16_t startAddr, std::size_t count1k, bool contended) noexcept;
@@ -188,11 +194,10 @@ private:
     std::array<uint8_t, kPageSize> m_unmappedPage{};
     std::array<uint8_t, kPageSize> m_sinkPage{};
 
-    template <typename Page>
-    static std::array<Page, kSlotCount> allSlots(Page page) noexcept
+    template <typename Page> static std::array<Page, kSlotCount> allSlots(Page page) noexcept
     {
         return [page]<std::size_t... I>(std::index_sequence<I...>) {
-            return std::array<Page, kSlotCount>{((void)I, page)...};
+            return std::array<Page, kSlotCount>{ ((void)I, page)... };
         }(std::make_index_sequence<kSlotCount>{});
     }
 
@@ -209,7 +214,6 @@ private:
     WatchpointCallback m_watchpointCb;
     BankId m_videoBank = 0;
     std::function<void()> m_videoWriteCallback;
-
 };
 
 } // namespace zxkit

@@ -24,21 +24,33 @@
 
 namespace zxkit {
 
-class Beeper {
+class Beeper
+{
 public:
     static constexpr int32_t kEarVolume = 8192;
     static constexpr int32_t kMicVolume = 2048;
 
     void reset() noexcept;
 
-    void setPortFeBits(uint32_t frameTstate, bool ear, bool mic, BlipBuffer &left, BlipBuffer &right) noexcept;
-    void setTapeEar(uint32_t frameTstate, bool tapeEar, BlipBuffer &left, BlipBuffer &right) noexcept;
+    void setPortFeBits(uint32_t frameTstate, bool ear, bool mic, BlipBuffer &left,
+                       BlipBuffer &right) noexcept;
+    void setTapeEar(uint32_t frameTstate, bool tapeEar, BlipBuffer &left,
+                    BlipBuffer &right) noexcept;
     void setPortFeBits(uint32_t frameTstate, bool ear, bool mic, BlipBuffer &mono) noexcept;
     void setTapeEar(uint32_t frameTstate, bool tapeEar, BlipBuffer &mono) noexcept;
 
-    bool earBit() const noexcept { return m_earBit; }
-    bool micBit() const noexcept { return m_micBit; }
-    bool tapeEarBit() const noexcept { return m_tapeEarBit; }
+    bool earBit() const noexcept
+    {
+        return m_earBit;
+    }
+    bool micBit() const noexcept
+    {
+        return m_micBit;
+    }
+    bool tapeEarBit() const noexcept
+    {
+        return m_tapeEarBit;
+    }
 
     void saveState(StateWriter &w) const;
     void loadState(StateReader &r);

@@ -36,23 +36,23 @@ enum class JoystickType : uint8_t {
     Timex2
 };
 
-struct JoystickButtons {
+struct JoystickButtons
+{
     static constexpr uint8_t Right = 0x01;
-    static constexpr uint8_t Left  = 0x02;
-    static constexpr uint8_t Down  = 0x04;
-    static constexpr uint8_t Up    = 0x08;
+    static constexpr uint8_t Left = 0x02;
+    static constexpr uint8_t Down = 0x04;
+    static constexpr uint8_t Up = 0x08;
     static constexpr uint8_t Fire1 = 0x10;
     static constexpr uint8_t Fire2 = 0x20;
     static constexpr uint8_t Fire3 = 0x40;
     static constexpr uint8_t Start = 0x80;
 };
 
-class KempstonJoystickPeripheral : public Peripheral {
+class KempstonJoystickPeripheral : public Peripheral
+{
 public:
     explicit KempstonJoystickPeripheral(bool looseDecode = false) noexcept
-        : m_loose(looseDecode)
-    {
-    }
+        : m_loose(looseDecode) { }
 
     std::string_view id() const noexcept override;
     std::string_view name() const noexcept override;
@@ -61,8 +61,14 @@ public:
     void onDetach(MachineContext &ctx) override;
     void reset(MachineContext &ctx, ResetKind kind) override;
 
-    void setButtons(uint8_t mask) noexcept { m_state = mask; }
-    uint8_t buttons() const noexcept { return m_state; }
+    void setButtons(uint8_t mask) noexcept
+    {
+        m_state = mask;
+    }
+    uint8_t buttons() const noexcept
+    {
+        return m_state;
+    }
 
 private:
     bool m_loose = false;

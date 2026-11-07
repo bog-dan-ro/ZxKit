@@ -29,13 +29,15 @@
 
 namespace zxkit {
 
-struct SnapshotMachineState {
+struct SnapshotMachineState
+{
     MachineContext &ctx;
     MachineProfile &machine;
     UlaRenderer &ula;
 };
 
-struct SnapshotJoystickInfo {
+struct SnapshotJoystickInfo
+{
     bool present = false;
     // A single declared interface, including explicit None. Empty for missing,
     // unsupported or conflicting declarations; never guess a programmable mapping.
@@ -43,14 +45,17 @@ struct SnapshotJoystickInfo {
 };
 
 /// Loads and saves .sna, .z80 (v1/v2/v3), .szx (ZX-State), and .nex (ZX Spectrum Next) snapshots.
-class SnapshotFormats {
+class SnapshotFormats
+{
 public:
     /// Base machine declared by the interchange header (throws for unsupported hardware).
     static std::string_view machineId(std::span<const uint8_t> data, std::string_view extension);
-    static SnapshotJoystickInfo joystickInfo(std::span<const uint8_t> data, std::string_view extension);
+    static SnapshotJoystickInfo joystickInfo(std::span<const uint8_t> data,
+                                             std::string_view extension);
     /// Write host input preferences without changing machine state. False if the
     /// format cannot represent this interface (the existing bytes stay unchanged).
-    static bool setJoystickInfo(std::vector<uint8_t> &data, std::string_view extension, JoystickType type);
+    static bool setJoystickInfo(std::vector<uint8_t> &data, std::string_view extension,
+                                JoystickType type);
 
     // ── SNA Format (48K & 128K) ───────────────────────────────────────────
     static void loadSna(std::span<const uint8_t> data, SnapshotMachineState &state);
@@ -70,7 +75,8 @@ public:
     // ── NEX Format (ZX Spectrum Next) ─────────────────────────────────────
     static void loadNex(std::span<const uint8_t> data, SnapshotMachineState &state);
 
-    static std::vector<uint8_t> decompressZ80Block(std::span<const uint8_t> src, std::size_t expectedSize, bool hasEndMarker);
+    static std::vector<uint8_t> decompressZ80Block(std::span<const uint8_t> src,
+                                                   std::size_t expectedSize, bool hasEndMarker);
 
 private:
     static constexpr uint16_t readLe16(std::span<const uint8_t> b, std::size_t offset) noexcept
@@ -80,15 +86,14 @@ private:
 
     static constexpr uint32_t readLe32(std::span<const uint8_t> b, std::size_t offset) noexcept
     {
-        return static_cast<uint32_t>(b[offset])
-             | (static_cast<uint32_t>(b[offset + 1]) << 8)
-             | (static_cast<uint32_t>(b[offset + 2]) << 16)
-             | (static_cast<uint32_t>(b[offset + 3]) << 24);
+        return static_cast<uint32_t>(b[offset]) | (static_cast<uint32_t>(b[offset + 1]) << 8)
+                | (static_cast<uint32_t>(b[offset + 2]) << 16)
+                | (static_cast<uint32_t>(b[offset + 3]) << 24);
     }
 
     static void writeLe16(std::vector<uint8_t> &b, std::size_t offset, uint16_t val) noexcept
     {
-        b[offset]     = static_cast<uint8_t>(val & 0xFF);
+        b[offset] = static_cast<uint8_t>(val & 0xFF);
         b[offset + 1] = static_cast<uint8_t>(val >> 8);
     }
 };

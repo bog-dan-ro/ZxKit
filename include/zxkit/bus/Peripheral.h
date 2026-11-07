@@ -41,16 +41,15 @@ class DiskImage;
 class SdCard;
 class TapeDeck;
 
-enum class ResetKind : uint8_t {
-    Soft = 0,
-    Hard = 1
-};
+enum class ResetKind : uint8_t { Soft = 0, Hard = 1 };
 
-using RomResolverFn = std::function<std::vector<uint8_t>(std::string_view romName, std::size_t expectedSize)>;
+using RomResolverFn =
+        std::function<std::vector<uint8_t>(std::string_view romName, std::size_t expectedSize)>;
 
 /// Context passed to every MachineProfile and Peripheral so they can wire
 /// ports, memory banks, overlays, CPU M1/RFSH/RETN hooks, timers, and audio.
-struct MachineContext {
+struct MachineContext
+{
     Clock &clock;
     Scheduler &scheduler;
     Mmu &mmu;
@@ -73,7 +72,8 @@ struct MachineContext {
 /// Base class for all internal and external ZX Spectrum / Z80 peripherals.
 /// Users can create custom virtual peripherals by subclassing `Peripheral`
 /// and attaching them to an `Emulator` without modifying any framework internals.
-class Peripheral {
+class Peripheral
+{
 public:
     virtual ~Peripheral() = default;
 
@@ -81,19 +81,25 @@ public:
     virtual std::string_view name() const noexcept = 0;
 
     virtual void onAttach(MachineContext &ctx) = 0;
-    virtual void onDetach(MachineContext & /*ctx*/) {}
+    virtual void onDetach(MachineContext & /*ctx*/) { }
 
     virtual void reset(MachineContext &ctx, ResetKind kind) = 0;
 
-    virtual void onFrameStart() {}
-    virtual void onFrameEnd() {}
+    virtual void onFrameStart() { }
+    virtual void onFrameEnd() { }
 
     /// Floppy drives this peripheral provides (used by `Emulator::insertDisk`).
-    virtual std::size_t diskDriveCount() const noexcept { return 0; }
-    virtual OptionalRef<DiskImage> diskDrive(std::size_t /*idx*/) noexcept { return std::nullopt; }
+    virtual std::size_t diskDriveCount() const noexcept
+    {
+        return 0;
+    }
+    virtual OptionalRef<DiskImage> diskDrive(std::size_t /*idx*/) noexcept
+    {
+        return std::nullopt;
+    }
 
-    virtual void saveState(StateWriter & /*w*/) const {}
-    virtual void loadState(StateReader & /*r*/) {}
+    virtual void saveState(StateWriter & /*w*/) const { }
+    virtual void loadState(StateReader & /*r*/) { }
 };
 
 } // namespace zxkit

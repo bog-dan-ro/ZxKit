@@ -25,25 +25,26 @@ namespace zxkit {
 
 enum class CpuSpeed : uint8_t {
     Mhz3_5 = 0, // 1x (divisor 8 from 28 MHz)
-    Mhz7   = 1, // 2x (divisor 4 from 28 MHz)
-    Mhz14  = 2, // 4x (divisor 2 from 28 MHz)
-    Mhz28  = 3  // 8x (divisor 1 from 28 MHz)
+    Mhz7 = 1, // 2x (divisor 4 from 28 MHz)
+    Mhz14 = 2, // 4x (divisor 2 from 28 MHz)
+    Mhz28 = 3 // 8x (divisor 1 from 28 MHz)
 };
 
-struct FrameTimings {
-    uint32_t baseClockHz      = 3'500'000;
+struct FrameTimings
+{
+    uint32_t baseClockHz = 3'500'000;
     uint16_t leftBorderTstates = 24;
-    uint16_t screenTstates     = 128;
+    uint16_t screenTstates = 128;
     uint16_t rightBorderTstates = 24;
-    uint16_t retraceTstates    = 48;
-    uint16_t tstatesPerLine    = 224;
-    uint16_t topBorderLines    = 64;
-    uint16_t screenLines       = 192;
+    uint16_t retraceTstates = 48;
+    uint16_t tstatesPerLine = 224;
+    uint16_t topBorderLines = 64;
+    uint16_t screenLines = 192;
     uint16_t bottomBorderLines = 56;
-    uint16_t linesPerFrame     = 312;
-    uint16_t interruptLength   = 32;
-    uint16_t ulaOriginHc       = 116;
-    uint16_t ulaOriginVc       = 64;
+    uint16_t linesPerFrame = 312;
+    uint16_t interruptLength = 32;
+    uint16_t ulaOriginHc = 116;
+    uint16_t ulaOriginVc = 64;
 
     // First pixel relative to topBorderLines * tstatesPerLine; the frame
     // origin is the interrupt edge, not the beginning of the left border.
@@ -65,25 +66,32 @@ struct FrameTimings {
     }
 };
 
-class Clock {
+class Clock
+{
 public:
     Clock() = default;
-    explicit Clock(const FrameTimings &timings) noexcept
-        : m_timings(timings)
-    {
-    }
+    explicit Clock(const FrameTimings &timings) noexcept : m_timings(timings) { }
 
     void reset() noexcept;
 
-    void setTimings(const FrameTimings &timings) noexcept { m_timings = timings; }
-    const FrameTimings &timings() const noexcept { return m_timings; }
+    void setTimings(const FrameTimings &timings) noexcept
+    {
+        m_timings = timings;
+    }
+    const FrameTimings &timings() const noexcept
+    {
+        return m_timings;
+    }
 
     void setSpeed(CpuSpeed speed) noexcept
     {
         m_speed = speed;
         m_baseRemainder = 0;
     }
-    CpuSpeed speed() const noexcept { return m_speed; }
+    CpuSpeed speed() const noexcept
+    {
+        return m_speed;
+    }
 
     /// Multiplier relative to 3.5 MHz base T-states (1, 2, 4, or 8).
     constexpr uint32_t speedMultiplier() const noexcept
@@ -112,13 +120,25 @@ public:
         m_baseRemainder = 0;
     }
 
-    uint64_t totalTstates() const noexcept { return m_totalTstates; }
+    uint64_t totalTstates() const noexcept
+    {
+        return m_totalTstates;
+    }
     /// CPU T-states since the frame started (at the current CPU speed).
-    uint32_t frameTstates() const noexcept { return m_frameTstates; }
+    uint32_t frameTstates() const noexcept
+    {
+        return m_frameTstates;
+    }
     /// Position in the frame in base (3.5MHz) T-states, whatever the CPU speed:
     /// the timeline of the video and audio.
-    uint32_t frameBaseTstates() const noexcept { return m_frameBaseTstates; }
-    uint64_t frameCount() const noexcept { return m_frameCount; }
+    uint32_t frameBaseTstates() const noexcept
+    {
+        return m_frameBaseTstates;
+    }
+    uint64_t frameCount() const noexcept
+    {
+        return m_frameCount;
+    }
 
     uint32_t scaledTstatesPerLine() const noexcept
     {
@@ -131,7 +151,8 @@ public:
     }
 
     /// Current scanline (0 .. linesPerFrame - 1) and horizontal T-state within line (3.5MHz domain).
-    struct RasterPos {
+    struct RasterPos
+    {
         uint16_t line = 0;
         uint16_t lineTstate = 0;
     };
@@ -147,8 +168,8 @@ private:
     uint32_t m_frameTstates = 0;
     uint32_t m_frameBaseTstates = 0;
     uint32_t m_baseRemainder = 0;
-    uint64_t m_frameCount   = 0;
-    CpuSpeed m_speed        = CpuSpeed::Mhz3_5;
+    uint64_t m_frameCount = 0;
+    CpuSpeed m_speed = CpuSpeed::Mhz3_5;
 };
 
 } // namespace zxkit

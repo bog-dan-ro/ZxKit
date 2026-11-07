@@ -19,17 +19,16 @@
 
 //do NOT include any headers here! used by xBRZ_dll!!!
 
-namespace zxkit::detail::xbrz
-{
+namespace zxkit::detail::xbrz {
 struct ScalerCfg
 {
-    double luminanceWeight            = 1;
-    double equalColorTolerance        = 30;
-    double centerDirectionBias        = 4;
+    double luminanceWeight = 1;
+    double equalColorTolerance = 30;
+    double centerDirectionBias = 4;
     double dominantDirectionThreshold = 3.6;
-    double steepDirectionThreshold    = 2.2;
-    double newTestAttribute           = 0; //unused; test new parameters
+    double steepDirectionThreshold = 2.2;
+    double newTestAttribute = 0; //unused; test new parameters
 };
-}
+} // namespace zxkit::detail::xbrz
 
 #endif

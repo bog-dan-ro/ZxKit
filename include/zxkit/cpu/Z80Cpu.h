@@ -34,30 +34,35 @@
 
 namespace zxkit {
 
-class Z80Cpu {
+class Z80Cpu
+{
 public:
     /// Bitmask flags gating optional CPU lifecycle hooks.
     /// When m_activeHooksMask == 0, the hot execution loop pays only a single branch.
-    struct HookFlags {
-        static constexpr uint32_t None          = 0x0000;
-        static constexpr uint32_t PreM1         = 0x0001; // Automap before opcode fetch (DivMMC, IF1, Beta128, +D, Multiface)
-        static constexpr uint32_t PostM1        = 0x0002; // Late automap / unmap after M1 fetch
-        static constexpr uint32_t RfshEdge      = 0x0004; // R7 bit-7 refresh edge hook (CoBra 1 CP/M flips)
-        static constexpr uint32_t Retn          = 0x0008; // RETN / RETI hook (Multiface, DivMMC, IM2 daisy-chain)
-        static constexpr uint32_t TapeTrap      = 0x0010; // ROM tape load/save trap
-        static constexpr uint32_t Debugger      = 0x0020; // Breakpoint / trace / step hook
-        static constexpr uint32_t EvenM1        = 0x0040; // Scorpion ZS 256 even-T-state M1 alignment
-        static constexpr uint32_t MagicBreak    = 0x0080; // ED FF / DD 01 magic breakpoints
+    struct HookFlags
+    {
+        static constexpr uint32_t None = 0x0000;
+        static constexpr uint32_t PreM1 =
+                0x0001; // Automap before opcode fetch (DivMMC, IF1, Beta128, +D, Multiface)
+        static constexpr uint32_t PostM1 = 0x0002; // Late automap / unmap after M1 fetch
+        static constexpr uint32_t RfshEdge =
+                0x0004; // R7 bit-7 refresh edge hook (CoBra 1 CP/M flips)
+        static constexpr uint32_t Retn =
+                0x0008; // RETN / RETI hook (Multiface, DivMMC, IM2 daisy-chain)
+        static constexpr uint32_t TapeTrap = 0x0010; // ROM tape load/save trap
+        static constexpr uint32_t Debugger = 0x0020; // Breakpoint / trace / step hook
+        static constexpr uint32_t EvenM1 = 0x0040; // Scorpion ZS 256 even-T-state M1 alignment
+        static constexpr uint32_t MagicBreak = 0x0080; // ED FF / DD 01 magic breakpoints
     };
 
-    using AddressHookFn   = std::function<void(uint16_t pc)>;
+    using AddressHookFn = std::function<void(uint16_t pc)>;
     /// The 256-byte pages of the address space (bit n: n * 256 to n * 256 + 255).
     using PcPages = std::bitset<256>;
-    using M1ByteHookFn    = std::function<void(uint16_t pc, uint8_t opcode)>;
-    using RfshHookFn      = std::function<void(uint8_t r7Bit)>;
-    using RetnHookFn      = std::function<void(bool isReti)>;
-    using TapeTrapFn      = std::function<bool(uint16_t pc, bool isLoad)>;
-    using DebuggerHookFn  = std::function<bool(uint16_t pc)>;
+    using M1ByteHookFn = std::function<void(uint16_t pc, uint8_t opcode)>;
+    using RfshHookFn = std::function<void(uint8_t r7Bit)>;
+    using RetnHookFn = std::function<void(bool isReti)>;
+    using TapeTrapFn = std::function<bool(uint16_t pc, bool isLoad)>;
+    using DebuggerHookFn = std::function<bool(uint16_t pc)>;
 
     Z80Cpu(Clock &clock, Mmu &mmu, ContentionModel &contention, IoBus &ioBus, Im2Controller &im2);
 
@@ -65,7 +70,10 @@ public:
 
     /// Executes a single Z80 / Z80N instruction (or services a pending NMI/INT)
     /// and returns the elapsed T-states.
-    uint32_t stepInstruction() { return stepInstructionImpl<false>(); }
+    uint32_t stepInstruction()
+    {
+        return stepInstructionImpl<false>();
+    }
 
     /// Executes instructions until `m_clock.frameBaseTstates() >= targetFrameTstates`
     /// (the frame position in base 3.5MHz T-states, so turbo speeds run more instructions)
@@ -75,29 +83,65 @@ public:
     /// RZX counts M1 opcode fetches, excluding interrupt acknowledge cycles.
     /// The normal execution loop has no counter/recording checks.
     bool runTrackedUntil(uint32_t targetFrameTstates, uint32_t fetchLimit, bool playback);
-    uint32_t trackedFetches() const noexcept { return m_trackedFetches; }
-    void resetTrackedFetches() noexcept { m_trackedFetches = 0; }
-    bool interruptJustEnabled() const noexcept { return m_interruptsEnabledAt == static_cast<int64_t>(m_clock.totalTstates()); }
+    uint32_t trackedFetches() const noexcept
+    {
+        return m_trackedFetches;
+    }
+    void resetTrackedFetches() noexcept
+    {
+        m_trackedFetches = 0;
+    }
+    bool interruptJustEnabled() const noexcept
+    {
+        return m_interruptsEnabledAt == static_cast<int64_t>(m_clock.totalTstates());
+    }
     void acceptPlaybackInterrupt(bool retrigger, bool inhibit = false);
-    bool acknowledgePendingInterrupt() { return serviceInterrupt(); }
+    bool acknowledgePendingInterrupt()
+    {
+        return serviceInterrupt();
+    }
 
     // ULA /INT is a level pulse. Interrupt generators which latch individual
     // events (e.g. Next legacy interrupts) consume the event on acknowledge.
-    void setInterruptRetrigger(bool enabled) noexcept { m_interruptRetrigger = enabled; }
+    void setInterruptRetrigger(bool enabled) noexcept
+    {
+        m_interruptRetrigger = enabled;
+    }
 
     void requestNmi(bool stackless = false) noexcept;
     /// elapsedTstates locates an already asserted pulse (e.g. a crossed frame edge).
     void requestInterrupt(uint8_t vector = 0xFF, uint32_t elapsedTstates = 0) noexcept;
 
-    Z80Registers &registers() noexcept { return m_regs; }
-    const Z80Registers &registers() const noexcept { return m_regs; }
-    void setRegisters(const Z80Registers &regs) noexcept { m_regs = regs; }
+    Z80Registers &registers() noexcept
+    {
+        return m_regs;
+    }
+    const Z80Registers &registers() const noexcept
+    {
+        return m_regs;
+    }
+    void setRegisters(const Z80Registers &regs) noexcept
+    {
+        m_regs = regs;
+    }
 
-    void setZ80nEnabled(bool enabled) noexcept { m_z80nEnabled = enabled; }
-    bool isZ80nEnabled() const noexcept { return m_z80nEnabled; }
+    void setZ80nEnabled(bool enabled) noexcept
+    {
+        m_z80nEnabled = enabled;
+    }
+    bool isZ80nEnabled() const noexcept
+    {
+        return m_z80nEnabled;
+    }
 
-    void setCmos(bool isCmos) noexcept { m_isCmos = isCmos; }
-    bool isCmos() const noexcept { return m_isCmos; }
+    void setCmos(bool isCmos) noexcept
+    {
+        m_isCmos = isCmos;
+    }
+    bool isCmos() const noexcept
+    {
+        return m_isCmos;
+    }
 
     void setEvenM1(bool enabled) noexcept
     {
@@ -116,7 +160,7 @@ public:
     /// with `setPreM1HookPages` when what it watches changes).
     void addPreM1Hook(AddressHookFn fn, std::string owner = {}, PcPages pages = PcPages{}.set())
     {
-        m_preM1Hooks.push_back({std::move(owner), std::move(fn), pages});
+        m_preM1Hooks.push_back({ std::move(owner), std::move(fn), pages });
         updatePreM1Pages();
     }
 
@@ -132,7 +176,7 @@ public:
 
     void addPostM1Hook(M1ByteHookFn fn, std::string owner = {})
     {
-        m_postM1Hooks.push_back({std::move(owner), std::move(fn)});
+        m_postM1Hooks.push_back({ std::move(owner), std::move(fn) });
         setHookFlag(HookFlags::PostM1, true);
     }
 
@@ -144,7 +188,7 @@ public:
 
     void addRetnHook(RetnHookFn fn, std::string owner = {})
     {
-        m_retnHooks.push_back({std::move(owner), std::move(fn)});
+        m_retnHooks.push_back({ std::move(owner), std::move(fn) });
         setHookFlag(HookFlags::Retn, true);
     }
 
@@ -166,7 +210,10 @@ public:
     }
 
     /// Called after an accepted interrupt (false IRQ, true NMI); never on rejected requests.
-    void setInterruptObserver(std::function<void(bool)> observer) { m_interruptObserver = std::move(observer); }
+    void setInterruptObserver(std::function<void(bool)> observer)
+    {
+        m_interruptObserver = std::move(observer);
+    }
 
     void setDebuggerHook(DebuggerHookFn fn)
     {
@@ -181,7 +228,8 @@ public:
         m_postM1Hooks.clear();
         m_rfshHook = nullptr;
         m_retnHooks.clear();
-        setHookFlag(HookFlags::PreM1 | HookFlags::PostM1 | HookFlags::RfshEdge | HookFlags::Retn, false);
+        setHookFlag(HookFlags::PreM1 | HookFlags::PostM1 | HookFlags::RfshEdge | HookFlags::Retn,
+                    false);
     }
 
     /// The debugger hook costs a call per instruction: it runs only while enabled
@@ -191,25 +239,40 @@ public:
         setHookFlag(HookFlags::Debugger, enabled && static_cast<bool>(m_debuggerHook));
     }
 
-    bool isTrapped() const noexcept { return m_trapped; }
+    bool isTrapped() const noexcept
+    {
+        return m_trapped;
+    }
     /// Stops `runUntil()` once the current instruction completes (e.g. a watchpoint hit).
-    void trap() noexcept { m_trapped = true; }
-    void clearTrap() noexcept { m_trapped = false; }
+    void trap() noexcept
+    {
+        m_trapped = true;
+    }
+    void clearTrap() noexcept
+    {
+        m_trapped = false;
+    }
 
     void configureStacklessRetn(bool active, uint16_t returnAddress) noexcept
     {
         m_stacklessRetnActive = active;
         m_stacklessRetnAddress = returnAddress;
     }
-    bool stacklessRetnActive() const noexcept { return m_stacklessRetnActive; }
+    bool stacklessRetnActive() const noexcept
+    {
+        return m_stacklessRetnActive;
+    }
     /// PC captured by the last NMI acknowledge, also used by stackless RETN.
-    uint16_t nmiReturnAddress() const noexcept { return m_stacklessRetnAddress; }
+    uint16_t nmiReturnAddress() const noexcept
+    {
+        return m_stacklessRetnAddress;
+    }
 
     void saveState(StateWriter &w) const;
     void loadState(StateReader &r);
 
 private:
-    template<bool TrackFetches> uint32_t stepInstructionImpl();
+    template <bool TrackFetches> uint32_t stepInstructionImpl();
     uint32_t m_trackedFetches = 0;
     bool m_playbackExecution = false;
     bool m_trackedInterrupt = false;
@@ -269,13 +332,14 @@ private:
     bool m_isCmos = false;
     bool m_trapped = false;
 
-    template <typename Fn>
-    struct OwnedHook {
+    template <typename Fn> struct OwnedHook
+    {
         std::string owner;
         Fn fn;
     };
 
-    struct PreM1Hook {
+    struct PreM1Hook
+    {
         std::string owner;
         AddressHookFn fn;
         PcPages pages;

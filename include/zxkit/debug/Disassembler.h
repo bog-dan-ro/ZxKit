@@ -25,7 +25,8 @@
 
 namespace zxkit {
 
-struct DisasmInstruction {
+struct DisasmInstruction
+{
     uint16_t address = 0;
     uint8_t length = 1;
     std::array<uint8_t, 4> bytes{};
@@ -34,14 +35,15 @@ struct DisasmInstruction {
 };
 
 /// Z80 & Z80N Disassembler supporting single-instruction and range disassembly.
-class Disassembler {
+class Disassembler
+{
 public:
     using ReadByteFn = std::function<uint8_t(uint16_t addr)>;
 
-    static DisasmInstruction disassembleOne(const ReadByteFn &readByte, uint16_t pc, bool z80n = true);
+    static DisasmInstruction disassembleOne(const ReadByteFn &readByte, uint16_t pc,
+                                            bool z80n = true);
     static std::vector<DisasmInstruction> disassembleCount(const ReadByteFn &readByte,
-                                                           uint16_t startPc,
-                                                           std::size_t count,
+                                                           uint16_t startPc, std::size_t count,
                                                            bool z80n = true);
 };
 

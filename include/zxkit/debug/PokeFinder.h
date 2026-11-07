@@ -24,26 +24,30 @@
 
 namespace zxkit {
 
-struct PokeCandidate {
+struct PokeCandidate
+{
     uint16_t page16k = 0;
     uint16_t offset = 0;
     uint8_t currentValue = 0;
 };
 
-struct PokPatch {
+struct PokPatch
+{
     uint8_t bank = 8; // 8 = ignore bank (16-bit address)
     uint16_t address = 0;
     uint16_t value = 0; // 256 = ask user
     uint8_t original = 0;
 };
 
-struct PokTrainer {
+struct PokTrainer
+{
     std::string name;
     std::vector<PokPatch> patches;
 };
 
 /// Cheat / Trainer RAM search engine & .pok file parser (ported & modernized from FUSE/Spectacol).
-class PokeFinder {
+class PokeFinder
+{
 public:
     /// Parses a standard Spectrum .pok trainer file (N = trainer name, M/Z = patch lines, Y = EOF).
     static std::vector<PokTrainer> parsePokFile(std::string_view content);
@@ -53,13 +57,15 @@ public:
     void searchIncremented(const Mmu &mmu);
     void searchDecremented(const Mmu &mmu);
 
-    std::size_t count() const noexcept { return m_candidateCount; }
+    std::size_t count() const noexcept
+    {
+        return m_candidateCount;
+    }
 
     std::vector<PokeCandidate> results(std::size_t maxResults = 256) const;
 
 private:
-    template <typename Pred>
-    void filterComparison(const Mmu &mmu, Pred pred)
+    template <typename Pred> void filterComparison(const Mmu &mmu, Pred pred)
     {
         if (m_ramBankId == 0)
             return;
