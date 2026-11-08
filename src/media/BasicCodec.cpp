@@ -1,6 +1,7 @@
 // Copyright (c) 2026, BogDan Vatra. SPDX-License-Identifier: GPL-3.0-or-later
 #include "zxkit/media/BasicCodec.h"
 #include "archive/ArchiveInternal.h"
+#include "NumberParsing.h"
 #include <charconv>
 #include <cmath>
 #include <cstdlib>
@@ -146,7 +147,7 @@ Bytes tokenize(std::string_view line, BasicDialect dialect)
                     }
                     require(n > 0, "BIN requires binary digits"sv);
                 } else {
-                    auto result = std::from_chars(tail.data(), tail.data() + tail.size(), value);
+                    auto result = parseNumber(tail.data(), tail.data() + tail.size(), value);
                     require(result.ec == std::errc{}, "Invalid BASIC number"sv);
                     n = result.ptr - tail.data();
                 }
@@ -361,7 +362,7 @@ Bytes compileArray(std::string_view source, bool characters)
                 rawText(out, std::string_view(token).substr(1));
             } else {
                 double value = 0;
-                auto r = std::from_chars(token.data(), token.data() + token.size(), value);
+                auto r = parseNumber(token.data(), token.data() + token.size(), value);
                 require(r.ec == std::errc{} && r.ptr == token.data() + token.size(),
                         "Invalid array number"sv);
                 append(out, encodeNumber(value));

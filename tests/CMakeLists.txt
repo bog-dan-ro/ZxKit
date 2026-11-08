@@ -127,6 +127,8 @@ add_test(NAME test_debugger COMMAND test_debugger)
 
 add_executable(test_media_archive test_media_archive.cpp)
 target_link_libraries(test_media_archive PRIVATE ZX::Kit)
+# Also checks the internal floating-point number parser.
+target_include_directories(test_media_archive PRIVATE ${PROJECT_SOURCE_DIR}/src)
 target_compile_definitions(test_media_archive PRIVATE ZXKIT_MEDIA_FIXTURES="${CMAKE_CURRENT_SOURCE_DIR}/fixtures")
 target_compile_options(test_media_archive PRIVATE $<IF:$<CXX_COMPILER_ID:MSVC>,/UNDEBUG,-UNDEBUG>)
 add_test(NAME test_media_archive COMMAND test_media_archive)

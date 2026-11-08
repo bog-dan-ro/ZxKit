@@ -5,6 +5,7 @@
 #include "zxkit/media/TapeConversion.h"
 #include "zxkit/peripherals/storage/FloppyDisk.h"
 #include "zxkit/core/Exception.h"
+#include "media/NumberParsing.h"
 #include <cassert>
 #include <cmath>
 #include <iostream>
@@ -357,9 +358,53 @@ void microdrive()
     auto protectedMedia = MediaArchive::open(bytes, "mdr"sv);
     fails([&] { protectedMedia.remove("TEST"sv); });
 }
+void numberParsing()
+{
+    struct Case
+    {
+        std::string_view text;
+        std::errc error;
+        std::size_t length;
+        double value;
+    };
+    constexpr std::array cases = {
+        Case{ "0"sv, std::errc{}, 1, 0 },
+        Case{ "10"sv, std::errc{}, 2, 10 },
+        Case{ "1.5"sv, std::errc{}, 3, 1.5 },
+        Case{ ".5"sv, std::errc{}, 2, 0.5 },
+        Case{ "1."sv, std::errc{}, 2, 1 },
+        Case{ "-2.25"sv, std::errc{}, 5, -2.25 },
+        Case{ "1E3"sv, std::errc{}, 3, 1000 },
+        Case{ "1e-2"sv, std::errc{}, 4, 0.01 },
+        Case{ "2.5E+2X"sv, std::errc{}, 6, 250 },
+        Case{ "1E"sv, std::errc{}, 1, 1 },
+        Case{ "1E+"sv, std::errc{}, 1, 1 },
+        Case{ "1AND"sv, std::errc{}, 1, 1 },
+        Case{ "3.14159265358979"sv, std::errc{}, 16, 3.14159265358979 },
+        Case{ "."sv, std::errc::invalid_argument, 0, -7 },
+        Case{ "-"sv, std::errc::invalid_argument, 0, -7 },
+        Case{ "X"sv, std::errc::invalid_argument, 0, -7 },
+        Case{ "1E999"sv, std::errc::result_out_of_range, 5, -7 },
+    };
+    for (const auto &c : cases) {
+        const char *first = c.text.data();
+        const char *last = first + c.text.size();
+        double classic = -7;
+        auto classicResult = parseClassicNumber(first, last, classic);
+        assert(classicResult.ec == c.error);
+        assert(std::size_t(classicResult.ptr - first) == c.length);
+        assert(classic == c.value);
+        // Uses std::from_chars wherever the C++ library has it.
+        double standard = -7;
+        auto standardResult = parseNumber(first, last, standard);
+        assert(standardResult.ec == classicResult.ec && standardResult.ptr == classicResult.ptr);
+        assert(standard == classic);
+    }
+}
 } // namespace
 int main()
 {
+    numberParsing();
     basic();
     tape();
     disks();
