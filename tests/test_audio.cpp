@@ -17,6 +17,8 @@
 
 #include "zxkit/audio/Ay8912.h"
 #include "zxkit/audio/AudioMixer.h"
+#include "zxkit/core/Emulator.h"
+#include "zxkit/machines/ZxNextMachine.h"
 
 #include <algorithm>
 #include <array>
@@ -24,6 +26,8 @@
 #include <cmath>
 #include <cstdio>
 #include <numeric>
+#include <string>
+#include <string_view>
 #include <vector>
 
 using namespace zxkit;
@@ -505,6 +509,130 @@ void testWritesAndHeadroom()
     const auto joined = single.endFrame(70888);
     assert(std::equal(split.begin(), split.end(), joined.begin(), joined.end()));
 }
+
+EmulatorConfig quietMachine(std::string_view machineId)
+{
+    EmulatorConfig config;
+    config.machineId = machineId;
+    config.romResolver = [](std::string_view, std::size_t size) {
+        return std::vector<uint8_t>(size, 0x76); // HALT: leave sound devices alone.
+    };
+    return config;
+}
+
+void testEmulatorResetSilencesAudio()
+{
+    using namespace std::literals;
+    for (const auto machineId : { "48k"sv, "128k"sv, "next"sv }) {
+        for (const auto kind : { ResetKind::Soft, ResetKind::Hard }) {
+            for (const auto model :
+                 { SpeakerModel::Unfiltered, SpeakerModel::TV, SpeakerModel::Beeper }) {
+                for (const bool midFrame : { false, true }) {
+                    Emulator emulator(quietMachine(machineId));
+                    auto &mixer = emulator.audioMixer();
+                    mixer.setSpeakerModel(model);
+                    mixer.setAyModel(AyModel::YM2149);
+                    mixer.setStereoMode(AyStereoMode::ABC);
+                    const auto chipCount = mixer.ayChipCount();
+                    for (uint8_t chip = 0; chip < chipCount; ++chip)
+                        tone(mixer.ayChip(chip));
+                    mixer.writeBeeper(0, true, false);
+                    mixer.dac().writeMono(0, 200, mixer.leftBlip(), mixer.rightBlip());
+                    assert(emulator.runFrame() == RunStatus::FrameDone);
+                    assert(std::ranges::any_of(emulator.audioSamples(),
+                                               [](auto sample) { return sample != 0; }));
+
+                    if (midFrame) {
+                        for (unsigned line = 0; line < 100; ++line)
+                            assert(emulator.runScanline() == RunStatus::LineDone);
+                        const auto tstate = emulator.clock().frameBaseTstates();
+                        mixer.writeBeeper(tstate, false, true);
+                        mixer.writeTapeEar(tstate, true);
+                        mixer.dac().writeMono(tstate, 50, mixer.leftBlip(), mixer.rightBlip());
+                        for (uint8_t chip = 0; chip < chipCount; ++chip) {
+                            mixer.setActiveAyChip(chip);
+                            mixer.activeAy().selectRegister(8);
+                            mixer.writeAyRegister(tstate, 9);
+                        }
+                    }
+
+                    emulator.reset(kind);
+                    assert(emulator.audioSamples().empty());
+                    assert(mixer.ayChipCount() == chipCount);
+                    assert(mixer.speakerModel() == model);
+                    assert(mixer.ayModel() == AyModel::YM2149);
+                    assert(mixer.stereoMode() == AyStereoMode::ABC);
+                    for (unsigned frame = 0; frame < 3; ++frame) {
+                        assert(emulator.runFrame() == RunStatus::FrameDone);
+                        assert(!emulator.audioSamples().empty());
+                        assert(std::ranges::all_of(emulator.audioSamples(),
+                                                   [](auto sample) { return sample == 0; }));
+                    }
+                }
+            }
+        }
+    }
+}
+
+void testEmulatorNmiAudio()
+{
+    using namespace std::literals;
+    enum class NmiSource { Cpu, Multiface, DivMmc };
+    for (const auto machineId : { "128k"sv, "next"sv }) {
+        for (const auto source : { NmiSource::Cpu, NmiSource::Multiface, NmiSource::DivMmc }) {
+            if (machineId != "next"sv && source != NmiSource::Cpu)
+                continue;
+            for (const bool silenceAy : { false, true }) {
+                auto config = quietMachine(machineId);
+                config.romResolver = [silenceAy](std::string_view, std::size_t size) {
+                    std::vector<uint8_t> rom(size, 0x76);
+                    if (silenceAy) {
+                        // NMI handler: select AY register 8, set its volume to zero, HALT.
+                        constexpr std::array<uint8_t, 13> handler{ 0x01, 0xFD, 0xFF, 0x3E, 0x08,
+                                                                   0xED, 0x79, 0x06, 0xBF, 0xAF,
+                                                                   0xED, 0x79, 0x76 };
+                        std::ranges::copy(handler, rom.begin() + 0x66);
+                    }
+                    return rom;
+                };
+                Emulator emulator(config);
+                Emulator reference(quietMachine(machineId));
+                for (auto *computer : { &emulator, &reference }) {
+                    computer->audioMixer().setSpeakerModel(SpeakerModel::Unfiltered);
+                    tone(computer->audioMixer().activeAy());
+                    assert(computer->runFrame() == RunStatus::FrameDone);
+                    for (unsigned line = 0; line < 100; ++line)
+                        assert(computer->runScanline() == RunStatus::LineDone);
+                }
+                const auto cycles = emulator.clock().totalTstates();
+                if (source == NmiSource::Cpu) {
+                    emulator.triggerNmi();
+                } else {
+                    auto &next = static_cast<ZxNextMachine &>(emulator.machine());
+                    next.nextReg().write(0x06, 0x18);
+                    assert(emulator.triggerNextNmi(source == NmiSource::Multiface));
+                }
+                assert(emulator.clock().totalTstates() == cycles);
+                for (unsigned frame = 0; frame < 3; ++frame) {
+                    assert(emulator.runFrame() == RunStatus::FrameDone);
+                    assert(reference.runFrame() == RunStatus::FrameDone);
+                    assert(!emulator.audioSamples().empty());
+                    if (!silenceAy) {
+                        // An NMI alone keeps the AY running on its continuous timeline.
+                        assert(std::ranges::equal(emulator.audioSamples(),
+                                                  reference.audioSamples()));
+                        assert(std::ranges::any_of(emulator.audioSamples(),
+                                                   [](auto sample) { return sample != 0; }));
+                    } else if (frame > 0) {
+                        // Fresh handler writes replace the tone; an old PCM frame cannot loop.
+                        assert(std::ranges::all_of(emulator.audioSamples(),
+                                                   [](auto sample) { return sample == 0; }));
+                    }
+                }
+            }
+        }
+    }
+}
 } // namespace
 int main()
 {
@@ -518,5 +646,7 @@ int main()
     testSpeakerResponses();
     testSpeakerTransitionsAndState();
     testSpeakerRoutingAndMixerState();
+    testEmulatorNmiAudio();
+    testEmulatorResetSilencesAudio();
     std::puts("AY synthesis regressions passed");
 }

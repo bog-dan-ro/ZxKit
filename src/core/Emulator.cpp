@@ -349,6 +349,8 @@ void Emulator::reset(ResetKind kind)
     m_keyboard.reset();
     m_ula.endRasterFrame();
     m_clock.reset();
+    m_audioMixer.reset();
+    m_audioSamples = {};
     m_cpu.reset(kind == ResetKind::Hard);
     m_machine->reset(m_context, m_ula, kind);
     for (auto &p : m_peripherals)
