@@ -133,6 +133,23 @@ target_compile_definitions(test_media_archive PRIVATE ZXKIT_MEDIA_FIXTURES="${CM
 target_compile_options(test_media_archive PRIVATE $<IF:$<CXX_COMPILER_ID:MSVC>,/UNDEBUG,-UNDEBUG>)
 add_test(NAME test_media_archive COMMAND test_media_archive)
 
+if(TARGET zx-mcp)
+    find_package(Python3 REQUIRED COMPONENTS Interpreter)
+    add_test(NAME test_mcp COMMAND ${Python3_EXECUTABLE}
+        ${CMAKE_CURRENT_SOURCE_DIR}/tools/test_mcp.py $<TARGET_FILE:zx-mcp>
+        ${CMAKE_CURRENT_BINARY_DIR}/mcp ${PROJECT_SOURCE_DIR}/tools/mcp)
+    set_tests_properties(test_mcp PROPERTIES TIMEOUT 180)
+    add_test(NAME test_mcp_next COMMAND ${Python3_EXECUTABLE}
+        ${CMAKE_CURRENT_SOURCE_DIR}/tools/test_mcp_next.py $<TARGET_FILE:zx-mcp>
+        ${CMAKE_CURRENT_BINARY_DIR}/mcp-next ${PROJECT_SOURCE_DIR}/tools/mcp)
+    set_tests_properties(test_mcp_next PROPERTIES TIMEOUT 180)
+endif()
+
+add_executable(test_io_observers test_io_observers.cpp)
+target_link_libraries(test_io_observers PRIVATE ZX::Kit)
+target_compile_options(test_io_observers PRIVATE $<IF:$<CXX_COMPILER_ID:MSVC>,/UNDEBUG,-UNDEBUG>)
+add_test(NAME test_io_observers COMMAND test_io_observers)
+
 if(TARGET zxmedia)
     find_package(Python3 COMPONENTS Interpreter QUIET)
     if(Python3_Interpreter_FOUND)

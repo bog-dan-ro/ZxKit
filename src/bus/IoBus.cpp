@@ -30,6 +30,7 @@ IoBus &IoBus::operator=(const IoBus &other)
     m_candidatesDirty = true; // Cached pointers belong to this bus's own handlers.
     m_handlers = other.m_handlers;
     m_observers = other.m_observers;
+    m_nextObserverId = other.m_nextObserverId;
     m_floatingBusFn = other.m_floatingBusFn;
     m_watchpointCb = other.m_watchpointCb;
     m_nextRegOpcodeCb = other.m_nextRegOpcodeCb;
@@ -84,7 +85,26 @@ void IoBus::unregisterOwner(std::string_view ownerId)
     std::erase_if(m_handlers, [ownerId](const HandlerEntry &e) { return e.ownerId == ownerId; });
 }
 
-void IoBus::addObserver(IoObserver observer) { m_observers.push_back(std::move(observer)); }
+void IoBus::addObserver(IoObserver observer)
+{
+    subscribe(std::move(observer));
+}
+
+uint64_t IoBus::subscribe(IoObserver observer)
+{
+    const auto id = ++m_nextObserverId;
+    m_observers.push_back({ id, std::move(observer) });
+    return id;
+}
+
+bool IoBus::unsubscribe(uint64_t subscriptionId)
+{
+    return std::erase_if(m_observers,
+                         [subscriptionId](const ObserverEntry &entry) {
+                             return entry.id == subscriptionId;
+                         })
+            != 0;
+}
 
 void IoBus::setFloatingBusCallback(FloatingBusFn fn) { m_floatingBusFn = std::move(fn); }
 
@@ -180,7 +200,7 @@ uint8_t IoBus::peekPort(uint16_t port, bool notifyObservers) const
 
     if (notifyObservers) {
         for (const auto &obs : m_observers)
-            obs(port, combinedValue, false);
+            obs.callback(port, combinedValue, false);
     }
     return combinedValue;
 }
@@ -188,7 +208,7 @@ uint8_t IoBus::peekPort(uint16_t port, bool notifyObservers) const
 void IoBus::write(uint16_t port, uint8_t value)
 {
     for (const auto &obs : m_observers)
-        obs(port, value, true);
+        obs.callback(port, value, true);
 
     const auto apply = [&](const HandlerEntry &h) {
         if ((port & h.mask) == h.value) {

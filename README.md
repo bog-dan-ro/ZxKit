@@ -32,6 +32,14 @@ and Next images through a shared library API. See [the media tools guide](docs/m
 for build options, format coverage, BASIC conversion and examples. Tools default
 to off when ZxKit is consumed with FetchContent.
 
+## MCP development server
+
+The optional [`zx-mcp` server](tools/mcp/README.md) exposes emulator sessions,
+media, BASIC/assembly, debugging, memory analysis, graphics and audio tools to AI
+agents. Enable `ZXKIT_BUILD_MCP_TOOL` with a C++26 reflection compiler and
+Boost.JSON/Beast and OpenSSL. It supports 48K/128K with embedded ROMs and Next
+sessions with downloadable SD firmware.
+
 ## Using it
 
 ```cpp

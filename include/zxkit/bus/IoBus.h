@@ -82,6 +82,11 @@ public:
 
     void unregisterOwner(std::string_view ownerId);
     void addObserver(IoObserver observer);
+    /// Temporary host trace subscription. Unsubscribe before the callback's
+    /// captures expire. Do not add/remove observers from inside a callback.
+    /// clear() removes subscriptions; stale IDs never remove a later observer.
+    uint64_t subscribe(IoObserver observer);
+    bool unsubscribe(uint64_t subscriptionId);
     void setFloatingBusCallback(FloatingBusFn fn);
     void setWatchpointCallback(WatchpointCb cb);
     void setNextRegOpcodeCallback(NextRegOpcodeCb cb);
@@ -111,7 +116,13 @@ private:
     mutable std::unique_ptr<DispatchCache> m_dispatch;
     mutable bool m_candidatesDirty = true;
     std::vector<HandlerEntry> m_handlers;
-    std::vector<IoObserver> m_observers;
+    struct ObserverEntry
+    {
+        uint64_t id;
+        IoObserver callback;
+    };
+    std::vector<ObserverEntry> m_observers;
+    uint64_t m_nextObserverId = 0;
     FloatingBusFn m_floatingBusFn;
     WatchpointCb m_watchpointCb;
     NextRegOpcodeCb m_nextRegOpcodeCb;

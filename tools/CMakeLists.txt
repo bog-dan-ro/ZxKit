@@ -4,7 +4,12 @@ option(ZXKIT_BUILD_MEDIA_CHECK "Build the optional image read/write audit tool" 
 option(ZXKIT_BUILD_FUSE_TOOL "Build zxmount when Linux FUSE3 is available" ON)
 option(ZXKIT_BUILD_MC_INTEGRATION "Install Midnight Commander integration" ON)
 option(ZXKIT_BUILD_PROFILING_TOOLS "Build the developer profiling tools" OFF)
+option(ZXKIT_BUILD_MCP_TOOL "Build zx-mcp (requires C++26 reflection and Boost.JSON)" OFF)
 list(PREPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+if(ZXKIT_BUILD_MCP_TOOL)
+    add_subdirectory(mcp)
+endif()
 
 if(ZXKIT_BUILD_MEDIA_TOOL)
     add_executable(zxmedia media/main.cpp)
