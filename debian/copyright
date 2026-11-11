@@ -11,3 +11,8 @@ Files: debian/vendor/safecpp/* debian/vendor/safecpp/cmake/*
 Copyright: 2026 BogDan Vatra
 License: MIT-0
  See debian/vendor/safecpp/LICENSE in the source package for the license text.
+
+Files: debian/vendor/mcpp/* debian/vendor/mcpp/include/* debian/vendor/mcpp/cmake/*
+Copyright: 2026 BogDan Vatra
+License: MIT
+ See debian/vendor/mcpp/LICENSE in the source package for the license text.

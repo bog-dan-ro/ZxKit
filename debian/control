@@ -3,8 +3,13 @@ Section: libs
 Priority: optional
 Maintainer: ZxKit maintainers <bogdan@kde.org>
 Build-Depends: debhelper-compat (= 13),
- cmake (>= 3.25),
- g++ (>= 12),
+ cmake (>= 3.30),
+ g++ (>= 16.2),
+ libboost1.92-dev,
+ libboost-context1.92-dev,
+ libboost-date-time1.92-dev,
+ libboost-json1.92-dev,
+ libssl-dev (>= 3),
  zlib1g-dev,
  python3 <!nocheck>,
  python3-pexpect <!nocheck>,
@@ -25,8 +30,9 @@ Package: zxkit-tools
 Section: utils
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: ZX Spectrum media tools
- Utilities for inspecting and manipulating ZX Spectrum media.
+Description: ZX Spectrum tools
+ Utilities for inspecting and manipulating ZX Spectrum media, and an MCP
+ server for headless emulation and reverse engineering.
 
 Package: zxkit-mc
 Section: utils

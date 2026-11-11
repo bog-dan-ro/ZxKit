@@ -5,7 +5,7 @@ find_package(OpenSSL 3 REQUIRED)
 include(FetchContent)
 FetchContent_Declare(MCPpp
     GIT_REPOSITORY https://github.com/bog-dan-ro/MCPpp.git
-    GIT_TAG 1b1848860d0a7387b4611e53a8e62ac5efc6b4bd)
+    GIT_TAG master)
 FetchContent_MakeAvailable(MCPpp)
 
 add_executable(zx-mcp main.cpp Tools.cpp Support.cpp Roms.cpp BasicListing.cpp Download.cpp Next.cpp)

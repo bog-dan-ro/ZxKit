@@ -1,2 +1,4 @@
 usr/bin/zxmedia
 usr/share/man/man1/zxmedia.1
+usr/bin/zx-mcp
+usr/share/zxkit/zx-mcp/
