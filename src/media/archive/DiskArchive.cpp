@@ -89,6 +89,22 @@ struct Disk final : Backend
         auto [user, field] = cpmName(name);
         return cpmPath(user, field);
     }
+    bool isCobraBootMarker(View entry) const
+    {
+        if (storage.profile.name != "cpm-720"sv && storage.profile.name != "cobra-cpm"sv)
+            return false;
+        const auto name = nameField(entry.subspan(1, 8));
+        if ((name != "CHRIS"sv && name != "Kryss"sv) || entry[0] != 0 || (entry[9] & 127) != 'S'
+            || (entry[10] & 127) != 'Y' || (entry[11] & 127) != 'S' || entry[16] != 7
+            || !std::ranges::all_of(entry.subspan(17), [](uint8_t value) { return value == 0; }))
+            return false;
+        // These CoBra boot stubs store dates in the extent fields. Block 7 points
+        // to a loader hidden in D.COM; the marker itself has no file payload.
+        const auto date = entry.subspan(12, 4);
+        return (name == "CHRIS"sv
+                && (std::ranges::equal(date, "@91\0"sv) || std::ranges::equal(date, " @91"sv)))
+                || (name == "Kryss"sv && std::ranges::equal(date, " @92"sv));
+    }
     std::vector<File> cpmFiles() const
     {
         auto &data = storage.logical;
@@ -122,6 +138,8 @@ struct Disk final : Backend
                                    { "readonly"s, bool(e[9] & 128) },
                                    { "system"s, bool(e[10] & 128) },
                                    { "archive"s, bool(e[11] & 128) } };
+            if (isCobraBootMarker(e))
+                continue;
             std::size_t extent = (e[12] & 31) | ((e[14] & 63) << 5);
             std::size_t start = (extent & ~extentMask()) * 16384;
             std::size_t length = ((extent & extentMask()) * 128 + e[15]) * 128;
@@ -193,6 +211,8 @@ struct Disk final : Backend
             std::set<unsigned> extents;
             for (const auto slot : file.slots) {
                 const auto entry = slice(storage.logical, dirPos(slot), 32);
+                if (isCobraBootMarker(entry))
+                    continue;
                 const unsigned extent = (entry[12] & 31) | ((entry[14] & 63) << 5);
                 if (!extents.insert(extent / (extentMask() + 1)).second)
                     return false;
@@ -204,7 +224,8 @@ struct Disk final : Backend
                         return false;
                 }
             }
-            if (*extents.begin() != 0 || *extents.rbegin() + 1 != extents.size())
+            if (!extents.empty()
+                && (*extents.begin() != 0 || *extents.rbegin() + 1 != extents.size()))
                 return false;
         }
         for (unsigned slot = 0; slot < profile.dirEntries; ++slot) {

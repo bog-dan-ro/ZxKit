@@ -282,6 +282,60 @@ void diskDetection()
     const auto selected = MediaArchive::open(ambiguous, "img"sv, { .filesystem = "cpm-720"s });
     assert(selected.read("CPM.BIN"sv) == Bytes(128, 0xA5));
 }
+void cobraDiskDetection()
+{
+    auto source = MediaArchive::create("img"sv, { .filesystem = "cpm-720"s });
+    source.put("D.COM"sv, Bytes(41003, 0xA5));
+    const auto payload = source.read("D.COM"sv);
+    constexpr std::size_t markerOffset = 18432 + 15 * 32;
+    // Original CHRIS and Kryss directory markers from the CoBra Project disks.
+    // Their date bytes are not CP/M extent numbers or record counts.
+    for (const auto date : { "@91\0"sv, " @91"sv, " @92"sv }) {
+        auto original = source.encode();
+        auto marker = std::span(original).subspan(markerOffset, 32);
+        std::ranges::fill(marker, 0);
+        const auto name = date == " @92"sv ? "Kryss   SYS"sv : "CHRIS   SYS"sv;
+        std::ranges::copy(name, marker.begin() + 1);
+        marker[9] |= 0x80;
+        marker[10] |= 0x80;
+        marker[11] |= 0x80;
+        std::ranges::copy(date, marker.begin() + 12);
+        marker[16] = 7; // Deliberately overlaps the real D.COM allocation.
+        auto explicitProfile =
+                MediaArchive::open(original, "img"sv, { .filesystem = "cobra-cpm"s });
+        for (const auto container : { "img"sv, "dsk"sv, "td0"sv, "cqm"sv }) {
+            auto detected = MediaArchive::open(explicitProfile.encode(container), container);
+            const auto entries = detected.list();
+            const auto markerName = date == " @92"sv ? "Kryss.SYS"sv : "CHRIS.SYS"sv;
+            const auto entry = std::ranges::find(entries, markerName, &MediaEntry::name);
+            assert(entry != entries.end() && entry->size == 0);
+            assert(detected.read("D.COM"sv) == payload);
+            assert(detected.encode("img"sv) == original);
+            detected.rename("D.COM"sv, "NEW.COM"sv);
+            detected.put("EXTRA.BIN"sv, Bytes{ 1, 2, 3 });
+            const auto edited = detected.encode("img"sv);
+            assert(std::ranges::equal(std::span(edited).subspan(markerOffset, 32), marker));
+            auto reopened = MediaArchive::open(edited, "img"sv);
+            assert(reopened.read("NEW.COM"sv) == payload);
+            if (markerName == "CHRIS.SYS"sv) {
+                reopened.setAttributes(markerName,
+                                       { { "readonly"s, 0 }, { "system"s, 0 }, { "archive"s, 0 } });
+                auto unprotected = MediaArchive::open(reopened.encode("img"sv), "img"sv);
+                assert(unprotected.read(markerName).empty());
+                assert(unprotected.read("NEW.COM"sv) == payload);
+            }
+        }
+        // Similar corrupt entries must not disable the normal validation.
+        for (const auto offset : { 1, 9, 12, 16, 17 }) {
+            auto corrupt = original;
+            corrupt[markerOffset + offset] ^= 1;
+            fails([&] { MediaArchive::open(corrupt, "img"sv); });
+        }
+        auto corruptAllocation = original;
+        corruptAllocation[18432 + 16] = 0;
+        fails([&] { MediaArchive::open(corruptAllocation, "img"sv); });
+    }
+}
 void next()
 {
     auto n = MediaArchive::create("nex"sv);
@@ -410,6 +464,7 @@ int main()
     disks();
     historicalLayouts();
     diskDetection();
+    cobraDiskDetection();
     next();
     historicalMedia();
     microdrive();
