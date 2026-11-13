@@ -1,6 +1,6 @@
-# CoBra 1 test disk
+# CoBra test disk
 
-`KRYS80_CL_SYSDISK.img` is a CP/M 2.2 system disk for the 80K CoBra 1 (the KRYS80
+`KRYS80_CL_SYSDISK.img` is a CP/M 2.2 system disk for the 80K CoBra (the KRYS80
 system with the CoBra 53K BIOS and 80 characters per line), a raw 720K image
 (80 cylinders, 2 sides, 9 sectors of 512 bytes). It was downloaded byte for byte
 from the CoBra Project, which publishes it for the computer and its emulators:

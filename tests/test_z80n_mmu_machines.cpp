@@ -21,11 +21,13 @@
 #include <cassert>
 #include <chrono>
 #include <span>
+#include <string_view>
 #include <thread>
 #include <print>
 #include <vector>
 
 using namespace zxkit;
+using namespace std::literals;
 
 namespace {
 
@@ -146,8 +148,8 @@ void testRomanianCpmBankingAndIf1Fdc()
         assert(mmu.read(0xC010) == 0xAA);
     }
 
-    // Test CoBra 1 R7 falling-edge flip-flop banking transition
-    emulator.selectMachine("cobra1_80k");
+    // Test CoBra R7 falling-edge flip-flop banking transition
+    emulator.selectMachine("cobra_80k"sv);
     {
         auto &eng = emulator;
         auto &cobra = dynamic_cast<CobraMachine &>(eng.machine());

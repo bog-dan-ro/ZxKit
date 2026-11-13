@@ -182,12 +182,12 @@ CobraMachine::CobraMachine(bool mode80k) noexcept
 
 std::string_view CobraMachine::id() const noexcept
 {
-    return m_mode80k ? "cobra1_80k"sv : "cobra1_64k"sv;
+    return m_mode80k ? "cobra_80k"sv : "cobra_64k"sv;
 }
 
 std::string_view CobraMachine::name() const noexcept
 {
-    return m_mode80k ? "CoBra 1 (80KB)"sv : "CoBra 1 (64KB)"sv;
+    return m_mode80k ? "CoBra (80KB)"sv : "CoBra (64KB)"sv;
 }
 
 FrameTimings CobraMachine::timings() const noexcept
@@ -213,9 +213,11 @@ void CobraMachine::initialize(MachineContext &ctx, UlaRenderer &ula)
     m_ramBank = ctx.mmu.registerBank("ram", 5 * 16 * 1024, true, true);
     if (ctx.romResolver || ctx.romOverrideResolver) {
         // Page 0: boot ROM, pages 1..4: Opus, BASIC, Devil BASIC and CP/M system ROMs
-        ctx.mmu.bank(m_romBank).loadData(0, ctx.loadRom("cobra1_boot.rom", 16 * 1024));
+        ctx.mmu.bank(m_romBank).loadData(0, ctx.loadRom("cobra_boot.rom"sv, 16 * 1024));
         for (std::size_t i = 0; i < 4; ++i)
-            ctx.mmu.bank(m_romBank).loadData((i + 1) * 16 * 1024, ctx.loadRom(std::format("cobra1_sys-{}.rom", i), 16 * 1024));
+            ctx.mmu.bank(m_romBank).loadData(
+                    (i + 1) * 16 * 1024,
+                    ctx.loadRom(std::format("cobra_sys-{}.rom", i), 16 * 1024));
     }
 
     // The 8255's port A: the keyboard's six columns, the tape, the RS-232 input
@@ -530,128 +532,6 @@ void CobraMachine::updateMemoryMap(MachineContext &ctx, UlaRenderer &ula)
         ctx.mmu.map16k(0xC000, m_ramBank, 3, false);
         ula.setVramSource(m_ramBank, 1);
     }
-}
-
-std::string_view Cobra2Machine::id() const noexcept
-{
-    return "cobra2"sv;
-}
-
-std::string_view Cobra2Machine::name() const noexcept
-{
-    return "CoBra 2 (TS)"sv;
-}
-
-FrameTimings Cobra2Machine::timings() const noexcept
-{
-    return kTimings48k;
-}
-
-ContentionPattern Cobra2Machine::contentionPattern() const noexcept
-{
-    return ContentionPattern::None;
-}
-
-bool Cobra2Machine::hasFloatingBus() const noexcept
-{
-    return false;
-}
-
-void Cobra2Machine::initialize(MachineContext &ctx, UlaRenderer &ula)
-{
-    // The 16K EEPROM: the boot, its logo and a compacted Spectrum ROM (https://cobrasov.org/download/)
-    m_romBank = ctx.mmu.registerBank("rom", 16 * 1024, false, false);
-    m_ramBank = ctx.mmu.registerBank("ram", 4 * 16 * 1024, true, true);
-    if (ctx.romResolver || ctx.romOverrideResolver)
-        ctx.mmu.bank(m_romBank).loadData(0, ctx.loadRom("cobra2_ts_boot.rom", 16 * 1024));
-
-    // Any even port (A0 = 0): an IN reads the keyboard and the tape (the B buffer), an OUT stores
-    // the F5 register (border, tape, speaker, the mode flops' inputs)
-    registerStandardUlaPort(ctx, ula);
-    ctx.ioBus.registerSimpleHandler(
-        std::string(id()) + "_f5",
-        0x0001,
-        0x0000,
-        nullptr,
-        [this](uint16_t, uint8_t val) { m_portFe = val; });
-
-    // Any IN loads F5's Q5 and Q6 into the CE and SM flops (TS specification, 2.7 and 2.12). The
-    // boot switches modes with OUT (FE) then IN; once SM is set both flops stay set until a reset.
-    // Asked first (whatever the port, before an exclusive device), it drives no data bit.
-    ctx.ioBus.registerHandler(
-        std::string(id()) + "_cfg_in",
-        0x0000,
-        0x0000,
-        [this, &ctx, &ula](uint16_t) -> IoReadResult {
-            if (!(m_latched & kSpectrumMode)) {
-                const uint8_t latched = (m_portFe & kSpectrumMode) ? (kEepromDisabled | kSpectrumMode)
-                                                                   : (m_portFe & kEepromDisabled);
-                if (latched != m_latched) {
-                    m_latched = latched;
-                    updateMemoryMap(ctx, ula);
-                }
-            }
-            return {0xFF, 0x00};
-        },
-        nullptr,
-        1000);
-
-    // The sound is the speaker only (Q4): no AY
-    ctx.audioMixer.setAyChipCount(0);
-}
-
-void Cobra2Machine::reset(MachineContext &ctx, UlaRenderer &ula, ResetKind kind)
-{
-    if (kind == ResetKind::Hard)
-        ctx.mmu.bank(m_ramBank).fill(0x00);
-    // nCE = 1, SM = 0 after reset would be the 64K mode; the TS boots with all bits clear
-    m_portFe = 0;
-    m_latched = 0;
-    // Start from the boot map (ROM 0 at 0x0000) with every page mapped
-    ctx.mmu.map16k(0x4000, m_ramBank, 3, false);
-    ctx.mmu.map16k(0x8000, m_ramBank, 0, false);
-    ctx.mmu.map16k(0xC000, m_ramBank, 1, false);
-    updateMemoryMap(ctx, ula);
-}
-
-void Cobra2Machine::saveState(StateWriter &w) const
-{
-    w.write(m_portFe);
-    w.write(m_latched);
-}
-
-void Cobra2Machine::loadState(StateReader &r, MachineContext &ctx, UlaRenderer &ula)
-{
-    m_portFe = r.read<uint8_t>();
-    m_latched = r.read<uint8_t>();
-    updateMemoryMap(ctx, ula);
-}
-
-void Cobra2Machine::updateMemoryMap(MachineContext &ctx, UlaRenderer &ula)
-{
-    const bool nCe = (m_latched & kEepromDisabled) != 0;
-    const bool sm  = (m_latched & kSpectrumMode) != 0;
-
-    if (!nCe && !sm) {
-        // EEPROM mode
-        ctx.mmu.map16k(0x0000, m_romBank, 0, false);
-        ctx.mmu.map16k(0x4000, m_ramBank, 3, false);
-        ctx.mmu.map16k(0x8000, m_ramBank, 0, false);
-        ctx.mmu.map16k(0xC000, m_ramBank, 1, false);
-    } else if (nCe && sm) {
-        // Spectrum mode: RAM page 0 is read-only "ROM"
-        ctx.mmu.map16k(0x0000, m_ramBank, 0, false, /*forceReadOnly=*/true);
-        ctx.mmu.map16k(0x4000, m_ramBank, 1, false);
-        ctx.mmu.map16k(0x8000, m_ramBank, 2, false);
-        ctx.mmu.map16k(0xC000, m_ramBank, 3, false);
-    } else if (nCe && !sm) {
-        // 64KB DRAM mode, transitory between boot and Spectrum mode (and CP/M)
-        ctx.mmu.map16k(0x0000, m_ramBank, 2, false);
-        ctx.mmu.map16k(0x4000, m_ramBank, 3, false);
-        ctx.mmu.map16k(0x8000, m_ramBank, 0, false);
-        ctx.mmu.map16k(0xC000, m_ramBank, 1, false);
-    }
-    ula.setVramSource(m_ramBank, 1);
 }
 
 } // namespace zxkit

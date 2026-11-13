@@ -21,6 +21,10 @@
 #include "zxkit/machines/SinclairMachines.h"
 #include "zxkit/machines/ZxNextMachine.h"
 
+#include <string>
+
+using namespace std::literals;
+
 namespace zxkit {
 
 MachineRegistry::MachineRegistry()
@@ -47,9 +51,8 @@ MachineRegistry::MachineRegistry()
 
     // Romanian Clones (ICE Felix HC & Brasov CoBra)
     registerMachine("hc2000",     [] { return std::make_unique<HcMachine>(); });
-    registerMachine("cobra1_64k", [] { return std::make_unique<CobraMachine>(false); });
-    registerMachine("cobra1_80k", [] { return std::make_unique<CobraMachine>(true); });
-    registerMachine("cobra2",     [] { return std::make_unique<Cobra2Machine>(); });
+    registerMachine("cobra_64k"s, [] { return std::make_unique<CobraMachine>(false); });
+    registerMachine("cobra_80k"s, [] { return std::make_unique<CobraMachine>(true); });
 
     // ZX Spectrum Next
     registerMachine("next", [] { return std::make_unique<ZxNextMachine>(); });

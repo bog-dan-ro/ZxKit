@@ -377,7 +377,7 @@ void historicalMedia()
     auto bootable = MediaArchive::create("dsk"sv, { .filesystem = "cobra-cpm"s });
     bootable.setBootTracks(std::span(original).first(18432));
     bootable.put("CBOT.SYS"sv, source.read("CBOT.SYS"sv));
-    Emulator emulator(test::romConfig(fixtures / "roms"sv, "cobra1_80k"s));
+    Emulator emulator(test::romConfig(fixtures / "roms"sv, "cobra_80k"s));
     emulator.insertDisk(0, bootable.encode(), ".dsk"sv);
     emulator.runFrames(100);
     test::tap(emulator, { ZxKey::Enter });

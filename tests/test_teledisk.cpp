@@ -20,8 +20,10 @@
 #include <algorithm>
 #include <cassert>
 #include <print>
+#include <string>
 
 using namespace zxkit;
+using namespace std::literals;
 
 namespace {
 uint16_t crc(std::span<const uint8_t> data)
@@ -145,7 +147,7 @@ void testAdvanced(const std::filesystem::path &fixtures)
     reject(std::span(bytes).first(bytes.size() / 2));
     assert(classifyMediaFile("archive.TD0") == MediaClass::Disk);
     assert(classifyMediaFile("unknown", bytes) == MediaClass::Disk);
-    Emulator emulator({ .machineId = "cobra1_80k" });
+    Emulator emulator({ .machineId = "cobra_80k"s });
     emulator.loadMedia(MediaFile::fromBytes(bytes, ".TD0"));
     assert(emulator.diskDrive(0)->get().trackCount() == 2);
 }

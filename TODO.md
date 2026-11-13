@@ -105,7 +105,7 @@ are retained locally under `build/profiling/`; kernel wakeup/energy access limit
 - [x] **+3 floppy drives.** The `Upd765Fdc` on ports 0x2FFD/0x3FFD, the motor on bit 3 of 0x1FFD, two drives
       (not on the +2A). Overrun timing, Control Mark / SK, READ TRACK, EDSK weak sectors and FUSE's Speedlock
       hack: disks compared with FUSE load (Turrican, California Games, Target Renegade, ...).
-- [x] **CoBra 1.** Checked against the cobrasov.com documentation (the hardware manual, the 80K and 80 characters
+- [x] **CoBra.** Checked against the cobrasov.com documentation (the hardware manual, the 80K and 80 characters
       modifications, the floppy board). The floppy board: an 8272 in non-DMA mode (status 0xF5, data 0xFD) and a
       new generic `Z80Ctc` (0xE3/0xEB/0xF3/0xFB) wired as on the board (INT counted by channel 0, bytes by 1,
       sectors by 2 whose zero count is the TC, the vertical sync on 3), its interrupts in IM2. Four drives, raw
@@ -123,11 +123,7 @@ are retained locally under `build/profiling/`; kernel wakeup/energy access limit
         real file names. Non-DMA readiness now agrees with the first byte's INT request.
   - [x] Standalone fixtures: the official boot/system ROMs and the KRYS80 CP/M disk are in
         `tests/fixtures`, with provenance and notices. `test_cobra` covers the hardware ports, disk and ROM
-        CP/M SAVE commands, the Turbo Spectrum boot and BASIC, and reset/rewind of the configurations.
-- [x] **CoBra 2 (Turbo Spectrum).** Any IN loads the CE / SM flops (TS specification 2.7), not only port 0x7E: the
-      boot's TURBO SPECTRUM logo, the 64K DRAM mode and the switch to Spectrum mode (locked until a reset) work.
-  - [x] Use the documented 16K EEPROM and its official MIT-licensed boot. The earlier four-page
-        CoBra 1 system ROM mapping does not belong to the Turbo Spectrum; removed it from both projects.
+        CP/M SAVE commands, BASIC, and reset/rewind of the configurations.
 - [x] Media activity: `Emulator::mediaActivity()` (the tape's state and block, the floppy drives and the SD card
       accessed in the last 0.2 s) and the Engine's `mediaActivity` callback when it changes.
 - [x] UART hardware (ports 0x133B–0x163B): two timed FIFOs, framing, CTS, reset and state.

@@ -15,7 +15,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// The CoBra 1's floppy disk board (the Z80 CTC and the 8272 in non-DMA mode) and its
+// The CoBra's floppy disk board (the Z80 CTC and the 8272 in non-DMA mode) and its
 // machine: the keyboard's sixth column, the configurations, the 80 characters screen. The
 // hardware tests program the ports directly; integration tests boot the bundled ROMs and disk.
 
@@ -25,6 +25,7 @@
 #include <array>
 #include <cassert>
 #include <print>
+#include <string>
 #include <string_view>
 #include <tuple>
 #include <vector>
@@ -233,7 +234,7 @@ void testUpd765NonDmaInterrupt()
     assert(fdc.interruptLine(now) && fdc.readMainStatus(now) == 0xD0);
 }
 
-// ── The CoBra 1 ───────────────────────────────────────────────────────────
+// ── The CoBra ───────────────────────────────────────────────────────────
 
 constexpr uint16_t kCtc0 = 0x00E3;
 constexpr uint16_t kCtc1 = 0x00EB;
@@ -269,7 +270,7 @@ void switchConfiguration(Emulator &emulator, bool cpm, uint16_t target)
 
 void testCobraKeyboard()
 {
-    Emulator emulator({.machineId = "cobra1_80k"});
+    Emulator emulator({ .machineId = "cobra_80k"s });
     auto &io = emulator.ioBus();
     assert((io.read(0xFEFE) & 0x3F) == 0x3F);
     // The sixth column (bit 5): CTRL on KA8, F4 on KA15
@@ -286,7 +287,7 @@ void testCobraKeyboard()
 
     constexpr std::array keys{ZxKey::Ctrl, ZxKey::NoScroll, ZxKey::LineFeed, ZxKey::Esc,
                               ZxKey::F1, ZxKey::F2, ZxKey::F3, ZxKey::F4};
-    for (const auto machine : {"cobra1_64k", "cobra1_80k"}) {
+    for (const auto &machine : { "cobra_64k"s, "cobra_80k"s }) {
         Emulator computer({.machineId = machine});
         for (std::size_t row = 0; row < keys.size(); ++row) {
             computer.setKeyState(keys[row], true);
@@ -308,7 +309,7 @@ void testCobraFrameInterrupt()
     // The 50Hz interrupt reaches the CPU in the BASIC configuration only. The program at 0100:
     // EI ; HALT, and a HALT at 0038 (the IM 1 handler). DRAM#0 is at 0000 in both CP/M and BASIC.
     for (const bool cpm : {true, false}) {
-        Emulator emulator({.machineId = "cobra1_80k"});
+        Emulator emulator({ .machineId = "cobra_80k"s });
         emulator.mmu().poke(0x8100, 0xFB);
         emulator.mmu().poke(0x8101, 0x76);
         emulator.mmu().poke(0x8038, 0x76);
@@ -325,7 +326,7 @@ void testCobraFrameInterrupt()
 void testCobraVerticalSyncCounter()
 {
     // CTC channel 3 counts the frames (NVS): CP/M's clock and keyboard scan
-    Emulator emulator({.machineId = "cobra1_80k"});
+    Emulator emulator({ .machineId = "cobra_80k"s });
     auto &io = emulator.ioBus();
     io.write(kCtc0, 0x98);
     io.write(kCtc3, 0xC5);
@@ -343,7 +344,7 @@ void testCobraFloppyRead()
     // The CP/M loaders' setup: CTC0 counts the 8272's INT edges (each one a byte request) and
     // interrupts for each; CTC1 counts CTC0's zero counts (the bytes), CTC2 CTC1's (the sectors),
     // and CTC2's zero count is the 8272's TC
-    Emulator emulator({.machineId = "cobra1_80k"});
+    Emulator emulator({ .machineId = "cobra_80k"s });
     assert(emulator.diskDriveCount() == 4);
     DiskImage &disk = emulator.diskDrive(0)->get();
     disk.formatBlank(80, 2, 9, 512, 1);
@@ -410,7 +411,7 @@ void testCobraWideScreen()
 {
     // The 80 characters modification: in CP/M, O5 latches a 320 pixel wide screen. The 4 cells
     // left of the screen show the video RAM's upper half columns 28-31, the 4 right columns 0-3.
-    Emulator emulator({.machineId = "cobra1_80k"});
+    Emulator emulator({ .machineId = "cobra_80k"s });
     emulator.mmu().poke(0x8100, 0xF3); // DI
     emulator.mmu().poke(0x8101, 0x76); // HALT
     switchConfiguration(emulator, true, 0x0100);
@@ -452,76 +453,9 @@ void testCobraWideScreen()
     assert(emulator.im2().pendingMask() == 0x8000);
 }
 
-// ── The CoBra 2 (Turbo Spectrum) ──────────────────────────────────────────
-
-void testCobra2Modes()
-{
-    // Any IN loads F5's bits 5 (EEPROM disabled) and 6 (Spectrum mode) into the mode flops
-    Emulator emulator({.machineId = "cobra2"});
-    auto &io = emulator.ioBus();
-    auto &mmu = emulator.mmu();
-    auto &ram = mmu.bank(emulator.machine().ramBankId());
-    ram.span16k(2)[0] = 0xA5; // DRAM 8000, the CPU's 0000 outside the Spectrum mode
-    ram.span16k(0)[0] = 0x5A; // DRAM 0000, the Spectrum mode's read-only "ROM"
-    ram.span16k(1)[0] = 0x11; // the video RAM: C000 outside the Spectrum mode, 4000 in it
-
-    // EEPROM mode after a reset (no ROM loaded: zeros)
-    assert(mmu.read(0x0000) == 0x00 && mmu.read(0xC000) == 0x11);
-    // OUT alone changes nothing, the next IN (any port) disables the EEPROM: 64K DRAM mode
-    io.write(0x00FE, 0x20);
-    assert(mmu.read(0x0000) == 0x00);
-    io.read(0x1235);
-    assert(mmu.read(0x0000) == 0xA5);
-    mmu.write(0x0001, 0x77);
-    assert(ram.span16k(2)[1] == 0x77);
-    // ... and back to the EEPROM (the boot copies the Spectrum ROM from it)
-    io.write(0x00FE, 0x00);
-    io.read(0x00FE);
-    assert(mmu.read(0x0000) == 0x00);
-
-    // The Spectrum mode: A15 is no longer inverted, the first 16K are read-only
-    io.write(0x00FE, 0x60);
-    io.read(0x60FE);
-    assert(mmu.read(0x0000) == 0x5A && mmu.read(0x4000) == 0x11);
-    mmu.write(0x0000, 0x00);
-    assert(mmu.read(0x0000) == 0x5A);
-    // ... until a reset: the Spectrum ROM's OUTs and keyboard reads don't leave it
-    io.write(0x00FE, 0x07);
-    io.read(0xFEFE);
-    assert(mmu.read(0x0000) == 0x5A);
-    emulator.reset();
-    assert(mmu.read(0x0000) == 0x00);
-}
-
-void testCobra2Rewind()
-{
-    Emulator emulator({.machineId = "cobra2"});
-    auto &io = emulator.ioBus();
-    auto &mmu = emulator.mmu();
-    auto &ram = mmu.bank(emulator.machine().ramBankId());
-    for (std::size_t page = 0; page < 4; ++page)
-        ram.span16k(page)[0] = static_cast<uint8_t>(0x10 + page);
-    ram.span16k(0)[0x100] = 0x76; // HALT at 8100 in the DRAM map
-    io.write(0x00FE, 0x20);
-    io.read(0x1235);
-    emulator.cpu().registers().PC = 0x8100;
-    emulator.setRewindEnabled(true);
-    emulator.runFrames(1);
-
-    io.write(0x00FE, 0x60);
-    io.read(0x1235);
-    assert(mmu.read(0x4000) == 0x11);
-    emulator.rewind(1);
-    // All four windows must return to the saved map, including writable DRAM at 0000.
-    assert(mmu.read(0x0000) == 0x12 && mmu.read(0x4000) == 0x13);
-    assert(mmu.read(0x8000) == 0x10 && mmu.read(0xC000) == 0x11);
-    mmu.write(0x0000, 0xA5);
-    assert(mmu.read(0x0000) == 0xA5);
-}
-
 void testCobraBasicRewind()
 {
-    Emulator emulator({.machineId = "cobra1_80k"});
+    Emulator emulator({ .machineId = "cobra_80k"s });
     emulator.mmu().poke(0x8100, 0x76);
     switchConfiguration(emulator, false, 0x0100);
     emulator.mmu().poke(0x6000, 0xFF);
@@ -570,7 +504,7 @@ bool hasCpmFile(Emulator &emulator, std::string_view name83)
 void testCobraDiskCpm(const std::filesystem::path &fixtures)
 {
     // The 80K standard boot (ENTER at the boot manager), then D: CP/M from the KRYS80 system disk
-    Emulator emulator(zxkit::test::romConfig(fixtures / "roms", "cobra1_80k"));
+    Emulator emulator(zxkit::test::romConfig(fixtures / "roms", "cobra_80k"s));
     emulator.insertDisk(0, zxkit::test::readFile(fixtures / "cobra" / "KRYS80_CL_SYSDISK.img"), ".img");
     emulator.runFrames(100);
     zxkit::test::tap(emulator, {ZxKey::Enter});
@@ -592,7 +526,7 @@ void testCobra64DiskLoader(const std::filesystem::path &fixtures)
     // No preserved 64K CP/M system disk is available. Exercise the original ROM's
     // SYS.COM loader with a diagnostic transient in both of its supported formats.
     for (const bool mfm : {false, true}) {
-        Emulator emulator(test::romConfig(fixtures / "roms", "cobra1_64k"));
+        Emulator emulator(test::romConfig(fixtures / "roms", "cobra_64k"s));
         auto &disk = emulator.diskDrive(0)->get();
         disk.formatBlank(77, 1, mfm ? 10 : 26, mfm ? 512 : 128);
         for (uint8_t track = 0; track < 77; ++track) {
@@ -633,7 +567,7 @@ void testCobra64DiskLoader(const std::filesystem::path &fixtures)
 
 void testCobraBasicBoot(const std::filesystem::path &fixtures)
 {
-    for (const auto machine : {"cobra1_64k", "cobra1_80k"}) {
+    for (const auto &machine : { "cobra_64k"s, "cobra_80k"s }) {
         Emulator emulator(test::romConfig(fixtures / "roms", machine));
         emulator.runFrames(100);
         test::tap(emulator, {ZxKey::B});
@@ -646,7 +580,7 @@ void testCobraBasicBoot(const std::filesystem::path &fixtures)
 void testCobraRomCpm(const std::filesystem::path &fixtures)
 {
     // CTRL+0 at the boot manager: the ROM's CP/M with an empty disk in drive A
-    Emulator emulator(zxkit::test::romConfig(fixtures / "roms", "cobra1_80k"));
+    Emulator emulator(zxkit::test::romConfig(fixtures / "roms", "cobra_80k"s));
     emulator.insertDisk(0, std::vector<uint8_t>(80 * 2 * 9 * 512, 0xE5), ".img");
     emulator.runFrames(100);
     zxkit::test::tap(emulator, {ZxKey::Ctrl, ZxKey::Num0});
@@ -658,7 +592,7 @@ void testCobraRomCpm(const std::filesystem::path &fixtures)
 
 void testDevilCatalog(const std::filesystem::path &fixtures)
 {
-    Emulator emulator(test::romConfig(fixtures / "roms", "cobra1_80k"));
+    Emulator emulator(test::romConfig(fixtures / "roms", "cobra_80k"s));
     emulator.insertDisk(0, test::readFile(fixtures / "cobra/UTILS1.TD0"), ".td0");
     emulator.runFrames(100);
     test::tap(emulator, {ZxKey::D});
@@ -667,7 +601,7 @@ void testDevilCatalog(const std::filesystem::path &fixtures)
     test::tap(emulator, {ZxKey::SymbolShift, ZxKey::Num9}); // extended keyword CAT
     test::tap(emulator, {ZxKey::Enter});
     emulator.runFrames(500);
-    const auto font = test::readFile(fixtures / "roms/cobra1_sys-2.rom");
+    const auto font = test::readFile(fixtures / "roms/cobra_sys-2.rom");
     std::string text;
     for (unsigned row = 0; row < 24; ++row) {
         for (unsigned col = 0; col < 32; ++col) {
@@ -691,34 +625,6 @@ void testDevilCatalog(const std::filesystem::path &fixtures)
     assert(text.contains("0 OK"));
 }
 
-void testCobra2Boot(const std::filesystem::path &fixtures)
-{
-    Emulator emulator(zxkit::test::romConfig(fixtures / "roms", "cobra2"));
-    emulator.runFrames(150);
-    // The 64K DRAM mode: 0000-3FFF is DRAM (page 2 at the CPU's 0000, A15 inverted), where the
-    // boot keeps TURBO's shifted bitmaps, not the EEPROM; the logo is on the screen's first third
-    // (the video RAM at C000)
-    const auto &ram = emulator.mmu().bank(emulator.machine().ramBankId());
-    bool shifted = false;
-    for (uint16_t i = 0; i < 0x3000; ++i) {
-        const uint8_t byte = emulator.mmu().read(i);
-        assert(byte == ram.span16k(2)[i]);
-        shifted = shifted || byte != 0;
-    }
-    assert(shifted);
-    for (unsigned row = 2; row < 6; ++row)
-        assert(zxkit::test::screenRowHasPixels(emulator, 0xC000, row));
-    // A key (not T or S) copies the Spectrum ROM to DRAM and enters the Spectrum mode: BASIC
-    // with the read-only ROM copy at 0000
-    zxkit::test::tap(emulator, {ZxKey::Enter});
-    emulator.runFrames(200);
-    auto &mmu = emulator.mmu();
-    assert(mmu.read(0x0000) == 0xF3);
-    mmu.write(0x0000, 0x00);
-    assert(mmu.read(0x0000) == 0xF3);
-    assert((mmu.read(23635) | (mmu.read(23636) << 8)) == 23755); // PROG: BASIC's system variables
-}
-
 } // namespace
 
 int main(int argc, char **argv)
@@ -733,14 +639,11 @@ int main(int argc, char **argv)
     testCobraFloppyRead();
     testCobraWideScreen();
     testCobraBasicRewind();
-    testCobra2Modes();
-    testCobra2Rewind();
     testCobraDiskCpm(fixtures);
     testCobra64DiskLoader(fixtures);
     testCobraBasicBoot(fixtures);
     testCobraRomCpm(fixtures);
     testDevilCatalog(fixtures);
-    testCobra2Boot(fixtures);
     std::println("test_cobra: all tests passed");
     return 0;
 }

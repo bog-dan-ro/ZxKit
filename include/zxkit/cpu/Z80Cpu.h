@@ -46,7 +46,7 @@ public:
                 0x0001; // Automap before opcode fetch (DivMMC, IF1, Beta128, +D, Multiface)
         static constexpr uint32_t PostM1 = 0x0002; // Late automap / unmap after M1 fetch
         static constexpr uint32_t RfshEdge =
-                0x0004; // R7 bit-7 refresh edge hook (CoBra 1 CP/M flips)
+                0x0004; // R7 bit-7 refresh edge hook (CoBra CP/M flips)
         static constexpr uint32_t Retn =
                 0x0008; // RETN / RETI hook (Multiface, DivMMC, IM2 daisy-chain)
         static constexpr uint32_t TapeTrap = 0x0010; // ROM tape load/save trap

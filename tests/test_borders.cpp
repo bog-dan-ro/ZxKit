@@ -127,7 +127,8 @@ void frameBoundaries()
 
 void machineCrops()
 {
-    for (const char *id : {"48k", "128k", "plus3", "pentagon", "tc2048", "ts2068", "se", "cobra1_80k", "next"}) {
+    for (const char *id :
+         { "48k", "128k", "plus3", "pentagon", "tc2048", "ts2068", "se", "cobra_80k", "next" }) {
         Emulator normal({.machineId = id}), full({.machineId = id, .fullBorder = true});
         for (const bool hires : {false, true}) {
             if (hires && std::string_view(id) != "tc2048")

@@ -71,7 +71,7 @@ private:
     bool m_cpmA13PullHigh = false;
 };
 
-/// Brasov CoBra 1 / CoBra 2 (64KB / 80KB Romanian Z80 & CP/M Computer)
+/// Brasov CoBra (64KB / 80KB Romanian Z80 & CP/M Computer)
 ///
 /// Models the hardware D-type flip-flops (PO = R7, LO6 = latched 8255 Port C bit 6 on
 /// falling edge of R7), 8255 PIA on ports 0xDF (control) and 0xFE (port C),
@@ -149,40 +149,6 @@ private:
     uint8_t m_po = 1;
     uint8_t m_lo6 = 1;
     bool m_locked = false;
-};
-
-/// The CoBra 2, the Turbo Spectrum (Sorin Cismas, Brasov, the late 1980s; specification, sources
-/// and binaries at https://cobrasov.org/download/): 64KB of DRAM, no ULA chip, a 16KB EEPROM
-/// with the boot, its TURBO SPECTRUM logo and a compacted Spectrum ROM. An OUT to any even
-/// port stores the F5 register (border, tape, speaker; Q5 and Q6 feed the CE and SM flops),
-/// any IN loads the flops:
-/// - CE = 0, SM = 0: EEPROM mode, the EEPROM at 0x0000, the video RAM at 0xC000
-/// - CE = 1, SM = 0: 64KB DRAM mode, DRAM at 0x0000 (A15 inverted: the video RAM stays at 0xC000)
-/// - SM = 1: Spectrum mode (CE set too, until a reset), the read-only DRAM copy of the ROM at 0x0000
-class Cobra2Machine : public MachineProfile
-{
-public:
-    std::string_view id() const noexcept override;
-    std::string_view name() const noexcept override;
-    FrameTimings timings() const noexcept override;
-    ContentionPattern contentionPattern() const noexcept override;
-    bool hasFloatingBus() const noexcept override;
-
-    void initialize(MachineContext &ctx, UlaRenderer &ula) override;
-    void reset(MachineContext &ctx, UlaRenderer &ula, ResetKind kind) override;
-
-    void saveState(StateWriter &w) const override;
-    void loadState(StateReader &r, MachineContext &ctx, UlaRenderer &ula) override;
-
-private:
-    void updateMemoryMap(MachineContext &ctx, UlaRenderer &ula);
-
-    // F5's Q5 and Q6, the inputs of the CE (EEPROM disabled) and SM (Spectrum mode) flops
-    static constexpr uint8_t kEepromDisabled = 0x20;
-    static constexpr uint8_t kSpectrumMode = 0x40;
-
-    uint8_t m_portFe = 0; // F5 register
-    uint8_t m_latched = 0; // the CE / SM flops (kEepromDisabled, kSpectrumMode), loaded by any IN
 };
 
 } // namespace zxkit
