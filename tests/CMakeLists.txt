@@ -133,6 +133,11 @@ target_compile_definitions(test_media_archive PRIVATE ZXKIT_MEDIA_FIXTURES="${CM
 target_compile_options(test_media_archive PRIVATE $<IF:$<CXX_COMPILER_ID:MSVC>,/UNDEBUG,-UNDEBUG>)
 add_test(NAME test_media_archive COMMAND test_media_archive)
 
+add_executable(test_media_view test_media_view.cpp)
+target_link_libraries(test_media_view PRIVATE ZX::Kit)
+target_compile_options(test_media_view PRIVATE $<IF:$<CXX_COMPILER_ID:MSVC>,/UNDEBUG,-UNDEBUG>)
+add_test(NAME test_media_view COMMAND test_media_view)
+
 if(TARGET zx-mcp)
     find_package(Python3 REQUIRED COMPONENTS Interpreter)
     add_test(NAME test_mcp COMMAND ${Python3_EXECUTABLE}

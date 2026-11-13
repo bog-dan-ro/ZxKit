@@ -99,6 +99,11 @@ are retained locally under `build/profiling/`; kernel wakeup/energy access limit
       `BasicCodec::listing()` gives a ROM-style LIST for reading (the lossless `decompile()` stays for editing),
       `listingLines()` the same in parts (line number, keyword, number, string, comment) for highlighting;
       both show the numbers a program stores where its digits are decoys.
+- [x] The file manager's logic shared with `zxmedia`: `zxkit/media/MediaView.h` (content detection, viewer
+      pages, text decoding, hex and disassembly lines), `FatImage` (FAT cards edited in place, also behind the
+      FAT archive backend) and `MediaArchive::probe()`. `zxmedia` gains `view`, `basic list`, paths through
+      images (`card.img/nextzxos/cpm-a.p3d`), probing and in-place cards; `test_media_view` and
+      `test_media_cli` cover them.
 
 - [x] **Real-time tape playback.** `TapeCursor` plays every TZX block (and TAP) as edges, the same waveform as
       libspectrum (checked edge by edge on ~5000 tapes); `TapeDeck` puts them on the EAR input at T-state accuracy,

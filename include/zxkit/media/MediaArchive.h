@@ -19,6 +19,12 @@ struct MediaEntry
     bool directory = false;
     MediaAttributes attributes;
 };
+/// A filesystem profile that reads an image, see MediaArchive::probe()
+struct MediaProfileMatch
+{
+    std::string profile;
+    std::size_t files = 0;
+};
 struct MediaOptions
 {
     /// Required when a raw disk's filesystem/geometry is ambiguous. See profiles().
@@ -41,6 +47,10 @@ public:
                              const MediaOptions &options = {});
     static MediaArchive create(std::string_view extension, const MediaOptions &options = {});
     static std::vector<std::string> profiles();
+    /// For an image the detection can't settle: the profiles that read it and the files each
+    /// finds, only those finding files when some do. One match is the image's filesystem.
+    static std::vector<MediaProfileMatch> probe(std::span<const uint8_t> bytes,
+                                                std::string_view extension);
     MediaArchive(MediaArchive &&) noexcept;
     MediaArchive &operator=(MediaArchive &&) noexcept;
     ~MediaArchive();

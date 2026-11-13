@@ -45,11 +45,30 @@ build/tools/zxmedia --filesystem cobra-cpm create build/cobra.img
 build/tools/zxmedia --filesystem fat create build/card.img
 build/tools/zxmedia mkdir build/card.img programs
 build/tools/zxmedia create build/cpm.p3d
+
+# Paths go through images, as in MC: the Next's CP/M drive on its SD card
+build/tools/zxmedia create build/card.img/cpm.p3d
+build/tools/zxmedia copy build/disk.dsk PROGRAM.BIN build/card.img/cpm.p3d PROGRAM.BIN
+build/tools/zxmedia list build/card.img/cpm.p3d
+
+# The file manager's views: unhacked BASIC, USR code, disassembly, text, screens
+build/tools/zxmedia view build/games.tap files/LOADER --as unhacked
+build/tools/zxmedia view build/games.tap/files/GAME --from 0x8001
+build/tools/zxmedia view title.scr --png build/title.png
+build/tools/zxmedia basic list program.bin -
 ```
+
+`view` uses `zxkit/media/MediaView.h`, the API behind Spectacol's file manager: the same
+content detection (`mediaContent()`), pages (`viewMedia()`), text decoding (`mediaText()`) and
+listings (`BasicCodec::listingLines()`), so both tools show a file the same way.
 
 Existing output files require `--force`. Mutations of an image are explicit
 commands. Writers take an exclusive advisory lock, check for external changes,
-and replace the image through a temporary file in the same directory. Sidecar
+and replace the image through a temporary file in the same directory. FAT SD
+card images are the exception: `zxkit::FatImage` edits them in place, a block at a
+time, so a 1 GB card is not copied for each change (a failure can leave a change
+half written, as on a real card). An image stored inside another one is edited in
+memory and written back into the image holding it. Sidecar
 `.zxmedia.lock` files contain no media data and can remain after a process exits.
 FUSE holds its lock for the mount's lifetime. Read-only mounts do not create one.
 Do not concurrently edit the same image in an emulator.
@@ -59,8 +78,10 @@ HC BASIC and supported CP/M/+3DOS layouts are detected from geometry, catalogue
 entries and allocation chains when exactly one profile matches. This also applies
 inside DSK/EDSK, TD0 and CQM containers; `.dsk` alone does not imply +3DOS.
 HC detection additionally requires a native Spectrum file header. Empty raw disks,
-headerless-only HC images and ambiguous catalogues require a profile selected with
-`--filesystem` (or `ZXMEDIA_FILESYSTEM` for an MC session). Explicit profiles always
+headerless-only HC images and ambiguous catalogues are then tried with every profile
+(`MediaArchive::probe()`): the one that reads the disk is used, and when several do the
+error lists them with their file counts, to select one with `--filesystem` (or
+`ZXMEDIA_FILESYSTEM` for an MC session). Explicit profiles always
 take precedence; detection never depends on the image's directory or filename.
 Generic CP/M 8.3 names use uppercase; HC BASIC preserves case and uses
 16-bit allocation pointers on both disk sizes. User areas 1–15 appear as `user01`–`user15`.

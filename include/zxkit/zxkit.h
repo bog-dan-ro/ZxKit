@@ -79,6 +79,8 @@
 
 #include "zxkit/media/MediaArchive.h"
 #include "zxkit/media/BasicCodec.h"
+#include "zxkit/media/FatImage.h"
+#include "zxkit/media/MediaView.h"
 #include "zxkit/media/TapeConversion.h"
 #include "zxkit/media/Compression.h"
 #include "zxkit/media/MediaPreview.h"

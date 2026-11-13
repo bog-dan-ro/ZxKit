@@ -415,6 +415,11 @@ struct Disk final : Backend
     {
         return std::string(storage.profile.name);
     }
+    bool fitsGeometry() const override
+    {
+        // Two additional recorded cylinders are common in archival images
+        return storage.image.trackCount() <= storage.profile.cylinders + 2;
+    }
     std::vector<MediaEntry> list() const override
     {
         std::vector<MediaEntry> out;

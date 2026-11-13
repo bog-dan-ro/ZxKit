@@ -14,6 +14,19 @@ D40, D80, CPC DSK and EDSK, TD0, CQM), Microdrive cartridges (MDR), ZX
 Spectrum Next files (NEX), FAT12/16/32 SD card images and NextZXOS P3D images.
 The floppy filesystems are CP/M, +3DOS, HC BASIC, CIP\-04, TR\-DOS,
 MGT/+D/Disciple, Opus Discovery, Didaktik MDOS and CoBra DEVIL.
+It also shows them the way Spectacol's file manager does: BASIC listings with
+the numbers a program really uses, disassembly, hex dumps, text and screens.
+.PP
+An
+.I IMAGE
+or
+.I PATH
+can go through images, as in Midnight Commander:
+\fIcard.img\fB/nextzxos/cpm\-a.p3d\fR is the P3D image stored in the folder
+\fBnextzxos\fR of the SD card image \fIcard.img\fR.
+The longest part that is a host file is the outer image; the rest names the
+images inside it, and a change is written back into each image holding the
+changed one.
 .PP
 Options may be given anywhere on the command line.
 Without a command, or with
@@ -68,6 +81,48 @@ A directory is shown as
 \(lqd 0<TAB>\fINAME\fR\(rq, a file as \(lqf \fISIZE\fR<TAB>\fINAME\fR\(rq
 followed by a tab and \fIkey\fR=\fIvalue\fR for each native attribute of the
 file.
+.TP
+\fBview\fR \fIPATH\fR [\fIENTRY\fR]
+Show a file, or an entry of an image (also given as a
+.I PATH
+going through the image), the way Spectacol's file manager does.
+Each page fitting the file is printed under a \(lq== \fITITLE\fR ==\(rq line:
+.B Unhacked
+BASIC, a listing where the numbers a program stores replace the decoy digits
+LIST shows, lines come in any order, embedded colour codes appear as
+\(lq{INK 6}\(rq and machine code in a REM as
+\(lq{machine code: \fIN\fR bytes at \fIADDRESS\fR}\(rq;
+.B Unfiltered
+BASIC, every byte as
+.B basic decompile
+writes them;
+.B USR
+\fIADDRESS\fR, a disassembly of the code each USR call into the program runs
+(the program taken to start at 23755);
+.BR Hex ,
+.B Disassembly
+from the load address (256 for a CP/M .COM program);
+.B Text
+(CP/M's end-of-file mark, any line endings, WordStar's bit-7 characters as
+plain ASCII);
+.BR Array ;
+.B Block
+and
+.B Raw
+for tape blocks;
+.B Screen
+for 6912-byte screens and snapshot previews, and
+.B As screen
+for larger data.
+On a terminal, keywords, numbers, strings and addresses are coloured; a decoy
+number is struck through and followed by the value used.
+See
+.BR \-\-as ,
+.BR \-\-from ,
+.BR \-\-org ,
+.B \-\-png
+and
+.BR \-\-color .
 .TP
 \fBget\fR \fIIMAGE\fR \fIENTRY\fR \fIOUTPUT\fR
 Write the contents of
@@ -158,6 +213,15 @@ Token and byte escapes (\fB\e{PRINT}\fR, \fB\exHH\fR) and stored variables
 (\fB!raw\fR \fIHEX\fR) are written out, so that compiling the listing again
 gives back the original bytes.
 .TP
+\fBbasic list\fR \fIINPUT\fR \fIOUTPUT\fR
+A listing to read, like
+.BR view 's
+Unhacked page: spaced keywords, the numbers the program stores where its
+digits are decoys, lines in any order, machine code in REMs summed up.
+It cannot be compiled back; use
+.B basic decompile
+for that.
+.TP
 \fBbasic array\-compile\fR \fIINPUT\fR \fIOUTPUT\fR
 Convert array text to array data.
 The text starts with the comma separated dimensions; numeric values follow as
@@ -206,6 +270,10 @@ catalogues need this option, and so does creating an
 or
 .B .cqm
 image.
+When detection can't settle a disk, every profile is tried: the one that reads
+it is used, and when several do, the error lists them with the files each
+finds.
+For a path going through images the option applies to the innermost one.
 An explicit profile always takes precedence; detection never depends on the
 directory or name of the image.
 The default comes from
@@ -234,6 +302,47 @@ The default is
 .B \-\-force
 Overwrite existing output files, and an existing destination of
 .BR rename .
+.TP
+\fB\-\-as\fR \fIVIEW\fR
+For
+.BR view :
+print only the pages of one kind:
+.BR unhacked ,
+.BR unfiltered ,
+.BR usr ,
+.BR screen ,
+.BR hex ,
+.BR disassembly ,
+.BR text ,
+.BR array ,
+.B block
+or
+.BR raw .
+.TP
+\fB\-\-from\fR \fIADDRESS\fR
+For
+.BR view :
+start the disassembly, or the hex dump, at
+.IR ADDRESS .
+An address inside an instruction restarts the disassembly there.
+Addresses are decimal (23803) or hexadecimal ($5CFB, #5CFB, 0x5CFB, 5CFBh, or
+any number with the digits A to F).
+.TP
+\fB\-\-org\fR \fIADDRESS\fR
+For
+.BR view :
+the address the data loads at, instead of the one its header gives.
+.TP
+\fB\-\-png\fR \fIFILE\fR
+For
+.BR view :
+save the file's screen as a 256x192 PNG image instead of printing.
+.TP
+\fB\-\-color\fR \fIauto\fR|\fIalways\fR|\fInever\fR
+For
+.BR view :
+colour the pages with ANSI escapes; by default when standard output is a
+terminal.
 .TP
 .BR \-h ", " \-\-help
 Print the usage summary.
@@ -307,6 +416,9 @@ before modifying or removing a protected file.
 Commands that change an image are transactions: the image is read, changed in
 memory and written back through a temporary file in the same directory, and a
 command that fails leaves the image unchanged.
+FAT SD card images are the exception: they are edited in place, a block at a
+time, so that a large card is not copied for each change.
+A failure there can leave the change half written, as on a real card.
 Writing takes an exclusive advisory lock on the sidecar file
 \fIIMAGE\fB.zxmedia.lock\fR
 and fails at once with \(lqImage is already being edited\(rq when another
@@ -316,8 +428,9 @@ program in the meantime is refused.
 The lock file contains no media data and can remain after the process exits.
 Do not edit an image in an emulator at the same time.
 .PP
-The image is kept in memory and cloned for a transaction, so a large SD card
-image needs several times its size in free memory.
+Other images are kept in memory and cloned for a transaction, so they need
+several times their size in free memory; so does an image stored inside
+another one.
 .SH ENVIRONMENT
 .TP
 .B ZXMEDIA_FILESYSTEM
@@ -367,6 +480,19 @@ Convert a tape to audio, and compile BASIC text:
 .RS
 zxmedia convert games.tap games.wav
 zxmedia \-\-dialect 128 basic compile source.bas program.bin
+.RE
+.fi
+.PP
+Add a CP/M program to the Next's CP/M drive, inside its SD card, and look at
+it and at a protected BASIC loader:
+.PP
+.nf
+.RS
+zxmedia copy hc.dsk DDT.COM card.img/nextzxos/cpm\-a.p3d DDT.COM
+zxmedia view card.img/nextzxos/cpm\-a.p3d/DDT.COM \-\-as disassembly
+zxmedia view game.tap files/LOADER \-\-as unhacked
+zxmedia view game.tap files/CODE \-\-from 0x62DE
+zxmedia view title.scr \-\-png title.png
 .RE
 .fi
 .SH SEE ALSO

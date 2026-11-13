@@ -94,6 +94,8 @@ set(ZXKIT_PUBLIC_HEADERS
     include/zxkit/machines/ZxNextMachine.h
     include/zxkit/media/MediaArchive.h
     include/zxkit/media/BasicCodec.h
+    include/zxkit/media/FatImage.h
+    include/zxkit/media/MediaView.h
     include/zxkit/media/TapeConversion.h
     include/zxkit/media/Compression.h
     include/zxkit/media/MediaPreview.h
@@ -164,6 +166,8 @@ set(ZXKIT_SOURCES
     src/machines/ZxNextMachine.cpp
     src/media/MediaArchive.cpp
     src/media/BasicCodec.cpp
+    src/media/FatImage.cpp
+    src/media/MediaView.cpp
     src/media/TapeConversion.cpp
     src/media/archive/TapeArchive.cpp
     src/media/archive/NexArchive.cpp

@@ -1,6 +1,6 @@
 // Copyright (c) 2026, BogDan Vatra. SPDX-License-Identifier: GPL-3.0-or-later
 #include "ArchiveInternal.h"
-#include "zxkit/peripherals/storage/FatVolume.h"
+#include "zxkit/media/FatImage.h"
 #include <set>
 #include <string>
 #include <string_view>
@@ -10,30 +10,28 @@ namespace {
 struct Fat final : Backend
 {
     Bytes image;
-    FatVolume volume() const
+    // Over this copy of the image: a transaction edits a clone
+    FatVolume::BlockReader reader() const
     {
-        return FatVolume([this](uint64_t lba, std::span<uint8_t, 512> out) {
+        return [this](uint64_t lba, std::span<uint8_t, 512> out) {
             if (lba >= image.size() / 512)
                 return false;
             std::copy_n(image.begin() + lba * 512, 512, out.begin());
             return true;
-        });
+        };
     }
-    FatVolume writable()
+    FatImage files() const
     {
-        return FatVolume(
-                [this](uint64_t lba, std::span<uint8_t, 512> out) {
-                    if (lba >= image.size() / 512)
-                        return false;
-                    std::copy_n(image.begin() + lba * 512, 512, out.begin());
-                    return true;
-                },
-                [this](uint64_t lba, std::span<const uint8_t, 512> in) {
-                    if (lba >= image.size() / 512)
-                        return false;
-                    std::ranges::copy(in, image.begin() + lba * 512);
-                    return true;
-                });
+        return FatImage(reader());
+    }
+    FatImage writableFiles()
+    {
+        return FatImage(reader(), [this](uint64_t lba, std::span<const uint8_t, 512> in) {
+            if (lba >= image.size() / 512)
+                return false;
+            std::ranges::copy(in, image.begin() + lba * 512);
+            return true;
+        });
     }
     std::unique_ptr<Backend> clone() const override
     {
@@ -45,81 +43,31 @@ struct Fat final : Backend
     }
     std::vector<MediaEntry> list() const override
     {
-        auto v = volume();
-        std::vector<std::string> paths{ ""s };
-        std::vector<MediaEntry> out;
-        for (std::size_t i = 0; i < paths.size(); ++i) {
-            require(paths.size() < 65536, "FAT directory tree exceeds limit (possibly cyclic)"sv);
-            auto entries = v.list(paths[i]);
-            require(entries.has_value(), "FAT directory disappeared"sv);
-            for (auto &e : *entries) {
-                auto path = paths[i].empty() ? e.name : paths[i] + "/"s + e.name;
-                out.push_back({ path,
-                                e.size,
-                                e.isDirectory,
-                                { { "readonly"s, bool(e.attributes & 1) },
-                                  { "hidden"s, bool(e.attributes & 2) },
-                                  { "system"s, bool(e.attributes & 4) },
-                                  { "archive"s, bool(e.attributes & 32) } } });
-                if (e.isDirectory)
-                    paths.push_back(path);
-            }
-        }
-        return out;
+        return files().list({}, true);
     }
     Bytes read(std::string_view name) const override
     {
-        auto bytes = volume().readFile(name);
-        require(bytes.has_value(), "FAT file not found"sv);
-        return std::move(*bytes);
+        return files().read(name);
     }
     void attributes(std::string_view name, const MediaAttributes &a) override
     {
-        checkAttrs(a, { "readonly"sv, "hidden"sv, "system"sv, "archive"sv });
-        auto entries = list();
-        auto i = std::ranges::find_if(
-                entries, [&](const MediaEntry &entry) { return upper(entry.name) == upper(name); });
-        require(i != entries.end(), "FAT entry not found"sv);
-        auto attrs = i->attributes;
-        for (auto &[k, v] : a) {
-            require(v <= 1, "Boolean attribute out of range"sv);
-            attrs[k] = v;
-        }
-        uint8_t bits = uint8_t(attr(attrs, "readonly"sv) | (attr(attrs, "hidden"sv) << 1)
-                               | (attr(attrs, "system"sv) << 2) | (attr(attrs, "archive"sv) << 5));
-        writable().setFileAttributes(name, bits);
+        writableFiles().setAttributes(name, a);
     }
     void put(std::string_view name, View bytes, const MediaAttributes &a) override
     {
-        validName(name, 4096, true);
-        auto entries = list();
-        auto i = std::ranges::find_if(
-                entries, [&](const MediaEntry &entry) { return upper(entry.name) == upper(name); });
-        require(i == entries.end() || !attr(i->attributes, "readonly"sv)
-                        || (a.contains("readonly"sv) && !attr(a, "readonly"sv)),
-                "FAT file is read-only"sv);
-        writable().writeFile(name, bytes);
-        if (!a.empty())
-            attributes(name, a);
+        writableFiles().put(name, bytes, a);
     }
     void remove(std::string_view name) override
     {
-        auto entries = list();
-        auto i = std::ranges::find_if(
-                entries, [&](const MediaEntry &entry) { return upper(entry.name) == upper(name); });
-        require(i != entries.end() && !attr(i->attributes, "readonly"sv),
-                "FAT file missing or read-only"sv);
-        writable().remove(name);
+        writableFiles().remove(name);
     }
     void rename(std::string_view name, std::string_view to) override
     {
-        validName(to, 4096, true);
-        writable().rename(name, to);
+        writableFiles().rename(name, to);
     }
     void mkdir(std::string_view name) override
     {
-        validName(name, 4096, true);
-        writable().makeDirectory(name);
+        writableFiles().makeDirectory(name);
     }
     Bytes encode(std::string_view ext) override
     {
@@ -166,7 +114,7 @@ std::unique_ptr<Backend> fat(View b, const MediaOptions &options, bool create)
         }
     } else
         r->image.assign(b.begin(), b.end());
-    r->volume();
+    r->files();
     return r;
 }
 } // namespace zxkit::archive

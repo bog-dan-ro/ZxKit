@@ -80,4 +80,48 @@ with tempfile.TemporaryDirectory(dir=root) as tmp:
     run('basic', 'array-decompile', d/'array.bin', d/'array.txt')
     run('basic', 'array-compile', d/'array.txt', d/'array2.bin')
     assert (d/'array.bin').read_bytes() == (d/'array2.bin').read_bytes()
+
+    # The file manager's views: a protected loader's decoys give way to the stored numbers
+    listing.write_text('10 \\{CLEAR}99999\\x0E\\x00\\x00\\xC5\\x62\\x00\n'
+                       '20 \\{RANDOMIZE}\\{USR}\\x0E\\x00\\x00\\xC5\\x62\\x00\n')
+    run('basic', 'compile', listing, d/'loader.bin')
+    run('basic', 'list', d/'loader.bin', d/'loader.txt')
+    assert (d/'loader.txt').read_text() == '  10 CLEAR 25285\n  20 RANDOMIZE USR 25285\n'
+    run('put', tape, d/'loader.bin', 'files/LOADER', 'type=0')
+    shown = run('view', tape, 'files/LOADER', '--as', 'unhacked', '--color', 'never')
+    assert shown == b'  10 CLEAR 25285\n  20 RANDOMIZE USR 25285\n'
+    coloured = run('view', tape, 'files/LOADER', '--as', 'unhacked', '--color', 'always')
+    assert b'\x1b[2;9m99999' in coloured and b'\x1b[1;91m25285' in coloured
+    assert b'== Unfiltered ==' in run('view', tape, 'files/LOADER')
+    # Going to an address inside an instruction restarts the disassembly there
+    (d/'code.bin').write_bytes(bytes([0x21, 0x2F, 0x63, 0xC9]))
+    run('put', tape, d/'code.bin', 'files/CODE', 'type=3', 'param1=32768')
+    assert run('view', tape, 'files/CODE', '--from', '0x8001').startswith(b'8001  2F')
+    assert run('view', f'{tape}/files/CODE', '--from', '$8003').startswith(b'8003  C9')
+    run('view', tape, 'files/CODE', '--as', 'screen', ok=False)
+    (d/'title.scr').write_bytes(bytes(6912))
+    run('view', d/'title.scr', '--png', d/'title.png')
+    assert (d/'title.png').read_bytes()[:8] == b'\x89PNG\r\n\x1a\n'
+    run('view', d/'title.scr', '--png', d/'title.png', ok=False)
+
+    # Paths through images, as in MC: a CP/M drive on a FAT card, edited in place
+    card = d/'card.img'
+    run('--filesystem', 'fat', 'create', card)
+    run('mkdir', card, 'nextzxos')
+    run('create', f'{card}/nextzxos/cpm-a.p3d')
+    inode = card.stat().st_ino
+    run('put', f'{card}/nextzxos/cpm-a.p3d', payload, 'APP.COM')
+    assert b'APP.COM' in run('list', f'{card}/nextzxos/cpm-a.p3d')
+    run('get', f'{card}/nextzxos/cpm-a.p3d', 'APP.COM', out, '--force')
+    assert out.read_bytes().startswith(payload.read_bytes())
+    # CP/M programs load at 0100
+    (d/'jump.com').write_bytes(bytes([0xC3, 0x00, 0x01, 0x00]))
+    run('put', f'{card}/nextzxos/cpm-a.p3d', d/'jump.com', 'JUMP.COM')
+    view = run('view', f'{card}/nextzxos/cpm-a.p3d/JUMP.COM', '--as', 'disassembly')
+    assert view.startswith(b'0100  C3 00 01'), view
+    run('attrs', card, 'nextzxos/cpm-a.p3d', 'readonly=1')
+    run('put', f'{card}/nextzxos/cpm-a.p3d', payload, 'OTHER.COM', ok=False)
+    run('attrs', card, 'nextzxos/cpm-a.p3d', 'readonly=0')
+    assert card.stat().st_ino == inode
+    run('list', f'{card}/nextzxos/missing.p3d', ok=False)
 print('CLI and MC protocol tests passed')

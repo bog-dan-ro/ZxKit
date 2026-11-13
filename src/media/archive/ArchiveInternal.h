@@ -126,6 +126,12 @@ struct Backend
     virtual ~Backend() = default;
     virtual std::unique_ptr<Backend> clone() const = 0;
     virtual std::string filesystem() const = 0;
+    /// Whether the image has the geometry the profile expects (not, e.g., a 40-track reading
+    /// of an 80-track disk)
+    virtual bool fitsGeometry() const
+    {
+        return true;
+    }
     virtual std::vector<MediaEntry> list() const = 0;
     virtual Bytes read(std::string_view) const = 0;
     virtual void put(std::string_view, View, const MediaAttributes &) = 0;

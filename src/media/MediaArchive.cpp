@@ -2,6 +2,7 @@
 #include "zxkit/media/MediaArchive.h"
 #include "archive/ArchiveInternal.h"
 #include "archive/DiskContainer.h"
+#include <array>
 #include <string>
 #include <string_view>
 namespace zxkit {
@@ -125,6 +126,30 @@ std::vector<std::string> MediaArchive::profiles()
     out.emplace_back("fat"s);
     out.emplace_back("next-cpm"s);
     return out;
+}
+std::vector<MediaProfileMatch> MediaArchive::probe(std::span<const uint8_t> bytes,
+                                                   std::string_view extension)
+{
+    // Those finding files before empty readings; fitting geometries before the others
+    std::array<std::vector<MediaProfileMatch>, 4> matches;
+    for (const auto &profile : profiles()) {
+        MediaOptions options;
+        options.filesystem = profile;
+        try {
+            const auto archive = open(bytes, extension, options);
+            const auto entries = archive.list();
+            const auto files = std::size_t(std::ranges::count_if(
+                    entries, [](const MediaEntry &entry) { return !entry.directory; }));
+            const bool fits = archive.m_impl->backend->fitsGeometry();
+            matches[(files ? 0 : 2) + (fits ? 0 : 1)].push_back({ profile, files });
+        } catch (const std::exception &) {
+            // This profile does not read the image
+        }
+    }
+    for (auto &found : matches)
+        if (!found.empty())
+            return std::move(found);
+    return {};
 }
 std::string MediaArchive::filesystem() const
 {
