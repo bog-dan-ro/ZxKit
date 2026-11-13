@@ -125,6 +125,7 @@ struct Backend
 {
     virtual ~Backend() = default;
     virtual std::unique_ptr<Backend> clone() const = 0;
+    virtual std::string filesystem() const = 0;
     virtual std::vector<MediaEntry> list() const = 0;
     virtual Bytes read(std::string_view) const = 0;
     virtual void put(std::string_view, View, const MediaAttributes &) = 0;
@@ -140,6 +141,16 @@ struct Backend
         auto attrs = i->attributes;
         remove(oldName);
         put(newName, data, attrs);
+    }
+    /// Removes the destination of a replacing rename, if there is one.
+    virtual void clearDestination(std::string_view name)
+    {
+        for (auto &e : list())
+            if (e.name == name) {
+                require(!e.directory, "Cannot replace a directory"sv);
+                remove(name);
+                return;
+            }
     }
     virtual void attributes(std::string_view name, const MediaAttributes &changes)
     {

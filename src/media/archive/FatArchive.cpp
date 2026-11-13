@@ -39,6 +39,10 @@ struct Fat final : Backend
     {
         return std::make_unique<Fat>(*this);
     }
+    std::string filesystem() const override
+    {
+        return "fat"s;
+    }
     std::vector<MediaEntry> list() const override
     {
         auto v = volume();

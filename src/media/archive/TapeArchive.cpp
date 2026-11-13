@@ -111,9 +111,17 @@ struct Tape final : Backend
         require(i != entries.end(), "Tape file not found"sv);
         return i->index;
     }
+    // A TAP tape's blocks are one-block TAP files, other tapes' one-block TZX files. Both
+    // names are accepted for every tape, and put() takes either content.
+    std::string_view blockSuffix() const
+    {
+        return ext == ".tap"sv ? ".tap"sv : ".tzx"sv;
+    }
     std::size_t blockIndex(std::string_view name, bool append = false) const
     {
-        require(name.starts_with("blocks/"sv) && name.ends_with(".tzx"sv), "Invalid block path"sv);
+        require(name.starts_with("blocks/"sv)
+                        && (name.ends_with(".tzx"sv) || name.ends_with(".tap"sv)),
+                "Invalid block path"sv);
         auto s = name.substr(7, name.size() - 11);
         std::size_t n = 0;
         auto r = std::from_chars(s.data(), s.data() + s.size(), n);
@@ -144,6 +152,15 @@ struct Tape final : Backend
             }
         }
         return bytes;
+    }
+    Bytes tapBlock(std::size_t index) const
+    {
+        require(blocks[index].isRomBlock(), "Only standard blocks fit in a TAP file: use .tzx"sv);
+        return TapeFormats::writeTap(std::span(&blocks[index], 1));
+    }
+    Bytes blockBytes(std::size_t index, std::string_view name) const
+    {
+        return name.ends_with(".tap"sv) ? tapBlock(index) : rawBlock(index);
     }
     MediaAttributes attrs(std::size_t i) const
     {
@@ -179,9 +196,46 @@ struct Tape final : Backend
         }
         blocks.erase(blocks.begin() + first, blocks.begin() + first + count);
     }
+    // Moves a block, keeping the control blocks' relative targets on the same blocks.
+    void move(std::size_t from, std::size_t to)
+    {
+        if (from == to)
+            return;
+        auto position = [&](int64_t old) -> int64_t {
+            require(old >= 0 && old <= int64_t(blocks.size()), "Invalid tape control target"sv);
+            if (old == int64_t(from))
+                return int64_t(to);
+            if (from < to && old > int64_t(from) && old <= int64_t(to))
+                return old - 1;
+            if (to < from && old >= int64_t(to) && old < int64_t(from))
+                return old + 1;
+            return old;
+        };
+        for (std::size_t i = 0; i < blocks.size(); ++i) {
+            auto &b = blocks[i];
+            auto origin = position(int64_t(i));
+            auto target = [&](int64_t n) {
+                auto delta = position(int64_t(i) + n) - origin;
+                require(delta >= INT16_MIN && delta <= INT16_MAX, "Tape control offset overflow"sv);
+                return int16_t(delta);
+            };
+            if (b.type == TapeBlockType::JumpTo)
+                b.value = target(b.value);
+            if (b.type == TapeBlockType::CallSequence || b.type == TapeBlockType::SelectBlock)
+                for (auto &n : b.offsets)
+                    n = target(n);
+        }
+        auto block = std::move(blocks[from]);
+        blocks.erase(blocks.begin() + from);
+        blocks.insert(blocks.begin() + to, std::move(block));
+    }
     std::unique_ptr<Backend> clone() const override
     {
         return std::make_unique<Tape>(*this);
+    }
+    std::string filesystem() const override
+    {
+        return "tape"s;
     }
     std::vector<MediaEntry> list() const override
     {
@@ -199,17 +253,15 @@ struct Tape final : Backend
             }
         }
         for (std::size_t i = 0; i < blocks.size(); ++i) {
-            auto data = rawBlock(i);
-            out.push_back({ std::format("blocks/{:06}.tzx", i), data.size(), false, {} });
+            auto name = std::format("blocks/{:06}{}", i, blockSuffix());
+            out.push_back({ name, blockBytes(i, name).size(), false, {} });
         }
         return out;
     }
     Bytes read(std::string_view name) const override
     {
-        if (name.starts_with("blocks/"sv)) {
-            auto i = blockIndex(name);
-            return rawBlock(i);
-        }
+        if (name.starts_with("blocks/"sv))
+            return blockBytes(blockIndex(name), name);
         bool basic = name.starts_with("basic/"sv);
         require(name.starts_with("files/"sv) || basic, "Invalid tape file path"sv);
         if (basic)
@@ -230,10 +282,18 @@ struct Tape final : Backend
         if (name.starts_with("blocks/"sv)) {
             checkAttrs(changes, {});
             auto i = blockIndex(name, true);
-            if (i < blocks.size() && std::ranges::equal(rawBlock(i), bytes))
+            if (i < blocks.size()
+                && (std::ranges::equal(rawBlock(i), bytes)
+                    || (blocks[i].isRomBlock() && std::ranges::equal(tapBlock(i), bytes))))
                 return;
-            auto parsed = TapeFormats::parseTzx(bytes);
-            require(parsed.size() == 1, "Raw block edit must contain exactly one TZX block"sv);
+            const bool tzx = bytes.size() >= 8
+                    && std::ranges::equal(bytes.first(8), "ZXTape!\x1A"sv,
+                                          [](uint8_t a, char c) { return a == uint8_t(c); });
+            auto parsed = tzx ? TapeFormats::parseTzx(bytes) : TapeFormats::parseTap(bytes);
+            require(parsed.size() == 1, "Raw block edit must contain exactly one tape block"sv);
+            // A TAP file would drop anything else silently
+            require(ext != ".tap"sv || parsed[0].isRomBlock(),
+                    "Only standard blocks fit in a TAP file: use a TZX tape"sv);
             if (i == blocks.size())
                 blocks.push_back(std::move(parsed[0]));
             else
@@ -315,9 +375,20 @@ struct Tape final : Backend
         else
             throw FormatException("Invalid tape path"sv);
     }
+    void clearDestination(std::string_view name) override
+    {
+        // Moving a raw block shifts the others; it never replaces one.
+        if (!name.starts_with("blocks/"sv))
+            Backend::clearDestination(name);
+    }
     void rename(std::string_view name, std::string_view newName) override
     {
         modified = true;
+        if (name.starts_with("blocks/"sv)) {
+            require(newName.starts_with("blocks/"sv), "Move raw tape blocks within blocks/"sv);
+            move(blockIndex(name), blockIndex(newName));
+            return;
+        }
         require(name.starts_with("files/"sv) && newName.starts_with("files/"sv),
                 "Rename tape logical files through files/"sv);
         for (auto &e : list())

@@ -93,6 +93,13 @@ are retained locally under `build/profiling/`; kernel wakeup/energy access limit
 
 ## Completed emulation and host work
 
+- [x] Media editing for Spectacol's file manager: `MediaArchive::filesystem()` names the open layout,
+      renaming `blocks/A.tzx` to `blocks/B.tzx` moves a raw tape block (control-block targets follow), TAP
+      tapes list their blocks as one-block `.tap` files (`.tzx` names still work), and
+      `BasicCodec::listing()` gives a ROM-style LIST for reading (the lossless `decompile()` stays for editing),
+      `listingLines()` the same in parts (line number, keyword, number, string, comment) for highlighting;
+      both show the numbers a program stores where its digits are decoys.
+
 - [x] **Real-time tape playback.** `TapeCursor` plays every TZX block (and TAP) as edges, the same waveform as
       libspectrum (checked edge by edge on ~5000 tapes); `TapeDeck` puts them on the EAR input at T-state accuracy,
       at any CPU speed and machine clock. ROM traps for standard blocks, auto play/stop (FUSE's loader detection),

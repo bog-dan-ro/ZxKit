@@ -5,6 +5,7 @@
 #include <charconv>
 #include <cmath>
 #include <cstdlib>
+#include <set>
 #include <sstream>
 #include <iomanip>
 #include <string>
@@ -297,6 +298,245 @@ std::string decompile(std::span<const uint8_t> data, BasicDialect dialect)
         out += "!raw "sv;
         for (auto c : data.subspan(p))
             out += std::format("{:02X}", c);
+        out += '\n';
+    }
+    return out;
+}
+
+namespace {
+// A stored number as the ROM would print it: integers in full, others to nine digits
+std::string numberText(double value)
+{
+    if (value == std::trunc(value) && std::fabs(value) < 1e15)
+        return std::format("{}", static_cast<long long>(value));
+    return std::format("{:.9g}", value);
+}
+
+// Whether `text` (decimal, or binary after BIN) is what compile() stores as `stored`
+bool listsStoredValue(std::string_view text, bool binary, std::span<const uint8_t, 5> stored)
+{
+    double value = 0;
+    if (binary) {
+        if (text.empty())
+            return false;
+        for (const char c : text) {
+            if (c != '0' && c != '1')
+                return false;
+            value = value * 2 + (c - '0');
+        }
+    } else {
+        const auto result = parseNumber(text.data(), text.data() + text.size(), value);
+        if (result.ec != std::errc{} || result.ptr != text.data() + text.size())
+            return false;
+    }
+    try {
+        return std::ranges::equal(encodeNumber(value), stored);
+    } catch (const std::exception &) {
+        return false;
+    }
+}
+// Where a 48K or 128K program starts without Interface 1's channels: the address of a byte
+constexpr std::size_t BasicStart = 23755;
+
+// Whether the bytes at `p` are a program line: a number below 16384 (variables start with a
+// letter, 0x40 and up), a length within the data, and its end. Lines may come in any order.
+bool programLine(std::span<const uint8_t> data, std::size_t p)
+{
+    if (data.size() - p < 4 || data[p] >= 0x40)
+        return false;
+    const std::size_t size = word(data, p + 2);
+    return size && size <= data.size() - p - 4 && data[p + 3 + size] == 13;
+}
+
+// The addresses USR calls with stored numbers
+std::set<std::size_t> usrTargets(std::span<const uint8_t> data, unsigned firstToken)
+{
+    std::set<std::size_t> out;
+    for (std::size_t p = 0; programLine(data, p); p += 4 + word(data, p + 2)) {
+        const auto body = slice(data, p + 4, word(data, p + 2) - 1);
+        bool quoted = false;
+        bool usr = false;
+        for (std::size_t j = 0; j < body.size(); ++j) {
+            const auto c = body[j];
+            if (c == '"')
+                quoted = !quoted;
+            if (quoted)
+                continue;
+            if (c == 14 && body.size() - j >= 6) {
+                const auto value =
+                        decodeNumber(std::span<const uint8_t, 5>(body.data() + j + 1, 5));
+                if (usr && value >= 0 && value < 65536)
+                    out.insert(std::size_t(value));
+                usr = false;
+                j += 5;
+            } else if (c == 0xEA) {
+                break;
+            } else if (c >= firstToken || c == ':') {
+                usr = c == 0xC0;
+            }
+        }
+    }
+    return out;
+}
+
+// INK to OVER with their value, AT with its line and column, TAB with its column
+std::string controlText(std::span<const uint8_t> code)
+{
+    static constexpr std::array names = { "INK"sv,    "PAPER"sv,   "FLASH"sv,
+                                          "BRIGHT"sv, "INVERSE"sv, "OVER"sv };
+    if (code[0] == 22)
+        return std::format("{{AT {},{}}}", code[1], code[2]);
+    if (code[0] == 23)
+        return std::format("{{TAB {}}}", code[1] | (code[2] << 8));
+    return std::format("{{{} {}}}", names[code[0] - 16], code[1]);
+}
+} // namespace
+
+std::vector<ListingLine> listingLines(std::span<const uint8_t> data, BasicDialect dialect)
+{
+    // The ROM's block graphics, by quadrant bits: 1 top right, 2 top left, 4 bottom right,
+    // 8 bottom left
+    static constexpr std::array<std::string_view, 16> blocks = { " "sv,
+                                                                 "\xE2\x96\x9D"sv,
+                                                                 "\xE2\x96\x98"sv,
+                                                                 "\xE2\x96\x80"sv,
+                                                                 "\xE2\x96\x97"sv,
+                                                                 "\xE2\x96\x90"sv,
+                                                                 "\xE2\x96\x9A"sv,
+                                                                 "\xE2\x96\x9C"sv,
+                                                                 "\xE2\x96\x96"sv,
+                                                                 "\xE2\x96\x9E"sv,
+                                                                 "\xE2\x96\x8C"sv,
+                                                                 "\xE2\x96\x9B"sv,
+                                                                 "\xE2\x96\x84"sv,
+                                                                 "\xE2\x96\x9F"sv,
+                                                                 "\xE2\x96\x99"sv,
+                                                                 "\xE2\x96\x88"sv };
+    const unsigned firstToken = dialect == BasicDialect::Spectrum48 ? 0xA5
+            : dialect == BasicDialect::Spectrum128                  ? 0xA3
+                                                                    : 0x81;
+    const auto wordChar = [](uint8_t c) { return alpha(char(c)) || digit(char(c)) || c == '$'; };
+    const auto targets = usrTargets(data, firstToken);
+    std::vector<ListingLine> out;
+    // Unlike LIST, any line order: protections repeat line numbers, or use ones above 9999
+    for (std::size_t p = 0; programLine(data, p); p += 4 + word(data, p + 2)) {
+        const unsigned number = (data[p] << 8) | data[p + 1];
+        const std::size_t size = word(data, p + 2);
+        const auto address = BasicStart + p + 4;
+        auto &line = out.emplace_back();
+        // Joins a part to the previous one of the same kind
+        const auto add = [&line](ListingPart::Kind kind, std::string_view text) {
+            if (!line.empty() && line.back().kind == kind)
+                line.back().text += text;
+            else
+                line.push_back({ kind, std::string(text) });
+        };
+        const auto last = [&line]() -> char {
+            return line.empty() || line.back().text.empty() ? ' ' : line.back().text.back();
+        };
+        add(ListingPart::Kind::LineNumber, std::format("{:>4} ", number));
+        const auto body = slice(data, p + 4, size - 1);
+        bool quoted = false;
+        bool rem = false;
+        bool binary = false;
+        for (std::size_t j = 0; j < body.size(); ++j) {
+            auto c = body[j];
+            // Machine code in a REM: from where a USR lands, or from the first byte no text has
+            if (rem && (targets.contains(address + j) || (c < 32 && (c < 16 || c > 23)))) {
+                if (last() != ' ')
+                    add(ListingPart::Kind::Text, " "sv);
+                add(ListingPart::Kind::Code,
+                    std::format("{{machine code: {} bytes at {}}}", body.size() - j, address + j));
+                break;
+            }
+            if (!quoted && !rem && c == 14 && body.size() - j >= 6) {
+                // The value the program uses: shown when the digits before it say otherwise
+                // (a common protection), and when there are no digits at all
+                const std::span<const uint8_t, 5> stored(body.data() + j + 1, 5);
+                const auto value = numberText(decodeNumber(stored));
+                if (!line.empty() && line.back().kind == ListingPart::Kind::Number) {
+                    auto &number = line.back();
+                    if (!listsStoredValue(number.text, binary, stored)) {
+                        number.listed = std::move(number.text);
+                        number.text = value;
+                    }
+                } else {
+                    if (wordChar(uint8_t(last())))
+                        add(ListingPart::Kind::Text, " "sv);
+                    line.push_back({ ListingPart::Kind::Number, value, std::string() });
+                }
+                binary = false;
+                j += 5;
+                continue;
+            }
+            // Colour, AT and TAB controls, with their values
+            if (c >= 16 && c <= 23) {
+                const std::size_t values = c >= 22 ? 2 : 1;
+                if (body.size() - j > values) {
+                    add(ListingPart::Kind::Control, controlText(body.subspan(j, values + 1)));
+                    j += values;
+                    continue;
+                }
+            }
+            const bool quote = c == '"' && !rem;
+            if (!quoted && !rem && c >= firstToken) {
+                const auto keyword = keywords[c - 0x81];
+                // Statements and operators are spaced out; functions only from words
+                const bool statement = c >= 0xC5 || c < 0xA5;
+                const bool next = j + 1 < body.size();
+                const bool nextWord =
+                        next && (wordChar(body[j + 1]) || (!quoted && body[j + 1] >= firstToken));
+                if (alpha(keyword.front()) && last() != ' '
+                    && (statement || wordChar(uint8_t(last()))))
+                    add(ListingPart::Kind::Text, " "sv);
+                add(ListingPart::Kind::Keyword, keyword);
+                rem = c == 0xEA;
+                binary = c == 0xC4;
+                if ((alpha(keyword.back()) || keyword.back() == '$') && next && body[j + 1] != ' '
+                    && (statement || nextWord))
+                    add(ListingPart::Kind::Text, " "sv);
+                continue;
+            }
+            auto kind = rem           ? ListingPart::Kind::Comment
+                    : quoted || quote ? ListingPart::Kind::String
+                                      : ListingPart::Kind::Text;
+            // Numbers start outside names and go on with digits, points and exponents
+            if (kind == ListingPart::Kind::Text) {
+                const bool continues = !line.empty()
+                        && line.back().kind == ListingPart::Kind::Number
+                        && (digit(char(c)) || c == '.' || c == 'e' || c == 'E');
+                if (continues
+                    || ((digit(char(c))
+                         || (c == '.' && j + 1 < body.size() && digit(char(body[j + 1]))))
+                        && !wordChar(uint8_t(last()))))
+                    kind = ListingPart::Kind::Number;
+            }
+            if (quote)
+                quoted = !quoted;
+            if (c >= 0x80 && c <= 0x8F)
+                add(kind, blocks[c - 0x80]);
+            else if (c >= 0x90 && c < firstToken)
+                add(kind, std::format("\\{:c}", char('A' + (c - 0x90))));
+            else if (c == 0x60)
+                add(kind, "\xC2\xA3"sv); // £
+            else if (c == 0x7F)
+                add(kind, "\xC2\xA9"sv); // ©
+            else if (c >= 32 && c < 127)
+                add(kind, std::string_view(reinterpret_cast<const char *>(&c), 1));
+            else
+                add(kind, escaped(c));
+        }
+    }
+    return out;
+}
+
+std::string listing(std::span<const uint8_t> data, BasicDialect dialect)
+{
+    std::string out;
+    for (const auto &line : listingLines(data, dialect)) {
+        for (const auto &part : line)
+            if (part.kind != ListingPart::Kind::Control)
+                out += part.text;
         out += '\n';
     }
     return out;

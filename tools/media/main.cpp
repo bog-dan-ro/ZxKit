@@ -91,7 +91,9 @@ void help()
   mc COMMAND IMAGE [ENTRY [HOST]]   Midnight Commander extfs protocol
 Use --filesystem for ambiguous raw/TD0/CQM images. Existing outputs require --force.
 Tape files live under files/NAME; editable listings under basic/NAME.bas;
-raw tape blocks under blocks/000000.tzx. NEX exposes header.bin and banks/NNN.bin.
+raw tape blocks under blocks/000000.tzx, or .tap on TAP tapes (rename one to another
+index to move it).
+NEX exposes header.bin and banks/NNN.bin.
 )"sv;
 }
 } // namespace

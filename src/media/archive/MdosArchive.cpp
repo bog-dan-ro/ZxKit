@@ -110,6 +110,10 @@ public:
     {
         return std::make_unique<Mdos>(*this);
     }
+    std::string filesystem() const override
+    {
+        return std::string(storage.profile.name);
+    }
     std::vector<MediaEntry> list() const override
     {
         std::vector<MediaEntry> result;

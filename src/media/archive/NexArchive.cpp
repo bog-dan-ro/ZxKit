@@ -42,6 +42,10 @@ struct Nex final : Backend
     {
         return std::make_unique<Nex>(*this);
     }
+    std::string filesystem() const override
+    {
+        return "nex"s;
+    }
     std::vector<MediaEntry> list() const override
     {
         std::vector<MediaEntry> out{ { "header.bin"s, 512, false, {} },

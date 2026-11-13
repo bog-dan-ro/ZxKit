@@ -75,6 +75,10 @@ struct Microdrive final : Backend
     {
         return std::make_unique<Microdrive>(*this);
     }
+    std::string filesystem() const override
+    {
+        return "microdrive"s;
+    }
     std::vector<MediaEntry> list() const override
     {
         std::vector<MediaEntry> out;

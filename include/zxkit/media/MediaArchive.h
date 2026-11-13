@@ -29,6 +29,11 @@ struct MediaOptions
 /// Editable media independent of emulation. Mutations have a strong exception guarantee.
 /// Names are relative '/' paths. Format-specific attributes are validated, never ignored.
 /// Generic CP/M lengths are rounded to 128-byte records by that filesystem.
+/// Tapes list logical files under files/NAME, editable BASIC under basic/NAME.bas and raw
+/// blocks under blocks/NNNNNN.tzx (blocks/NNNNNN.tap for TAP tapes: one-block TAP files). Both
+/// suffixes are accepted, and blocks may be put as one-block TAP or TZX files. Putting
+/// blocks/N with N equal to the block count appends a block; renaming blocks/A to blocks/B
+/// moves block A to position B.
 class MediaArchive
 {
 public:
@@ -40,6 +45,10 @@ public:
     MediaArchive &operator=(MediaArchive &&) noexcept;
     ~MediaArchive();
 
+    /// The filesystem profile in use (see profiles()), or the container kind: "tape", "nex",
+    /// "microdrive" or "fat". Native attribute meanings depend on it (e.g. TR-DOS types are
+    /// letters, +3DOS and tape types are 0-3).
+    std::string filesystem() const;
     std::vector<MediaEntry> list() const;
     std::vector<uint8_t> read(std::string_view name) const;
     void put(std::string_view name, std::span<const uint8_t> data,

@@ -126,6 +126,10 @@ std::vector<std::string> MediaArchive::profiles()
     out.emplace_back("next-cpm"s);
     return out;
 }
+std::string MediaArchive::filesystem() const
+{
+    return m_impl->backend->filesystem();
+}
 std::vector<MediaEntry> MediaArchive::list() const
 {
     return m_impl->backend->list();
@@ -148,12 +152,7 @@ void MediaArchive::rename(std::string_view n, std::string_view to, bool replace)
         return;
     m_impl->mutate([&](auto &b) {
         if (replace)
-            for (auto &e : b.list())
-                if (e.name == to) {
-                    archive::require(!e.directory, "Cannot replace a directory"sv);
-                    b.remove(to);
-                    break;
-                }
+            b.clearDestination(to);
         b.rename(n, to);
     });
 }

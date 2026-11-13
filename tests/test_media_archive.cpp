@@ -40,6 +40,55 @@ void basic()
     assert(data[0] == 0 && data[1] == 10 && data[4] == 0xF5);
     auto text = BasicCodec::decompile(data);
     assert(BasicCodec::compile(text) == data);
+    assert(BasicCodec::listing(data)
+           == "  10 PRINT \"hello 12\": LET a=1.5\n  20 REM PRINT 123\n  30 GO TO 10\n"sv);
+    // As typed on a Spectrum: no stored spaces, colour controls, block graphics and UDGs
+    const Bytes packed{ 0, 40, 22, 0,   0xF1, 'a',  '=', 0xA7, '+',  '1',  0x0E, 0,   0,
+                        1, 0,  0,  ':', 0xF5, 0x10, 2,   '"',  0x83, 0x90, 0x60, '"', 0x0D };
+    assert(BasicCodec::listing(packed) == "  40 LET a=PI+1: PRINT \"\xE2\x96\x80\\A\xC2\xA3\"\n"sv);
+    // The parts say what each piece is, for highlighting
+    using Kind = BasicCodec::ListingPart::Kind;
+    const auto parts = BasicCodec::listingLines(data);
+    assert(parts.size() == 3);
+    const std::vector<std::pair<Kind, std::string>> first{
+        { Kind::LineNumber, "  10 "s }, { Kind::Keyword, "PRINT"s },
+        { Kind::Text, " "s },           { Kind::String, "\"hello 12\""s },
+        { Kind::Text, ": "s },          { Kind::Keyword, "LET"s },
+        { Kind::Text, " a="s },         { Kind::Number, "1.5"s }
+    };
+    assert(parts[0].size() == first.size());
+    for (std::size_t i = 0; i < first.size(); ++i)
+        assert(parts[0][i].kind == first[i].first && parts[0][i].text == first[i].second);
+    assert(parts[1][1].kind == Kind::Keyword && parts[1][1].text == "REM"s);
+    assert(parts[1][2].kind == Kind::Comment && parts[1][2].text == " PRINT 123"s);
+    // A protected loader: the digits LIST shows are a decoy, the stored numbers are used
+    const auto loader =
+            BasicCodec::compile("10 \\{CLEAR}99999\\x0E\\x00\\x00\\xC5\\x62\\x00\n"
+                                "20 \\{RANDOMIZE}\\{USR}\\x0E\\x00\\x00\\xC5\\x62\\x00\n"
+                                "30 \\{PRINT}\\{BIN}101\n"sv);
+    assert(BasicCodec::listing(loader)
+           == "  10 CLEAR 25285\n  20 RANDOMIZE USR 25285\n  30 PRINT BIN 101\n"sv);
+    const auto revealed = BasicCodec::listingLines(loader);
+    assert(revealed[0][3].kind == Kind::Number && revealed[0][3].text == "25285"s
+           && revealed[0][3].listed == "99999"s);
+    assert(revealed[1].back().text == "25285"s && revealed[1].back().listed == ""s);
+    assert(!revealed[2].back().listed && !parts[0].back().listed);
+    // A REM holding code called through a second line 0, as protected loaders do
+    const Bytes rem{ 0, 0,  9, 0,    0xEA, 0x10, 6,    'H', 'I', 0xF3, 0xC9, 0x00, 0x0D, 0,
+                     0, 10, 0, 0xF5, 0xC0, '0',  0x0E, 0,   0,   0xD4, 0x5C, 0,    0x0D };
+    assert(BasicCodec::listing(rem)
+           == "   0 REM HI {machine code: 3 bytes at 23764}\n   0 PRINT USR 23764\n"sv);
+    const auto remParts = BasicCodec::listingLines(rem);
+    assert(remParts[0][3].kind == Kind::Control && remParts[0][3].text == "{INK 6}"s);
+    assert(remParts[0].back().kind == Kind::Code);
+    assert(remParts[1].back().listed == "0"s);
+    // Without a USR into it, code starts at the first byte no text has
+    const Bytes plain{ 0, 10, 6, 0, 0xEA, 'A', 'B', 0x00, 0xC9, 0x0D };
+    assert(BasicCodec::listing(plain) == "  10 REM AB {machine code: 2 bytes at 23762}\n"sv);
+    // Digits inside names are not numbers
+    const auto names = BasicCodec::listingLines(BasicCodec::compile("10 LET a1=2\n"sv));
+    assert(names[0][2].kind == Kind::Text && names[0][2].text == " a1="s);
+    assert(names[0][3].kind == Kind::Number && names[0][3].text == "2"s);
     auto next = BasicCodec::compile("10 BANK 1: LAYER 2: REG 18,9\n"sv, BasicDialect::Next);
     assert(next[4] == 0x9A);
     assert(BasicCodec::compile(BasicCodec::decompile(next, BasicDialect::Next), BasicDialect::Next)
@@ -103,6 +152,79 @@ void tape()
     auto listing = a.read("basic/HELLO.bas"sv);
     a.put("basic/HELLO.bas"sv, listing);
     assert(!a.read("files/HELLO"sv).empty());
+}
+// A raw JumpTo block: offsets are written after encoding, like the archive's raw blocks.
+Bytes jumpBlock(int16_t offset)
+{
+    TapeBlock jump;
+    jump.type = TapeBlockType::JumpTo;
+    jump.value = 0;
+    auto raw = TapeFormats::writeTzx(std::span(&jump, 1));
+    raw[11] = uint8_t(offset);
+    raw[12] = uint8_t(uint16_t(offset) >> 8);
+    return raw;
+}
+int16_t jumpOffset(const Bytes &raw)
+{
+    return int16_t(raw[11] | (raw[12] << 8));
+}
+void tapeBlocks()
+{
+    auto tape = MediaArchive::create("tzx"sv);
+    assert(tape.filesystem() == "tape"sv);
+    tape.put("files/ONE"sv, Bytes{ 1 });
+    tape.put("files/TWO"sv, Bytes{ 2 });
+    // Block 4 jumps back to TWO's header (block 2)
+    tape.put("blocks/000004.tzx"sv, jumpBlock(-2));
+    assert(jumpOffset(tape.read("blocks/000004.tzx"sv)) == -2);
+    // To the front: the jump still targets TWO's header, now block 3
+    tape.rename("blocks/000004.tzx"sv, "blocks/000000.tzx"sv);
+    assert(jumpOffset(tape.read("blocks/000000.tzx"sv)) == 3);
+    assert(tape.read("files/ONE"sv) == Bytes{ 1 } && tape.read("files/TWO"sv) == Bytes{ 2 });
+    // Moving the target itself moves the jump's target with it
+    tape.rename("blocks/000003.tzx"sv, "blocks/000001.tzx"sv);
+    assert(jumpOffset(tape.read("blocks/000000.tzx"sv)) == 1);
+    tape.rename("blocks/000001.tzx"sv, "blocks/000003.tzx"sv, true);
+    assert(jumpOffset(tape.read("blocks/000000.tzx"sv)) == 3);
+    assert(std::ranges::count_if(
+                   tape.list(), [](const MediaEntry &e) { return e.name.starts_with("blocks/"sv); })
+           == 5);
+    // Back to the end, after the files
+    tape.rename("blocks/000000.tzx"sv, "blocks/000004.tzx"sv);
+    assert(jumpOffset(tape.read("blocks/000004.tzx"sv)) == -2);
+    auto reopened = MediaArchive::open(tape.encode(), "tzx"sv);
+    assert(reopened.read("files/TWO"sv) == Bytes{ 2 });
+    assert(jumpOffset(reopened.read("blocks/000004.tzx"sv)) == -2);
+    auto before = tape.encode();
+    fails([&] { tape.rename("blocks/000000.tzx"sv, "blocks/000005.tzx"sv); });
+    fails([&] { tape.rename("blocks/000000.tzx"sv, "files/X"sv); });
+    assert(tape.encode() == before);
+    // TAP tapes list one-block TAP files; TZX names and contents work for both kinds of tape
+    auto tap = MediaArchive::create("tap"sv);
+    tap.put("files/ONE"sv, Bytes{ 1 });
+    const auto tapEntries = tap.list();
+    assert(std::ranges::count(tapEntries, "blocks/000000.tap"s, &MediaEntry::name) == 1);
+    assert(std::ranges::count(tapEntries, "blocks/000000.tzx"s, &MediaEntry::name) == 0);
+    const auto header = tap.read("blocks/000000.tap"sv);
+    assert(header.size() == 21 && header[0] == 19 && header[1] == 0 && header[2] == 0);
+    assert(tap.read("blocks/000000.tzx"sv).size() > header.size());
+    auto other = MediaArchive::create("tzx"sv);
+    other.put("blocks/000000.tzx"sv, header);
+    assert(other.read("blocks/000000.tap"sv) == header);
+    tap.put("blocks/000002.tap"sv, other.read("blocks/000000.tzx"sv));
+    assert(tap.read("blocks/000002.tap"sv) == header);
+    tap.rename("blocks/000002.tap"sv, "blocks/000000.tap"sv);
+    assert(MediaArchive::open(tap.encode(), "tap"sv).read("blocks/000000.tap"sv) == header);
+    const auto tapBefore = tap.encode();
+    TapeBlock text;
+    text.type = TapeBlockType::TextDesc;
+    text.description = "Side A"s;
+    fails([&] { tap.put("blocks/000003.tap"sv, TapeFormats::writeTzx(std::span(&text, 1))); });
+    fails([&] { tap.put("blocks/000003.tap"sv, jumpBlock(1)); });
+    assert(tap.encode() == tapBefore);
+    fails([&] { reopened.read("blocks/000004.tap"sv); });
+    assert(MediaArchive::create("trd"sv).filesystem() == "trdos"sv);
+    assert(MediaArchive::create("mdr"sv).filesystem() == "microdrive"sv);
 }
 void disks()
 {
@@ -461,6 +583,7 @@ int main()
     numberParsing();
     basic();
     tape();
+    tapeBlocks();
     disks();
     historicalLayouts();
     diskDetection();

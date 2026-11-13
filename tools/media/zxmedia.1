@@ -247,10 +247,15 @@ Tapes show their logical files as
 (duplicate names get numbered aliases) and BASIC programs also as the
 writable text view \fBbasic/\fINAME\fB.bas\fR.
 \fBblocks/000000.tzx\fR and the following numbers expose the tape blocks one
-by one as standalone TZX files.
+by one as standalone TZX files; a TAP tape lists them as one-block TAP files,
+\fBblocks/000000.tap\fR.
+Either name reads either form of a standard block, and a block can be written
+as a one-block TAP or TZX file.
 A block is appended by giving the next sequential number; removing a block
 fixes up the jump, call and selection targets of the blocks that remain, and
 is refused when a remaining block refers into the removed range.
+Renaming a block to another existing number moves it there; the jump, call
+and selection targets keep pointing at the same blocks.
 .PP
 A NEX file shows
 .BR header.bin ,
