@@ -90,15 +90,22 @@ Each page fitting the file is printed under a \(lq== \fITITLE\fR ==\(rq line:
 .B Unhacked
 BASIC, a listing where the numbers a program stores replace the decoy digits
 LIST shows, lines come in any order, embedded colour codes appear as
-\(lq{INK 6}\(rq and machine code in a REM as
+\(lq{INK 6}\(rq and machine code, in a REM or after a credit in a line BASIC
+cannot hold (as cracked loaders have), as
 \(lq{machine code: \fIN\fR bytes at \fIADDRESS\fR}\(rq;
 .B Unfiltered
 BASIC, every byte as
 .B basic decompile
 writes them;
 .B USR
-\fIADDRESS\fR, a disassembly of the code each USR call into the program runs
-(the program taken to start at 23755);
+\fIADDRESS\fR, a disassembly of the code each USR call into the program runs, to
+the end of its line (a number,
+.BR VAL \(dq\fIdigits\fR\(dq ,
+or
+.BR "PEEK 23635+256*PEEK 23636+" \fIN\fR;
+the program is taken to start at 23755, or at 23813 after Interface 1's
+channels when its calls land on code there or it uses
+.BR "LOAD *" );
 .BR Hex ,
 .B Disassembly
 from the load address (256 for a CP/M .COM program);
@@ -217,7 +224,8 @@ gives back the original bytes.
 A listing to read, like
 .BR view 's
 Unhacked page: spaced keywords, the numbers the program stores where its
-digits are decoys, lines in any order, machine code in REMs summed up.
+digits are decoys, lines in any order, machine code in REMs and cracked
+loaders' lines summed up.
 It cannot be compiled back; use
 .B basic decompile
 for that.

@@ -305,45 +305,30 @@ std::vector<MediaViewPage> viewMedia(std::span<const uint8_t> data, MediaContent
         try {
             auto listing = BasicCodec::listingLines(data, BasicDialect::Spectrum128);
             std::vector<std::string> lines;
-            std::vector<uint32_t> calls;
             for (const auto &line : listing) {
                 auto &text = lines.emplace_back();
-                for (std::size_t k = 0; k < line.size(); ++k) {
-                    text += line[k].text;
-                    if (line[k].kind != BasicCodec::ListingPart::Kind::Keyword
-                        || line[k].text != "USR"sv)
-                        continue;
-                    // Where USR calls land in the program: code to read, often in a REM
-                    for (auto next = k + 1; next < line.size(); ++next) {
-                        const auto &part = line[next];
-                        if (part.kind == BasicCodec::ListingPart::Kind::Number) {
-                            double target = 0;
-                            const auto &digits = part.text;
-                            parseNumber(digits.data(), digits.data() + digits.size(), target);
-                            if (target >= basicProgramStart
-                                && target < basicProgramStart + double(data.size())
-                                && std::ranges::find(calls, uint32_t(target)) == calls.end())
-                                calls.push_back(uint32_t(target));
-                        }
-                        if (part.kind != BasicCodec::ListingPart::Kind::Text)
-                            break;
-                    }
-                }
+                for (const auto &part : line)
+                    text += part.text;
             }
+            // Where the program runs, and the code its USR calls land on: often in a REM
+            const auto start = BasicCodec::programStart(data);
             auto &page = pages.emplace_back();
             page.kind = Kind::Basic;
-            page.address = basicProgramStart;
+            page.address = start;
             page.lines = std::move(lines);
             page.listing = std::move(listing);
             linesPage(Kind::Unfiltered,
                       splitLines(BasicCodec::decompile(data, BasicDialect::Spectrum128)));
-            for (const auto target : calls)
-                disassemblyPage(data.subspan(target - basicProgramStart), uint16_t(target),
-                                Kind::Usr);
+            // Each to the end of its line, as the listing sums it up
+            for (const auto &call : BasicCodec::usrCalls(data)) {
+                if (call.size)
+                    disassemblyPage(data.subspan(call.address - start, call.size), call.address,
+                                    Kind::Usr);
+            }
         } catch (const std::exception &e) {
             linesPage(Kind::Basic, { e.what() });
         }
-        hexPage(data, basicProgramStart);
+        hexPage(data, BasicCodec::programStart(data));
         break;
     case MediaContent::NumberArray:
     case MediaContent::CharacterArray:

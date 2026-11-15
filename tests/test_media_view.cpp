@@ -111,6 +111,17 @@ void views()
     assert(pages[0].lines[1] == "   0 PRINT USR 23764"sv && pages[0].listing.size() == 2);
     assert(pages[2].address == 23764 && pages[2].lines[0].starts_with("5CD4  F3"sv));
     assert(pages[3].address == basicProgramStart);
+    // The same with code after a credit in line 0, the program after a disk's channels
+    Bytes credit{ 0,   0,    20,   0,    0xF4, 0xC6, 0xFF, 'B',  'Y',  ' ',  'M',  'E',
+                  ' ', 0x11, 0x3E, 0xEF, 0x21, 0x97, 0xF3, 0x1A, 0xFE, 0x00, 0xC9, 0x0D };
+    const auto run = BasicCodec::compile("1 RANDOMIZE USR VAL\"23826\"\n"sv);
+    credit.insert(credit.end(), run.begin(), run.end());
+    pages = viewMedia(credit, MediaContent::Basic);
+    assert((kinds(pages) == std::vector{ Kind::Basic, Kind::Unfiltered, Kind::Usr, Kind::Hex }));
+    assert(pages[0].address == 23813 && pages[3].address == 23813);
+    assert(pages[2].address == 23826 && pages[2].lines[0].starts_with("5D12  11 3E EF"sv));
+    // The code to the end of its line, not into the next one
+    assert(pages[2].bytes.size() == 10 && pages[2].lines.back().ends_with("RET"sv));
 
     // Code, a screen, and code larger than a screen
     pages = viewMedia(Bytes{ 0xC9 }, MediaContent::Code, 0x8000);

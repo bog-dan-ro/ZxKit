@@ -85,6 +85,41 @@ void basic()
     // Without a USR into it, code starts at the first byte no text has
     const Bytes plain{ 0, 10, 6, 0, 0xEA, 'A', 'B', 0x00, 0xC9, 0x0D };
     assert(BasicCodec::listing(plain) == "  10 REM AB {machine code: 2 bytes at 23762}\n"sv);
+    // The ROM's own rounding is no decoy: it stores .05 one bit below the exact value
+    const Bytes rounded{
+        0, 5, 11, 0, 0xD7, '.', '0', '5', 0x0E, 0x7C, 0x4C, 0xCC, 0xCC, 0xCC, 0x0D
+    };
+    assert(BasicCodec::listing(rounded) == "   5 BEEP .05\n"sv);
+    assert(!BasicCodec::listingLines(rounded)[0].back().listed);
+    // A cracked loader: a credit, then code in line 0 itself, run from the program's address
+    // with Interface 1's (or a disk's) channels, or from PROG (PEEK 23635+256*PEEK 23636)
+    const Bytes credit{ 0,   0,    20,   0,    0xF4, 0xC6, 0xFF, 'B',  'Y',  ' ',  'M',  'E',
+                        ' ', 0x11, 0x3E, 0xEF, 0x21, 0x97, 0xF3, 0x1A, 0xFE, 0x00, 0xC9, 0x0D };
+    auto disk = credit;
+    const auto run = BasicCodec::compile("1 RANDOMIZE USR VAL \"23826\"\n"sv);
+    disk.insert(disk.end(), run.begin(), run.end());
+    assert(BasicCodec::programStart(disk) == 23813 && BasicCodec::usrCalls(disk).size() == 1
+           && BasicCodec::usrCalls(disk)[0].address == 23826
+           && BasicCodec::usrCalls(disk)[0].size == 10);
+    assert(BasicCodec::listing(disk)
+           == "   0 POKE AND COPY BY ME {machine code: 10 bytes at 23826}\n"
+              "   1 RANDOMIZE USR VAL \"23826\"\n"sv);
+    auto relative = credit;
+    const auto prog = BasicCodec::compile("1 RANDOMIZE USR (PEEK 23635+256*PEEK 23636+13)\n"sv);
+    relative.insert(relative.end(), prog.begin(), prog.end());
+    assert(BasicCodec::programStart(relative) == 23755
+           && BasicCodec::usrCalls(relative)[0].address == 23768);
+    assert(BasicCodec::listing(relative).starts_with(
+            "   0 POKE AND COPY BY ME {machine code: 10 bytes at 23768}\n"sv));
+    // Loading from a disk the Interface 1 way puts the program after the channels
+    const auto load = BasicCodec::compile("2 LOAD *\"d\";1;\"game\"CODE\n"sv);
+    relative.insert(relative.end(), load.begin(), load.end());
+    assert(BasicCodec::programStart(relative) == 23813
+           && BasicCodec::usrCalls(relative)[0].address == 23826);
+    // A USR into a line BASIC can hold is not code, and the program stays at 23755
+    const auto clean = BasicCodec::compile("10 RANDOMIZE USR 23813\n20 PRINT \"HELLO, WORLD\"\n"sv);
+    assert(BasicCodec::programStart(clean) == 23755
+           && BasicCodec::listing(clean).find("machine code") == std::string::npos);
     // Digits inside names are not numbers
     const auto names = BasicCodec::listingLines(BasicCodec::compile("10 LET a1=2\n"sv));
     assert(names[0][2].kind == Kind::Text && names[0][2].text == " a1="s);

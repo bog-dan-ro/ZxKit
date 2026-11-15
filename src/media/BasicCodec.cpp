@@ -2,12 +2,14 @@
 #include "zxkit/media/BasicCodec.h"
 #include "archive/ArchiveInternal.h"
 #include "NumberParsing.h"
+#include <algorithm>
 #include <charconv>
 #include <cmath>
 #include <cstdlib>
 #include <set>
 #include <sstream>
 #include <iomanip>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -330,10 +332,14 @@ bool listsStoredValue(std::string_view text, bool binary, std::span<const uint8_
             return false;
     }
     try {
-        return std::ranges::equal(encodeNumber(value), stored);
+        if (std::ranges::equal(encodeNumber(value), stored))
+            return true;
     } catch (const std::exception &) {
         return false;
     }
+    // The ROM converts decimals with its calculator, which truncates: .05 is stored a bit below
+    // the exact 0.05. Decoys are other numbers altogether.
+    return std::fabs(decodeNumber(stored) - value) <= std::fabs(value) * 1e-8;
 }
 // Where a 48K or 128K program starts without Interface 1's channels: the address of a byte
 constexpr std::size_t BasicStart = 23755;
@@ -348,33 +354,285 @@ bool programLine(std::span<const uint8_t> data, std::size_t p)
     return size && size <= data.size() - p - 4 && data[p + 3 + size] == 13;
 }
 
-// The addresses USR calls with stored numbers
-std::set<std::size_t> usrTargets(std::span<const uint8_t> data, unsigned firstToken)
+// Where a program runs with Interface 1's (or a disk system's) 58 bytes of channels before it
+constexpr std::size_t ChannelsStart = BasicStart + 58;
+
+constexpr uint8_t TokenCode = 0xAF;
+constexpr uint8_t TokenVal = 0xB0;
+constexpr uint8_t TokenPeek = 0xBE;
+constexpr uint8_t TokenUsr = 0xC0;
+constexpr uint8_t TokenRem = 0xEA;
+
+// A USR argument: constant + low * PEEK 23635 + high * PEEK 23636. The program's address,
+// PROG, is PEEK 23635+256*PEEK 23636.
+struct UsrAddress
 {
-    std::set<std::size_t> out;
+    double constant = 0;
+    double low = 0;
+    double high = 0;
+    bool known = true;
+};
+
+// Reads the factor after a USR: numbers (the stored value), VAL"digits", CODE"text",
+// PEEK 23635/23636, parentheses, + - *. Anything else is unknown.
+class UsrParser
+{
+public:
+    UsrParser(std::span<const uint8_t> body, std::size_t at) : m_body(body), m_at(at) { }
+
+    UsrAddress factor()
+    {
+        skipSpaces();
+        if (m_at >= m_body.size())
+            return unknown();
+        const auto c = m_body[m_at];
+        if (c == '(') {
+            ++m_at;
+            auto value = expression();
+            skipSpaces();
+            if (m_at >= m_body.size() || m_body[m_at] != ')')
+                return unknown();
+            ++m_at;
+            return value;
+        }
+        if (c == '-') {
+            ++m_at;
+            auto value = factor();
+            value.constant = -value.constant;
+            value.low = -value.low;
+            value.high = -value.high;
+            return value;
+        }
+        if (c == TokenVal || c == TokenCode) {
+            ++m_at;
+            const auto text = stringLiteral();
+            if (!text)
+                return unknown();
+            if (c == TokenCode)
+                return { text->empty() ? 0 : double(uint8_t(text->front())) };
+            double value = 0;
+            const auto trimmed = trim(*text);
+            const auto result = parseNumber(trimmed.data(), trimmed.data() + trimmed.size(), value);
+            if (trimmed.empty() || result.ec != std::errc{}
+                || result.ptr != trimmed.data() + trimmed.size())
+                return unknown();
+            return { value };
+        }
+        if (c == TokenPeek) {
+            ++m_at;
+            const auto address = factor();
+            if (!address.known || address.low || address.high)
+                return unknown();
+            if (address.constant == 23635)
+                return { 0, 1, 0 };
+            if (address.constant == 23636)
+                return { 0, 0, 1 };
+            return unknown();
+        }
+        if (const auto value = number())
+            return { *value };
+        return unknown();
+    }
+
+private:
+    static UsrAddress unknown()
+    {
+        return { 0, 0, 0, false };
+    }
+    static std::string_view trim(std::string_view text)
+    {
+        while (!text.empty() && text.front() == ' ')
+            text.remove_prefix(1);
+        while (!text.empty() && text.back() == ' ')
+            text.remove_suffix(1);
+        return text;
+    }
+    void skipSpaces()
+    {
+        while (m_at < m_body.size() && m_body[m_at] == ' ')
+            ++m_at;
+    }
+    std::optional<std::string> stringLiteral()
+    {
+        skipSpaces();
+        if (m_at >= m_body.size() || m_body[m_at] != '"')
+            return std::nullopt;
+        std::string text;
+        for (++m_at; m_at < m_body.size(); ++m_at) {
+            if (m_body[m_at] == '"') {
+                ++m_at;
+                return text;
+            }
+            text += char(m_body[m_at]);
+        }
+        return std::nullopt;
+    }
+    // Digits and the number the program stores after them, which is the one it uses
+    std::optional<double> number()
+    {
+        while (m_at < m_body.size()
+               && (digit(char(m_body[m_at])) || m_body[m_at] == '.' || m_body[m_at] == 'E'
+                   || m_body[m_at] == 'e'))
+            ++m_at;
+        if (m_at >= m_body.size() || m_body[m_at] != 14 || m_body.size() - m_at < 6)
+            return std::nullopt;
+        const auto value = decodeNumber(std::span<const uint8_t, 5>(m_body.data() + m_at + 1, 5));
+        m_at += 6;
+        return value;
+    }
+    UsrAddress expression()
+    {
+        auto sum = term();
+        for (;;) {
+            skipSpaces();
+            if (m_at >= m_body.size() || (m_body[m_at] != '+' && m_body[m_at] != '-'))
+                return sum;
+            const double sign = m_body[m_at++] == '+' ? 1 : -1;
+            const auto next = term();
+            sum.known = sum.known && next.known;
+            sum.constant += sign * next.constant;
+            sum.low += sign * next.low;
+            sum.high += sign * next.high;
+        }
+    }
+    UsrAddress term()
+    {
+        auto product = factor();
+        for (;;) {
+            skipSpaces();
+            if (m_at >= m_body.size() || m_body[m_at] != '*')
+                return product;
+            ++m_at;
+            const auto next = factor();
+            // Only a constant can multiply: the result stays a sum of PEEKs
+            const bool constantLeft = !product.low && !product.high;
+            const bool constantRight = !next.low && !next.high;
+            if (!product.known || !next.known || (!constantLeft && !constantRight))
+                return unknown();
+            const auto &scale = constantLeft ? product : next;
+            const auto &value = constantLeft ? next : product;
+            product = { value.constant * scale.constant, value.low * scale.constant,
+                        value.high * scale.constant };
+        }
+    }
+
+    std::span<const uint8_t> m_body;
+    std::size_t m_at;
+};
+
+// A program line: where its body is, where a REM's text starts, and the first byte BASIC
+// can't hold outside a REM (a control code no colour, AT or TAB is), or npos
+struct LineLayout
+{
+    std::size_t body = 0;
+    std::size_t size = 0;
+    std::size_t remText = std::string_view::npos;
+    std::size_t unlistable = std::string_view::npos;
+};
+
+std::vector<LineLayout> lineLayouts(std::span<const uint8_t> data)
+{
+    std::vector<LineLayout> out;
     for (std::size_t p = 0; programLine(data, p); p += 4 + word(data, p + 2)) {
-        const auto body = slice(data, p + 4, word(data, p + 2) - 1);
+        auto &line = out.emplace_back(LineLayout{ p + 4, std::size_t(word(data, p + 2)) - 1 });
+        const auto body = slice(data, line.body, line.size);
         bool quoted = false;
-        bool usr = false;
         for (std::size_t j = 0; j < body.size(); ++j) {
+            const auto c = body[j];
+            if (c == '"')
+                quoted = !quoted;
+            if (!quoted && c == TokenRem) {
+                line.remText = j + 1;
+                break;
+            }
+            if (!quoted && c == 14 && body.size() - j >= 6) {
+                j += 5;
+            } else if (c >= 16 && c <= 23) {
+                j += c >= 22 ? 2 : 1;
+            } else if (c < 32) {
+                line.unlistable = j;
+                break;
+            }
+        }
+    }
+    return out;
+}
+
+// Whether code can start at `offset` in the program: in a REM's text, or in a line BASIC can't
+// hold, before its first such byte (code runs from where the USR lands)
+bool codeAt(const std::vector<LineLayout> &lines, std::size_t offset)
+{
+    for (const auto &line : lines) {
+        if (offset < line.body || offset >= line.body + line.size)
+            continue;
+        const auto at = offset - line.body;
+        return (line.remText != std::string_view::npos && at >= line.remText)
+                || (line.unlistable != std::string_view::npos && at <= line.unlistable);
+    }
+    return false;
+}
+
+// Where a program runs, and the offsets its USR calls land on in it
+struct CodeCalls
+{
+    std::size_t start = BasicStart;
+    std::vector<std::size_t> offsets;
+};
+
+CodeCalls codeCalls(std::span<const uint8_t> data)
+{
+    const auto lines = lineLayouts(data);
+    std::vector<UsrAddress> calls;
+    // LOAD *, SAVE *, CAT *...: Interface 1's syntax, which needs its channels
+    bool channels = false;
+    for (const auto &line : lines) {
+        const auto body = slice(data, line.body, line.size);
+        bool quoted = false;
+        const auto end = std::min(body.size(), line.remText);
+        for (std::size_t j = 0; j < end; ++j) {
             const auto c = body[j];
             if (c == '"')
                 quoted = !quoted;
             if (quoted)
                 continue;
             if (c == 14 && body.size() - j >= 6) {
-                const auto value =
-                        decodeNumber(std::span<const uint8_t, 5>(body.data() + j + 1, 5));
-                if (usr && value >= 0 && value < 65536)
-                    out.insert(std::size_t(value));
-                usr = false;
                 j += 5;
-            } else if (c == 0xEA) {
-                break;
-            } else if (c >= firstToken || c == ':') {
-                usr = c == 0xC0;
+            } else if (c == 0xEF || c == 0xF8 || c == 0xD6 || c == 0xD5 || c == 0xCF || c == 0xD0
+                       || c == 0xD1 || c == 0xD2) {
+                auto next = j + 1;
+                while (next < end && body[next] == ' ')
+                    ++next;
+                channels = channels || (next < end && body[next] == '*');
+            } else if (c == TokenUsr) {
+                const auto address = UsrParser(body, j + 1).factor();
+                if (address.known
+                    && ((!address.low && !address.high)
+                        || (address.low == 1 && address.high == 256)))
+                    calls.push_back(address);
             }
         }
+    }
+    // The start that puts the most constant addresses on code; with as many, Interface 1's
+    // syntax says the channels are there
+    CodeCalls out;
+    const auto programEnd = lines.empty() ? 0 : lines.back().body + lines.back().size + 1;
+    const auto landings = [&](std::size_t start) {
+        return std::ranges::count_if(calls, [&](const UsrAddress &call) {
+            return !call.low && call.constant >= double(start)
+                    && call.constant < double(start + programEnd)
+                    && codeAt(lines, std::size_t(call.constant) - start);
+        });
+    };
+    const auto afterChannels = landings(ChannelsStart);
+    const auto plain = landings(BasicStart);
+    if (afterChannels > plain || (afterChannels == plain && channels))
+        out.start = ChannelsStart;
+    for (const auto &call : calls) {
+        // PROG + n lands at n, wherever the program is
+        const double offset = call.low ? call.constant : call.constant - double(out.start);
+        if (offset >= 0 && offset < double(programEnd) && offset == std::trunc(offset)
+            && std::ranges::find(out.offsets, std::size_t(offset)) == out.offsets.end())
+            out.offsets.push_back(std::size_t(offset));
     }
     return out;
 }
@@ -416,13 +674,18 @@ std::vector<ListingLine> listingLines(std::span<const uint8_t> data, BasicDialec
             : dialect == BasicDialect::Spectrum128                  ? 0xA3
                                                                     : 0x81;
     const auto wordChar = [](uint8_t c) { return alpha(char(c)) || digit(char(c)) || c == '$'; };
-    const auto targets = usrTargets(data, firstToken);
+    const auto calls = codeCalls(data);
+    const auto layouts = lineLayouts(data);
     std::vector<ListingLine> out;
     // Unlike LIST, any line order: protections repeat line numbers, or use ones above 9999
     for (std::size_t p = 0; programLine(data, p); p += 4 + word(data, p + 2)) {
         const unsigned number = (data[p] << 8) | data[p + 1];
         const std::size_t size = word(data, p + 2);
-        const auto address = BasicStart + p + 4;
+        const auto address = calls.start + p + 4;
+        const auto &layout = layouts[out.size()];
+        const auto called = [&](std::size_t j) {
+            return std::ranges::find(calls.offsets, p + 4 + j) != calls.offsets.end();
+        };
         auto &line = out.emplace_back();
         // Joins a part to the previous one of the same kind
         const auto add = [&line](ListingPart::Kind kind, std::string_view text) {
@@ -441,8 +704,11 @@ std::vector<ListingLine> listingLines(std::span<const uint8_t> data, BasicDialec
         bool binary = false;
         for (std::size_t j = 0; j < body.size(); ++j) {
             auto c = body[j];
-            // Machine code in a REM: from where a USR lands, or from the first byte no text has
-            if (rem && (targets.contains(address + j) || (c < 32 && (c < 16 || c > 23)))) {
+            // Machine code: in a REM from where a USR lands or from the first byte no text has; in
+            // a line BASIC can't hold from where a USR lands
+            if ((rem && (called(j) || (c < 32 && (c < 16 || c > 23))))
+                || (!rem && called(j) && layout.unlistable != std::string_view::npos
+                    && j <= layout.unlistable)) {
                 if (last() != ' ')
                     add(ListingPart::Kind::Text, " "sv);
                 add(ListingPart::Kind::Code,
@@ -526,6 +792,27 @@ std::vector<ListingLine> listingLines(std::span<const uint8_t> data, BasicDialec
             else
                 add(kind, escaped(c));
         }
+    }
+    return out;
+}
+
+uint16_t programStart(std::span<const uint8_t> data)
+{
+    return uint16_t(codeCalls(data).start);
+}
+
+std::vector<UsrCall> usrCalls(std::span<const uint8_t> data)
+{
+    const auto calls = codeCalls(data);
+    const auto lines = lineLayouts(data);
+    std::vector<UsrCall> out;
+    for (const auto offset : calls.offsets) {
+        const auto line = std::ranges::find_if(lines, [offset](const LineLayout &l) {
+            return offset >= l.body && offset < l.body + l.size;
+        });
+        // In a line, or in a line's number or length
+        const auto end = line != lines.end() ? line->body + line->size : offset;
+        out.push_back({ uint16_t(calls.start + offset), end - offset });
     }
     return out;
 }

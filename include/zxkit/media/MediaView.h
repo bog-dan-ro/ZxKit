@@ -59,8 +59,8 @@ std::vector<std::string> hexLines(std::span<const uint8_t> data, uint32_t addres
 std::vector<std::string> disassemblyLines(std::span<const uint8_t> data, uint16_t address,
                                           int restart = -1, std::size_t limit = 64 * 1024);
 
-/// Where a 48K or 128K BASIC program starts without Interface 1's channels: BASIC views take
-/// the program to load there
+/// Where a 48K or 128K BASIC program starts without Interface 1's channels. BASIC views take
+/// the program to load where BasicCodec::programStart() says: here, or after the channels.
 inline constexpr uint16_t basicProgramStart = 23755;
 
 /// One way to look at a file
