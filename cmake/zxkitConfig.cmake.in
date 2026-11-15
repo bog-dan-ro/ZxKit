@@ -1,7 +1,10 @@
 @PACKAGE_INIT@
 
 include(CMakeFindDependencyMacro)
-find_dependency(ZLIB)
+# A bundled zlib is part of the exported targets
+if(NOT @ZXKIT_BUNDLED_ZLIB@)
+    find_dependency(ZLIB)
+endif()
 find_dependency(Threads)
 find_dependency(SafeCpp 1.0)
 

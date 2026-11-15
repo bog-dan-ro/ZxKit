@@ -18,8 +18,30 @@ option(ZXKIT_BUILD_TESTS "Build the zxkit unit tests" ${ZXKIT_IS_TOP_LEVEL})
 option(ZXKIT_INSTALL "Generate the install and package rules" ${ZXKIT_IS_TOP_LEVEL})
 option(ZXKIT_BUILD_TOOLS "Build optional ZxKit command-line tools" ${ZXKIT_IS_TOP_LEVEL})
 
-find_package(ZLIB REQUIRED)
 find_package(Threads REQUIRED)
+
+# zlib: the system's when there is one, else a static build of the upstream
+# sources (e.g. for MinGW cross builds, which usually have no zlib package)
+set(ZXKIT_BUNDLED_ZLIB OFF)
+if(NOT TARGET ZLIB::ZLIB)
+    find_package(ZLIB QUIET)
+endif()
+if(NOT TARGET ZLIB::ZLIB)
+    include(FetchContent)
+    set(ZLIB_BUILD_TESTING OFF CACHE BOOL "" FORCE)
+    set(ZLIB_BUILD_SHARED OFF CACHE BOOL "" FORCE)
+    set(ZLIB_BUILD_STATIC ON CACHE BOOL "" FORCE)
+    set(ZLIB_INSTALL OFF CACHE BOOL "" FORCE)
+    FetchContent_Declare(zlib
+        GIT_REPOSITORY https://github.com/madler/zlib.git
+        GIT_TAG v1.3.2
+        EXCLUDE_FROM_ALL)
+    FetchContent_MakeAvailable(zlib)
+    # A shared zxkit links the static zlib in
+    set_target_properties(zlibstatic PROPERTIES POSITION_INDEPENDENT_CODE ON)
+    add_library(ZLIB::ZLIB ALIAS zlibstatic)
+    set(ZXKIT_BUNDLED_ZLIB ON)
+endif()
 
 # SafeCpp: thread safe smart pointers, every shared object is reached through a lock guard
 if(NOT TARGET Safe::CPP)
@@ -276,6 +298,15 @@ if(ZXKIT_INSTALL)
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
+
+    # A static zxkit's link interface names the bundled zlib, so it installs too
+    get_target_property(zxkitType zxkit TYPE)
+    if(ZXKIT_BUNDLED_ZLIB AND zxkitType STREQUAL "STATIC_LIBRARY")
+        install(TARGETS zlibstatic
+            EXPORT zxkitTargets
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        )
+    endif()
 
     install(TARGETS zxkit_video_filters
         EXPORT zxkitTargets

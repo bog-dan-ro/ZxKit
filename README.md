@@ -71,7 +71,9 @@ resetting the machine. Next layers and CoBra's extra text columns can also draw 
 ## Building and testing
 
 Requires CMake 3.25 or newer, a compiler with C++23 support, zlib and threads.
-CMake fetches SafeCpp if it is not already available.
+CMake fetches SafeCpp if it is not already available. Without a zlib package
+(e.g. MinGW cross builds), it fetches [zlib](https://github.com/madler/zlib) 1.3.2
+and links it statically; an installed static ZxKit then includes it.
 
 ```sh
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DZXKIT_BUILD_TESTS=ON
