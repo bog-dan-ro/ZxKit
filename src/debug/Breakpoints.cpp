@@ -23,6 +23,19 @@ uint32_t BreakpointManager::add(Breakpoint bp, Mmu &mmu)
 {
     if (unsigned(bp.type) > unsigned(BreakpointType::Event))
         throw InvalidArgumentException("Unknown breakpoint type");
+    // One breakpoint of a type for a location: adding it again enables the one there
+    if (!bp.condition) {
+        for (auto &existing : m_breakpoints) {
+            if (existing.type != bp.type || existing.address != bp.address
+                || existing.mask != bp.mask || existing.page1k != bp.page1k
+                || existing.bankId != bp.bankId || existing.condition)
+                continue;
+            existing.enabled = existing.enabled || bp.enabled;
+            existing.temporary = existing.temporary && bp.temporary;
+            syncMmuWatchFlags(mmu);
+            return existing.id;
+        }
+    }
     bp.id = ++m_nextId;
     m_breakpoints.push_back(std::move(bp));
     syncMmuWatchFlags(mmu);

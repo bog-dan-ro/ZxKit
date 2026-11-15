@@ -22,6 +22,9 @@ Breakpoint masks match `(value & mask) == (address & mask)`. Memory/execute trap
 can also constrain `bankId` and `page1k`; use mask `0x03ff` and the within-page
 offset to follow a physical byte through paging and aliases. Bank IDs belong to
 the installed machine; recreate physical watches when changing machine profiles.
+A location has one unconditional breakpoint of a type: `addBreakpoint()` with the same type,
+address, mask, `page1k` and `bankId` as an existing one returns that one's id, enabled (and
+permanent unless both are one-shot). Breakpoints with a condition are always added.
 `setBreakpointEnabled()` updates the MMU's watched slots; one-shot traps remove
 themselves, and every matched breakpoint increments its hit count. Memory and port
 watches stop after the instruction containing the access. `peek`/`poke` and the

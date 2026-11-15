@@ -87,6 +87,29 @@ void memoryAndPorts()
 {
     Emulator e;
     setup(e);
+    {
+        // One unconditional breakpoint of a type for a location
+        const Breakpoint watch{ .type = BreakpointType::MemoryWrite, .address = 0x9000 };
+        const auto first = e.addBreakpoint(watch);
+        assert(e.addBreakpoint(watch) == first
+               && e.debugger().breakpoints().breakpoints().size() == 1);
+        e.setBreakpointEnabled(first, false);
+        auto once = watch;
+        once.temporary = true;
+        assert(e.addBreakpoint(once) == first);
+        const auto &kept = e.debugger().breakpoints().breakpoints().front();
+        assert(kept.enabled && !kept.temporary);
+        auto read = watch;
+        read.type = BreakpointType::MemoryRead;
+        auto paged = watch;
+        paged.page1k = 5;
+        auto conditional = watch;
+        conditional.condition = [](const Z80Registers &) { return true; };
+        assert(e.addBreakpoint(read) != first && e.addBreakpoint(paged) != first);
+        assert(e.addBreakpoint(conditional) != first);
+        assert(e.debugger().breakpoints().breakpoints().size() == 4);
+        e.clearBreakpoints();
+    }
     e.writeMemory(0x8000, { 0x3E, 0x42, 0x32, 0x05, 0x90, 0xD3, 0x1F, 0x76 });
     const auto memory = e.addBreakpoint(Breakpoint{ .type = BreakpointType::MemoryWrite,
                                                     .temporary = true,

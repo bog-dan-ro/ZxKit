@@ -57,6 +57,10 @@ struct Breakpoint
 class BreakpointManager
 {
 public:
+    /// Adds a breakpoint and returns its id. A location has one unconditional breakpoint of a
+    /// type: adding the same one again (type, address, mask, page and bank) returns the id of
+    /// the one there, enabled, and permanent unless both are temporary. Breakpoints with a
+    /// condition are always added.
     uint32_t add(Breakpoint bp, Mmu &mmu);
     bool remove(uint32_t id, Mmu &mmu);
     void clear(Mmu &mmu);
