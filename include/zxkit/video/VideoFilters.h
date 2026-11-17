@@ -57,6 +57,15 @@ struct VideoFilterSize
     bool operator==(const VideoFilterSize &) const = default;
 };
 
+struct VideoFilterRect
+{
+    uint32_t x = 0;
+    uint32_t y = 0;
+    uint32_t width = 0;
+    uint32_t height = 0;
+    bool operator==(const VideoFilterRect &) const = default;
+};
+
 /// Ordered post-processing, separate from emulation and GPU rendering.
 /// Active stages ignore input alpha and produce opaque 0xFFBBGGRR pixels.
 /// Neighborhood filters repeat the nearest border pixel. No shared mutable state.
@@ -94,18 +103,44 @@ public:
     /// may itself be used as input. Allocation failures propagate as std::bad_alloc.
     const VideoFrame &apply(const VideoFrame &source);
 
+    /// Output pixels updated by the last successful apply(). Empty for an
+    /// unchanged RGB image; full on initialization, reconfiguration or aliasing.
+    /// Includes every neighbourhood affected by changed input pixels.
+    /// An empty pipeline reports the complete source without tracking changes.
+    VideoFilterRect updatedRect() const noexcept
+    {
+        return m_updatedRect;
+    }
+
     /// Release cached storage after disabling filters or changing resolution.
     void releaseBuffers();
 
 private:
+    const VideoFrame &applyFull(const VideoFrame &source);
+    const VideoFrame &applyIncremental(const VideoFrame &source, VideoFilterSize output);
     void applyStage(VideoFilterStage stage, const VideoFrame &source, VideoFrame &target);
     void applyFuse(VideoFilterStage stage, const VideoFrame &source, VideoFrame &target);
+    void applyHq(VideoFilterStage stage, const VideoFrame &source, VideoFrame &target,
+                 std::size_t bufferIndex);
 
     std::vector<VideoFilterStage> m_stages;
     std::size_t m_maxPixels;
     std::array<VideoFrame, 2> m_buffers{ VideoFrame(0, 0), VideoFrame(0, 0) };
     VideoFrame m_scaleScratch{ 0, 0 };
     std::vector<uint32_t> m_inputScratch;
+    VideoFilterRect m_updatedRect;
+    VideoFrame m_cachedSource{ 0, 0 };
+    VideoFrame m_cachedOutput{ 0, 0 };
+    VideoFrame m_patchSource{ 0, 0 };
+    std::vector<uint8_t> m_dirtyTiles;
+    bool m_cacheValid = false;
+    // A single HQ stage retains its padded input and completed output so only
+    // changed neighbourhoods need filtering on the next frame.
+    std::vector<uint8_t> m_hqDirtyTiles;
+    VideoFilterSize m_hqInputSize{ 0, 0 };
+    uint32_t m_hqScale = 0;
+    std::size_t m_hqBufferIndex = 0;
+    bool m_hqCacheValid = false;
 };
 
 } // namespace zxkit

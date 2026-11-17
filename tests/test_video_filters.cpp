@@ -14,6 +14,7 @@
 #include <limits>
 #include <print>
 #include <set>
+#include <vector>
 
 #ifdef NDEBUG
 #error Video filter tests require assertions, including in Release builds.
@@ -296,6 +297,176 @@ void compositionAndOwnership()
     equalFrames(a.get(), b.get());
 }
 
+void changedHqNeighbourhoods()
+{
+    for (const uint32_t scale : { 2u, 3u, 4u }) {
+        VideoFilterPipeline cached({ { VideoFilter::Hq, scale } });
+        // A second, identity stage exercises the original full-frame HQ path.
+        VideoFilterPipeline full({ { VideoFilter::Hq, scale }, { VideoFilter::Nearest, 1 } });
+        for (const auto size : { VideoFilterSize{ 1, 1 },
+                                 { 1, 17 },
+                                 { 19, 1 },
+                                 { 7, 9 },
+                                 { 8, 8 },
+                                 { 9, 17 },
+                                 { 37, 29 } }) {
+            auto source = pattern(size.width, size.height);
+            uint32_t random = 0x12345678;
+            for (uint32_t frame = 0; frame < 64; ++frame) {
+                const auto next = [&] {
+                    random = random * 1664525u + 1013904223u;
+                    return random;
+                };
+                // Include unchanged and alpha-only frames, complete changes,
+                // sparse edits, all image edges and 8-pixel tile boundaries.
+                if (frame % 13 == 0) {
+                    for (auto &pixel : source.pixels())
+                        pixel = next();
+                } else if (frame % 11 == 0) {
+                    for (auto &pixel : source.pixels())
+                        pixel ^= 0xff000000u;
+                } else if (frame % 7 != 0) {
+                    for (uint32_t edit = 0; edit < frame % 5 + 1; ++edit) {
+                        const uint32_t x = next() % size.width;
+                        const uint32_t y = next() % size.height;
+                        source.putPixel(x, y, next());
+                    }
+                    const uint32_t x = std::min(frame % 17, size.width - 1);
+                    const uint32_t y = std::min(frame % 17, size.height - 1);
+                    source.putPixel(x, y, next());
+                    source.putPixel(size.width - 1, size.height - 1, next());
+                }
+                source.setFrameNumber(frame);
+                const auto &actual = cached.apply(source);
+                full.releaseBuffers();
+                const auto &expected = full.apply(source);
+                if (!std::ranges::equal(actual.pixels(), expected.pixels())) {
+                    const auto difference =
+                            std::ranges::mismatch(actual.pixels(), expected.pixels());
+                    const auto index = difference.in1 - actual.pixels().begin();
+                    std::fprintf(
+                            stderr, "HQ%u %ux%u frame %u at %zu,%zu: %08x != %08x\n", scale,
+                            size.width, size.height, frame, std::size_t(index) % actual.width(),
+                            std::size_t(index) / actual.width(), *difference.in1, *difference.in2);
+                }
+                equalFrames(actual, expected);
+                equalFrames(cached.apply(source), full.apply(source));
+            }
+            // Switching away from HQ and releasing scratch must invalidate its
+            // retained input/output, even when the next dimensions are equal.
+            cached.setStages({ { VideoFilter::Nearest, 1 } });
+            auto opaque = source;
+            for (auto &pixel : opaque.pixels())
+                pixel |= 0xff000000u;
+            equalFrames(cached.apply(source), opaque);
+            cached.setStages({ { VideoFilter::Hq, scale } });
+            equalFrames(cached.apply(source), full.apply(source));
+            cached.releaseBuffers();
+            equalFrames(cached.apply(source), full.apply(source));
+            rejects([&] { cached.setStages({ { VideoFilter::Hq, 1 } }); });
+            equalFrames(cached.apply(source), full.apply(source));
+        }
+    }
+}
+
+void changedFilterNeighbourhoods()
+{
+    std::vector<std::vector<VideoFilterStage>> pipelines;
+    for (const auto &info : videoFilterCatalog())
+        for (uint32_t scale = info.minScale; scale <= info.maxScale; ++scale)
+            pipelines.push_back({ { info.filter, scale } });
+    // Exercise global mask phases after scaling, compounded neighbourhoods and
+    // Scale4's internal two-pass implementation as well as explicit chains.
+    pipelines.push_back({ { VideoFilter::Nearest, 3 }, { VideoFilter::Scanlines, 1 } });
+    pipelines.push_back({ { VideoFilter::Bilinear, 2 }, { VideoFilter::RgbMask, 1 } });
+    pipelines.push_back({ { VideoFilter::Xbrz, 4 }, { VideoFilter::Scanlines, 1 } });
+    pipelines.push_back({ { VideoFilter::Hq, 2 }, { VideoFilter::DotMatrix, 2 } });
+    pipelines.push_back({ { VideoFilter::Scale, 2 }, { VideoFilter::Scale, 2 } });
+    pipelines.push_back({ { VideoFilter::Sai, 2 }, { VideoFilter::Bilinear, 2 } });
+    pipelines.push_back({ { VideoFilter::RgbMask, 1 }, { VideoFilter::Hq, 2 } });
+    pipelines.push_back({ { VideoFilter::Scanlines, 1 }, { VideoFilter::Xbrz, 2 } });
+    for (const auto &stages : pipelines) {
+        VideoFilterPipeline cached(stages);
+        auto referenceStages = stages;
+        if (stages.size() == 1 && stages.front().filter == VideoFilter::Hq)
+            referenceStages.push_back({ VideoFilter::Nearest, 1 });
+        VideoFilterPipeline full(referenceStages);
+        for (const auto size :
+             { VideoFilterSize{ 1, 1 }, { 1, 49 }, { 49, 1 }, { 17, 19 }, { 65, 53 } }) {
+            auto source = pattern(size.width, size.height);
+            VideoFrame previous(0, 0);
+            uint32_t random = 0x7badcafeu;
+            for (uint32_t frame = 0; frame < 32; ++frame) {
+                const auto next = [&] {
+                    random = random * 1664525u + 1013904223u;
+                    return random;
+                };
+                if (frame % 11 == 0) {
+                    for (auto &pixel : source.pixels())
+                        pixel = next();
+                } else if (frame % 5 == 0) {
+                    for (auto &pixel : source.pixels())
+                        pixel ^= 0xff000000u;
+                } else if (frame % 7 != 0) {
+                    // Cross tile and image edges as well as mask phases.
+                    const uint32_t x = std::min(frame * 3 % 65, size.width - 1);
+                    const uint32_t y = std::min(frame * 5 % 53, size.height - 1);
+                    source.putPixel(x, y, next());
+                    source.putPixel(next() % size.width, next() % size.height, next());
+                }
+                source.setFrameNumber(frame);
+                const auto &actual = cached.apply(source);
+                // Force the original whole-image stage kernels, not another
+                // incremental pipeline, as the pixel oracle for every frame.
+                full.setStages(referenceStages);
+                const auto &expected = full.apply(source);
+                if (!std::ranges::equal(actual.pixels(), expected.pixels()))
+                    std::fprintf(stderr,
+                                 "Incremental filter %u scale %u stages %zu %ux%u frame %u\n",
+                                 unsigned(stages.front().filter), stages.front().scale,
+                                 stages.size(), size.width, size.height, frame);
+                equalFrames(actual, expected);
+                const auto dirty = cached.updatedRect();
+                assert(dirty.x + dirty.width <= actual.width());
+                assert(dirty.y + dirty.height <= actual.height());
+                if (previous.width() == actual.width() && previous.height() == actual.height())
+                    for (uint32_t y = 0; y < actual.height(); ++y)
+                        for (uint32_t x = 0; x < actual.width(); ++x)
+                            if (actual.pixel(x, y) != previous.pixel(x, y))
+                                assert(x >= dirty.x && x < dirty.x + dirty.width && y >= dirty.y
+                                       && y < dirty.y + dirty.height);
+                previous = actual;
+                const auto storage = actual.pixels().data();
+                equalFrames(cached.apply(source), expected);
+                assert(cached.updatedRect() == VideoFilterRect{});
+                assert(cached.apply(source).pixels().data() == storage);
+            }
+            cached.releaseBuffers();
+            equalFrames(cached.apply(source), full.apply(source));
+            const auto &initial = cached.apply(source);
+            source.putPixel(size.width / 2, size.height / 2,
+                            source.pixel(size.width / 2, size.height / 2) ^ 0x00ffffffu);
+            cached.apply(source);
+            const auto partial = cached.updatedRect();
+            assert(partial.width && partial.height);
+            if (size.width >= 65 && size.height >= 53) {
+                assert(partial.width < initial.width());
+                assert(partial.height < initial.height());
+            }
+        }
+        auto source = pattern(3, 2);
+        const auto original = cached.apply(source);
+        const auto &aliased = cached.apply(source);
+        full.setStages(referenceStages);
+        equalFrames(cached.apply(aliased), full.apply(original));
+        cached.setStages({});
+        assert(&cached.apply(source) == &source);
+        cached.setStages(stages);
+        full.setStages(referenceStages);
+        equalFrames(cached.apply(source), full.apply(source));
+    }
+}
+
 } // namespace
 
 int main()
@@ -305,5 +476,7 @@ int main()
     bilinearPixels();
     upstreamReferences();
     compositionAndOwnership();
+    changedHqNeighbourhoods();
+    changedFilterNeighbourhoods();
     std::println("Video filter tests passed (32 variants, composition, borders and ownership)");
 }
