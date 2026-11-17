@@ -32,15 +32,9 @@
       z80.memptr.w = BC + 1;
       break;
     case 0x42:		/* SBC HL,BC */
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      SBC16(BC);
-      break;
+    contend_read_no_mreq(IR, 7);
+    SBC16(BC);
+    break;
     case 0x43:		/* LD (nnnn),BC */
       LD16_NNRR(C,B);
       break;
@@ -87,15 +81,9 @@
       z80.memptr.w = BC + 1;
       break;
     case 0x4a:		/* ADC HL,BC */
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      ADC16(BC);
-      break;
+    contend_read_no_mreq(IR, 7);
+    ADC16(BC);
+    break;
     case 0x4b:		/* LD BC,(nnnn) */
       LD16_RRNN(C,B);
       break;
@@ -111,15 +99,9 @@
       z80.memptr.w = BC + 1;
       break;
     case 0x52:		/* SBC HL,DE */
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      SBC16(DE);
-      break;
+    contend_read_no_mreq(IR, 7);
+    SBC16(DE);
+    break;
     case 0x53:		/* LD (nnnn),DE */
       LD16_NNRR(E,D);
       break;
@@ -142,15 +124,9 @@
       z80.memptr.w = BC + 1;
       break;
     case 0x5a:		/* ADC HL,DE */
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      ADC16(DE);
-      break;
+    contend_read_no_mreq(IR, 7);
+    ADC16(DE);
+    break;
     case 0x5b:		/* LD DE,(nnnn) */
       LD16_RRNN(E,D);
       break;
@@ -173,28 +149,21 @@
       z80.memptr.w = BC + 1;
       break;
     case 0x62:		/* SBC HL,HL */
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      SBC16(HL);
-      break;
+    contend_read_no_mreq(IR, 7);
+    SBC16(HL);
+    break;
     case 0x63:		/* LD (nnnn),HL */
       LD16_NNRR(L,H);
       break;
     case 0x67:		/* RRD */
       {
 	libspectrum_byte bytetemp = readbyte( HL );
-	contend_read_no_mreq( HL, 1 ); contend_read_no_mreq( HL, 1 );
-	contend_read_no_mreq( HL, 1 ); contend_read_no_mreq( HL, 1 );
-	writebyte(HL,  ( A << 4 ) | ( bytetemp >> 4 ) );
-	A = ( A & 0xf0 ) | ( bytetemp & 0x0f );
-	F = ( F & FLAG_C ) | sz53p_table[A];
-	Q = F;
-	z80.memptr.w=HL+1;
+        contend_read_no_mreq(HL, 4);
+        writebyte(HL, (A << 4) | (bytetemp >> 4));
+        A = (A & 0xf0) | (bytetemp & 0x0f);
+        F = (F & FLAG_C) | sz53p_table[A];
+        Q = F;
+        z80.memptr.w = HL + 1;
       }
       break;
     case 0x68:		/* IN L,(C) */
@@ -205,28 +174,21 @@
       z80.memptr.w = BC + 1;
       break;
     case 0x6a:		/* ADC HL,HL */
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      ADC16(HL);
-      break;
+    contend_read_no_mreq(IR, 7);
+    ADC16(HL);
+    break;
     case 0x6b:		/* LD HL,(nnnn) */
       LD16_RRNN(L,H);
       break;
     case 0x6f:		/* RLD */
       {
 	libspectrum_byte bytetemp = readbyte( HL );
-	contend_read_no_mreq( HL, 1 ); contend_read_no_mreq( HL, 1 );
-	contend_read_no_mreq( HL, 1 ); contend_read_no_mreq( HL, 1 );
-	writebyte(HL, (bytetemp << 4 ) | ( A & 0x0f ) );
-	A = ( A & 0xf0 ) | ( bytetemp >> 4 );
-	F = ( F & FLAG_C ) | sz53p_table[A];
-	Q = F;
-	z80.memptr.w=HL+1;
+        contend_read_no_mreq(HL, 4);
+        writebyte(HL, (bytetemp << 4) | (A & 0x0f));
+        A = (A & 0xf0) | (bytetemp >> 4);
+        F = (F & FLAG_C) | sz53p_table[A];
+        Q = F;
+        z80.memptr.w = HL + 1;
       }
       break;
     case 0x70:		/* IN F,(C) */
@@ -240,15 +202,9 @@
       z80.memptr.w = BC + 1;
       break;
     case 0x72:		/* SBC HL,SP */
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      SBC16(SP);
-      break;
+    contend_read_no_mreq(IR, 7);
+    SBC16(SP);
+    break;
     case 0x73:		/* LD (nnnn),SP */
       LD16_NNRR(SPL,SPH);
       break;
@@ -260,15 +216,9 @@
       z80.memptr.w = BC + 1;
       break;
     case 0x7a:		/* ADC HL,SP */
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      ADC16(SP);
-      break;
+    contend_read_no_mreq(IR, 7);
+    ADC16(SP);
+    break;
     case 0x7b:		/* LD SP,(nnnn) */
       LD16_RRNN(SPL,SPH);
       break;
@@ -278,12 +228,13 @@
 	BC--;
 	m_regs.incDecZ = (BC != 0) ? 1 : 0;
 	writebyte(DE,bytetemp);
-	contend_write_no_mreq( DE, 1 ); contend_write_no_mreq( DE, 1 );
-	DE++; HL++;
-	bytetemp += A;
-	F = ( F & ( FLAG_C | FLAG_Z | FLAG_S ) ) | ( BC ? FLAG_V : 0 ) |
-	  ( bytetemp & FLAG_3 ) | ( (bytetemp & 0x02) ? FLAG_5 : 0 );
-	Q = F;
+        contend_write_no_mreq(DE, 2);
+        DE++;
+        HL++;
+        bytetemp += A;
+        F = (F & (FLAG_C | FLAG_Z | FLAG_S)) | (BC ? FLAG_V : 0) | (bytetemp & FLAG_3)
+                | ((bytetemp & 0x02) ? FLAG_5 : 0);
+        Q = F;
       }
       break;
     case 0xa1:		/* CPI */
@@ -292,18 +243,17 @@
 	  lookup = ( (        A & 0x08 ) >> 3 ) |
 	           ( (  (value) & 0x08 ) >> 2 ) |
 	           ( ( bytetemp & 0x08 ) >> 1 );
-	contend_read_no_mreq( HL, 1 ); contend_read_no_mreq( HL, 1 );
-	contend_read_no_mreq( HL, 1 ); contend_read_no_mreq( HL, 1 );
-	contend_read_no_mreq( HL, 1 );
-	HL++; BC--;
-	m_regs.incDecZ = (BC != 0) ? 1 : 0;
-	F = ( F & FLAG_C ) | ( BC ? ( FLAG_V | FLAG_N ) : FLAG_N ) |
-	  halfcarry_sub_table[lookup] | ( bytetemp ? 0 : FLAG_Z ) |
-	  ( bytetemp & FLAG_S );
-	if(F & FLAG_H) bytetemp--;
-	F |= ( bytetemp & FLAG_3 ) | ( (bytetemp&0x02) ? FLAG_5 : 0 );
-	Q = F;
-	z80.memptr.w++;
+        contend_read_no_mreq(HL, 5);
+        HL++;
+        BC--;
+        m_regs.incDecZ = (BC != 0) ? 1 : 0;
+        F = (F & FLAG_C) | (BC ? (FLAG_V | FLAG_N) : FLAG_N) | halfcarry_sub_table[lookup]
+                | (bytetemp ? 0 : FLAG_Z) | (bytetemp & FLAG_S);
+        if (F & FLAG_H)
+            bytetemp--;
+        F |= (bytetemp & FLAG_3) | ((bytetemp & 0x02) ? FLAG_5 : 0);
+        Q = F;
+        z80.memptr.w++;
       }
       break;
     case 0xa2:		/* INI */
@@ -349,12 +299,13 @@
 	BC--;
 	m_regs.incDecZ = (BC != 0) ? 1 : 0;
 	writebyte(DE,bytetemp);
-	contend_write_no_mreq( DE, 1 ); contend_write_no_mreq( DE, 1 );
-	DE--; HL--;
-	bytetemp += A;
-	F = ( F & ( FLAG_C | FLAG_Z | FLAG_S ) ) | ( BC ? FLAG_V : 0 ) |
-	  ( bytetemp & FLAG_3 ) | ( (bytetemp & 0x02) ? FLAG_5 : 0 );
-	Q = F;
+        contend_write_no_mreq(DE, 2);
+        DE--;
+        HL--;
+        bytetemp += A;
+        F = (F & (FLAG_C | FLAG_Z | FLAG_S)) | (BC ? FLAG_V : 0) | (bytetemp & FLAG_3)
+                | ((bytetemp & 0x02) ? FLAG_5 : 0);
+        Q = F;
       }
       break;
     case 0xa9:		/* CPD */
@@ -363,18 +314,17 @@
 	  lookup = ( (        A & 0x08 ) >> 3 ) |
 	           ( (  (value) & 0x08 ) >> 2 ) |
 	           ( ( bytetemp & 0x08 ) >> 1 );
-	contend_read_no_mreq( HL, 1 ); contend_read_no_mreq( HL, 1 );
-	contend_read_no_mreq( HL, 1 ); contend_read_no_mreq( HL, 1 );
-	contend_read_no_mreq( HL, 1 );
-	HL--; BC--;
-	m_regs.incDecZ = (BC != 0) ? 1 : 0;
-	F = ( F & FLAG_C ) | ( BC ? ( FLAG_V | FLAG_N ) : FLAG_N ) |
-	  halfcarry_sub_table[lookup] | ( bytetemp ? 0 : FLAG_Z ) |
-	  ( bytetemp & FLAG_S );
-	if(F & FLAG_H) bytetemp--;
-	F |= ( bytetemp & FLAG_3 ) | ( (bytetemp&0x02) ? FLAG_5 : 0 );
-	Q = F;
-	z80.memptr.w--;
+        contend_read_no_mreq(HL, 5);
+        HL--;
+        BC--;
+        m_regs.incDecZ = (BC != 0) ? 1 : 0;
+        F = (F & FLAG_C) | (BC ? (FLAG_V | FLAG_N) : FLAG_N) | halfcarry_sub_table[lookup]
+                | (bytetemp ? 0 : FLAG_Z) | (bytetemp & FLAG_S);
+        if (F & FLAG_H)
+            bytetemp--;
+        F |= (bytetemp & FLAG_3) | ((bytetemp & 0x02) ? FLAG_5 : 0);
+        Q = F;
+        z80.memptr.w--;
       }
       break;
     case 0xaa:		/* IND */
@@ -418,20 +368,18 @@
       {
 	libspectrum_byte bytetemp=readbyte( HL );
 	writebyte(DE,bytetemp);
-	contend_write_no_mreq( DE, 1 ); contend_write_no_mreq( DE, 1 );
-	BC--;
-	m_regs.incDecZ = (BC != 0) ? 1 : 0;
-	bytetemp += A;
-	F = ( F & ( FLAG_C | FLAG_Z | FLAG_S ) ) | ( BC ? FLAG_V : 0 ) |
-	  ( bytetemp & FLAG_3 ) | ( (bytetemp & 0x02) ? FLAG_5 : 0 );
-	Q = F;
-	if(BC) {
-	  contend_write_no_mreq( DE, 1 ); contend_write_no_mreq( DE, 1 );
-	  contend_write_no_mreq( DE, 1 ); contend_write_no_mreq( DE, 1 );
-	  contend_write_no_mreq( DE, 1 );
-	  PC-=2;
-	  z80.memptr.w = PC+1;
-	}
+        contend_write_no_mreq(DE, 2);
+        BC--;
+        m_regs.incDecZ = (BC != 0) ? 1 : 0;
+        bytetemp += A;
+        F = (F & (FLAG_C | FLAG_Z | FLAG_S)) | (BC ? FLAG_V : 0) | (bytetemp & FLAG_3)
+                | ((bytetemp & 0x02) ? FLAG_5 : 0);
+        Q = F;
+        if (BC) {
+            contend_write_no_mreq(DE, 5);
+            PC -= 2;
+            z80.memptr.w = PC + 1;
+        }
         HL++; DE++;
       }
       break;
@@ -441,27 +389,23 @@
 	  lookup = ( (        A & 0x08 ) >> 3 ) |
 		   ( (  (value) & 0x08 ) >> 2 ) |
 		   ( ( bytetemp & 0x08 ) >> 1 );
-	contend_read_no_mreq( HL, 1 ); contend_read_no_mreq( HL, 1 );
-	contend_read_no_mreq( HL, 1 ); contend_read_no_mreq( HL, 1 );
-	contend_read_no_mreq( HL, 1 );
-	BC--;
-	m_regs.incDecZ = (BC != 0) ? 1 : 0;
-	F = ( F & FLAG_C ) | ( BC ? ( FLAG_V | FLAG_N ) : FLAG_N ) |
-	  halfcarry_sub_table[lookup] | ( bytetemp ? 0 : FLAG_Z ) |
-	  ( bytetemp & FLAG_S );
-	if(F & FLAG_H) bytetemp--;
-	F |= ( bytetemp & FLAG_3 ) | ( (bytetemp&0x02) ? FLAG_5 : 0 );
-	Q = F;
-	if( ( F & ( FLAG_V | FLAG_Z ) ) == FLAG_V ) {
-	  contend_read_no_mreq( HL, 1 ); contend_read_no_mreq( HL, 1 );
-	  contend_read_no_mreq( HL, 1 ); contend_read_no_mreq( HL, 1 );
-	  contend_read_no_mreq( HL, 1 );
-	  PC-=2;
-	  z80.memptr.w = PC+1;
-	} else {
-	  z80.memptr.w++;
-	}
-	HL++;
+        contend_read_no_mreq(HL, 5);
+        BC--;
+        m_regs.incDecZ = (BC != 0) ? 1 : 0;
+        F = (F & FLAG_C) | (BC ? (FLAG_V | FLAG_N) : FLAG_N) | halfcarry_sub_table[lookup]
+                | (bytetemp ? 0 : FLAG_Z) | (bytetemp & FLAG_S);
+        if (F & FLAG_H)
+            bytetemp--;
+        F |= (bytetemp & FLAG_3) | ((bytetemp & 0x02) ? FLAG_5 : 0);
+        Q = F;
+        if ((F & (FLAG_V | FLAG_Z)) == FLAG_V) {
+            contend_read_no_mreq(HL, 5);
+            PC -= 2;
+            z80.memptr.w = PC + 1;
+        } else {
+            z80.memptr.w++;
+        }
+        HL++;
       }
       break;
     case 0xb2:		/* INIR */
@@ -482,11 +426,9 @@
 	Q = F;
 
 	if( B ) {
-	  contend_write_no_mreq( HL, 1 ); contend_write_no_mreq( HL, 1 );
-	  contend_write_no_mreq( HL, 1 ); contend_write_no_mreq( HL, 1 );
-	  contend_write_no_mreq( HL, 1 );
-	  PC -= 2;
-	}
+            contend_write_no_mreq(HL, 5);
+            PC -= 2;
+        }
         HL++;
       }
       break;
@@ -509,31 +451,27 @@
 	Q = F;
 
 	if( B ) {
-	  contend_read_no_mreq( BC, 1 ); contend_read_no_mreq( BC, 1 );
-	  contend_read_no_mreq( BC, 1 ); contend_read_no_mreq( BC, 1 );
-	  contend_read_no_mreq( BC, 1 );
-	  PC -= 2;
-	}
+            contend_read_no_mreq(BC, 5);
+            PC -= 2;
+        }
       }
       break;
     case 0xb8:		/* LDDR */
       {
 	libspectrum_byte bytetemp=readbyte( HL );
 	writebyte(DE,bytetemp);
-	contend_write_no_mreq( DE, 1 ); contend_write_no_mreq( DE, 1 );
-	BC--;
-	m_regs.incDecZ = (BC != 0) ? 1 : 0;
-	bytetemp += A;
-	F = ( F & ( FLAG_C | FLAG_Z | FLAG_S ) ) | ( BC ? FLAG_V : 0 ) |
-	  ( bytetemp & FLAG_3 ) | ( (bytetemp & 0x02) ? FLAG_5 : 0 );
-	Q = F;
-	if(BC) {
-	  contend_write_no_mreq( DE, 1 ); contend_write_no_mreq( DE, 1 );
-	  contend_write_no_mreq( DE, 1 ); contend_write_no_mreq( DE, 1 );
-	  contend_write_no_mreq( DE, 1 );
-	  PC-=2;
-	  z80.memptr.w = PC+1;
-	}
+        contend_write_no_mreq(DE, 2);
+        BC--;
+        m_regs.incDecZ = (BC != 0) ? 1 : 0;
+        bytetemp += A;
+        F = (F & (FLAG_C | FLAG_Z | FLAG_S)) | (BC ? FLAG_V : 0) | (bytetemp & FLAG_3)
+                | ((bytetemp & 0x02) ? FLAG_5 : 0);
+        Q = F;
+        if (BC) {
+            contend_write_no_mreq(DE, 5);
+            PC -= 2;
+            z80.memptr.w = PC + 1;
+        }
         HL--; DE--;
       }
       break;
@@ -543,27 +481,23 @@
 	  lookup = ( (        A & 0x08 ) >> 3 ) |
 		   ( (  (value) & 0x08 ) >> 2 ) |
 		   ( ( bytetemp & 0x08 ) >> 1 );
-	contend_read_no_mreq( HL, 1 ); contend_read_no_mreq( HL, 1 );
-	contend_read_no_mreq( HL, 1 ); contend_read_no_mreq( HL, 1 );
-	contend_read_no_mreq( HL, 1 );
-	BC--;
-	m_regs.incDecZ = (BC != 0) ? 1 : 0;
-	F = ( F & FLAG_C ) | ( BC ? ( FLAG_V | FLAG_N ) : FLAG_N ) |
-	  halfcarry_sub_table[lookup] | ( bytetemp ? 0 : FLAG_Z ) |
-	  ( bytetemp & FLAG_S );
-	if(F & FLAG_H) bytetemp--;
-	F |= ( bytetemp & FLAG_3 ) | ( (bytetemp&0x02) ? FLAG_5 : 0 );
-	Q = F;
-	if( ( F & ( FLAG_V | FLAG_Z ) ) == FLAG_V ) {
-	  contend_read_no_mreq( HL, 1 ); contend_read_no_mreq( HL, 1 );
-	  contend_read_no_mreq( HL, 1 ); contend_read_no_mreq( HL, 1 );
-	  contend_read_no_mreq( HL, 1 );
-	  PC-=2;
-	  z80.memptr.w = PC+1;
-	} else {
-	  z80.memptr.w--;
-	}
-	HL--;
+        contend_read_no_mreq(HL, 5);
+        BC--;
+        m_regs.incDecZ = (BC != 0) ? 1 : 0;
+        F = (F & FLAG_C) | (BC ? (FLAG_V | FLAG_N) : FLAG_N) | halfcarry_sub_table[lookup]
+                | (bytetemp ? 0 : FLAG_Z) | (bytetemp & FLAG_S);
+        if (F & FLAG_H)
+            bytetemp--;
+        F |= (bytetemp & FLAG_3) | ((bytetemp & 0x02) ? FLAG_5 : 0);
+        Q = F;
+        if ((F & (FLAG_V | FLAG_Z)) == FLAG_V) {
+            contend_read_no_mreq(HL, 5);
+            PC -= 2;
+            z80.memptr.w = PC + 1;
+        } else {
+            z80.memptr.w--;
+        }
+        HL--;
       }
       break;
     case 0xba:		/* INDR */
@@ -584,11 +518,9 @@
 	Q = F;
 
 	if( B ) {
-	  contend_write_no_mreq( HL, 1 ); contend_write_no_mreq( HL, 1 );
-	  contend_write_no_mreq( HL, 1 ); contend_write_no_mreq( HL, 1 );
-	  contend_write_no_mreq( HL, 1 );
-	  PC -= 2;
-	}
+            contend_write_no_mreq(HL, 5);
+            PC -= 2;
+        }
         HL--;
       }
       break;
@@ -611,11 +543,9 @@
 	Q = F;
 
 	if( B ) {
-	  contend_read_no_mreq( BC, 1 ); contend_read_no_mreq( BC, 1 );
-	  contend_read_no_mreq( BC, 1 ); contend_read_no_mreq( BC, 1 );
-	  contend_read_no_mreq( BC, 1 );
-	  PC -= 2;
-	}
+            contend_read_no_mreq(BC, 5);
+            PC -= 2;
+        }
       }
       break;
     case 0xfb:		/* slttrap */

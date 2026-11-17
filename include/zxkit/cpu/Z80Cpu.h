@@ -273,6 +273,8 @@ public:
 
 private:
     template <bool TrackFetches> uint32_t stepInstructionImpl();
+    template <bool TrackFetches, bool RunLoop>
+    uint32_t executeInstructions(uint32_t targetFrameTstates);
     uint32_t m_trackedFetches = 0;
     bool m_playbackExecution = false;
     bool m_trackedInterrupt = false;

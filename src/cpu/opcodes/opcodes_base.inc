@@ -36,11 +36,10 @@
       writebyte(BC,A);
       break;
     case 0x03:		/* INC BC */
-	contend_read_no_mreq( IR, 1 );
-	contend_read_no_mreq( IR, 1 );
-	BC++;
-	m_regs.incDecZ = (BC != 0) ? 1 : 0;
-      break;
+    contend_read_no_mreq(IR, 2);
+    BC++;
+    m_regs.incDecZ = (BC != 0) ? 1 : 0;
+    break;
     case 0x04:		/* INC B */
       INC(B);
       break;
@@ -69,25 +68,18 @@
       }
       break;
     case 0x09:		/* ADD HL,BC */
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      ADD16(HL,BC);
-      break;
+    contend_read_no_mreq(IR, 7);
+    ADD16(HL, BC);
+    break;
     case 0x0a:		/* LD A,(BC) */
       z80.memptr.w=BC+1;
       A=readbyte(BC);
       break;
     case 0x0b:		/* DEC BC */
-	contend_read_no_mreq( IR, 1 );
-	contend_read_no_mreq( IR, 1 );
-	BC--;
-	m_regs.incDecZ = (BC != 0) ? 1 : 0;
-      break;
+    contend_read_no_mreq(IR, 2);
+    BC--;
+    m_regs.incDecZ = (BC != 0) ? 1 : 0;
+    break;
     case 0x0c:		/* INC C */
       INC(C);
       break;
@@ -124,10 +116,9 @@
       writebyte(DE,A);
       break;
     case 0x13:		/* INC DE */
-	contend_read_no_mreq( IR, 1 );
-	contend_read_no_mreq( IR, 1 );
-	DE++;
-      break;
+    contend_read_no_mreq(IR, 2);
+    DE++;
+    break;
     case 0x14:		/* INC D */
       INC(D);
       break;
@@ -150,24 +141,17 @@
       JR();
       break;
     case 0x19:		/* ADD HL,DE */
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      ADD16(HL,DE);
-      break;
+    contend_read_no_mreq(IR, 7);
+    ADD16(HL, DE);
+    break;
     case 0x1a:		/* LD A,(DE) */
       z80.memptr.w=DE+1;
       A=readbyte(DE);
       break;
     case 0x1b:		/* DEC DE */
-	contend_read_no_mreq( IR, 1 );
-	contend_read_no_mreq( IR, 1 );
-	DE--;
-      break;
+    contend_read_no_mreq(IR, 2);
+    DE--;
+    break;
     case 0x1c:		/* INC E */
       INC(E);
       break;
@@ -202,10 +186,9 @@
       LD16_NNRR(L,H);
       break;
     case 0x23:		/* INC HL */
-	contend_read_no_mreq( IR, 1 );
-	contend_read_no_mreq( IR, 1 );
-	HL++;
-      break;
+    contend_read_no_mreq(IR, 2);
+    HL++;
+    break;
     case 0x24:		/* INC H */
       INC(H);
       break;
@@ -239,23 +222,16 @@
       }
       break;
     case 0x29:		/* ADD HL,HL */
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      ADD16(HL,HL);
-      break;
+    contend_read_no_mreq(IR, 7);
+    ADD16(HL, HL);
+    break;
     case 0x2a:		/* LD HL,(nnnn) */
       LD16_RRNN(L,H);
       break;
     case 0x2b:		/* DEC HL */
-	contend_read_no_mreq( IR, 1 );
-	contend_read_no_mreq( IR, 1 );
-	HL--;
-      break;
+    contend_read_no_mreq(IR, 2);
+    HL--;
+    break;
     case 0x2c:		/* INC L */
       INC(L);
       break;
@@ -293,10 +269,9 @@
       }
       break;
     case 0x33:		/* INC SP */
-	contend_read_no_mreq( IR, 1 );
-	contend_read_no_mreq( IR, 1 );
-	SP++;
-      break;
+    contend_read_no_mreq(IR, 2);
+    SP++;
+    break;
     case 0x34:		/* INC (HL) */
       {
 	libspectrum_byte bytetemp = readbyte( HL );
@@ -331,15 +306,9 @@
       }
       break;
     case 0x39:		/* ADD HL,SP */
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      ADD16(HL,SP);
-      break;
+    contend_read_no_mreq(IR, 7);
+    ADD16(HL, SP);
+    break;
     case 0x3a:		/* LD A,(nnnn) */
       {
 	z80.memptr.b.l = readbyte(PC++);
@@ -348,10 +317,9 @@
       }
       break;
     case 0x3b:		/* DEC SP */
-	contend_read_no_mreq( IR, 1 );
-	contend_read_no_mreq( IR, 1 );
-	SP--;
-      break;
+    contend_read_no_mreq(IR, 2);
+    SP--;
+    break;
     case 0x3c:		/* INC A */
       INC(A);
       break;
@@ -1014,9 +982,9 @@
 	bytetemph = readbyte( SP + 1 ); contend_read_no_mreq( SP + 1, 1 );
 	writebyte( SP + 1, H );
 	writebyte( SP,     L  );
-	contend_write_no_mreq( SP, 1 ); contend_write_no_mreq( SP, 1 );
-	L=z80.memptr.b.l=bytetempl;
-	H=z80.memptr.b.h=bytetemph;
+        contend_write_no_mreq(SP, 2);
+        L = z80.memptr.b.l = bytetempl;
+        H = z80.memptr.b.h = bytetemph;
       }
       break;
     case 0xe4:		/* CALL PO,nnnn */
@@ -1149,10 +1117,9 @@
       if( F & FLAG_S ) { RET(); }
       break;
     case 0xf9:		/* LD SP,HL */
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      SP = HL;
-      break;
+    contend_read_no_mreq(IR, 2);
+    SP = HL;
+    break;
     case 0xfa:		/* JP M,nnnn */
       z80.memptr.b.l = readbyte(PC++);
       z80.memptr.b.h = readbyte(PC);

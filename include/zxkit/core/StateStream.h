@@ -29,6 +29,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include <utility>
 
 namespace zxkit {
 
@@ -38,6 +39,12 @@ public:
     StateWriter() = default;
     explicit StateWriter(std::size_t reserveBytes)
     {
+        m_buffer.reserve(reserveBytes);
+    }
+    explicit StateWriter(std::vector<uint8_t> buffer, std::size_t reserveBytes = 0)
+        : m_buffer(std::move(buffer))
+    {
+        m_buffer.clear();
         m_buffer.reserve(reserveBytes);
     }
 

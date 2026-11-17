@@ -22,9 +22,9 @@ namespace zxkit {
 void Clock::reset() noexcept
 {
     m_totalTstates = 0;
-    m_frameTstates = 0;
-    m_frameBaseTstates = 0;
-    m_baseRemainder = 0;
+    m_frameTstateOrigin = 0;
+    m_baseFrameAtCheckpoint = 0;
+    m_baseCpuCheckpoint = 0;
     m_frameCount = 0;
     m_speed = CpuSpeed::Mhz3_5;
 }
@@ -32,15 +32,20 @@ void Clock::reset() noexcept
 void Clock::beginNewFrame() noexcept
 {
     // Carry the overshoot of the last instruction into the new frame
-    const uint32_t fts = m_timings.tstatesPerFrame();
-    m_frameBaseTstates = (m_frameBaseTstates >= fts) ? m_frameBaseTstates - fts : 0;
-    m_frameTstates = m_frameBaseTstates << static_cast<uint8_t>(m_speed);
+    const uint32_t frameLength = m_timings.tstatesPerFrame();
+    const uint64_t remainder = (m_totalTstates - m_baseCpuCheckpoint) & (speedMultiplier() - 1);
+    const uint32_t baseTstates = frameBaseTstates();
+    m_baseFrameAtCheckpoint = baseTstates >= frameLength ? baseTstates - frameLength : 0;
+    m_frameTstateOrigin = static_cast<uint32_t>(m_totalTstates)
+            - (m_baseFrameAtCheckpoint << static_cast<uint8_t>(m_speed));
+    // Keep a partial base clock when an instruction crosses the frame boundary.
+    m_baseCpuCheckpoint = m_totalTstates - remainder;
     ++m_frameCount;
 }
 
 Clock::RasterPos Clock::rasterPos() const noexcept
 {
-    const uint32_t baseTs = m_frameBaseTstates;
+    const uint32_t baseTs = frameBaseTstates();
     const uint16_t line = static_cast<uint16_t>((baseTs / m_timings.tstatesPerLine) % m_timings.linesPerFrame);
     const uint16_t hts  = static_cast<uint16_t>(baseTs % m_timings.tstatesPerLine);
     return {line, hts};
@@ -49,8 +54,8 @@ Clock::RasterPos Clock::rasterPos() const noexcept
 void Clock::saveState(StateWriter &w) const
 {
     w.write(m_totalTstates);
-    w.write(m_frameTstates);
-    w.write(m_frameBaseTstates);
+    w.write(frameTstates());
+    w.write(frameBaseTstates());
     w.write(m_frameCount);
     w.write(static_cast<uint8_t>(m_speed));
 }
@@ -58,9 +63,9 @@ void Clock::saveState(StateWriter &w) const
 void Clock::loadState(StateReader &r)
 {
     m_totalTstates = r.read<uint64_t>();
-    m_frameTstates = r.read<uint32_t>();
-    m_frameBaseTstates = r.read<uint32_t>();
-    m_baseRemainder = 0;
+    m_frameTstateOrigin = static_cast<uint32_t>(m_totalTstates) - r.read<uint32_t>();
+    m_baseFrameAtCheckpoint = r.read<uint32_t>();
+    m_baseCpuCheckpoint = m_totalTstates;
     m_frameCount   = r.read<uint64_t>();
     const auto speed = r.read<uint8_t>();
     if (speed > 3) throw FormatException("Invalid CPU speed in state");

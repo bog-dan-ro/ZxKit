@@ -20,6 +20,14 @@
 #include <array>
 #include <bit>
 
+#if defined(_MSC_VER)
+#define ZXKIT_CPU_ALWAYS_INLINE __forceinline
+#elif defined(__GNUC__) || defined(__clang__)
+#define ZXKIT_CPU_ALWAYS_INLINE [[gnu::always_inline]] inline
+#else
+#define ZXKIT_CPU_ALWAYS_INLINE inline
+#endif
+
 namespace zxkit {
 
 namespace {
@@ -167,6 +175,55 @@ inline uint8_t ldiFamilyFlags(uint8_t bytetemp, uint8_t a, uint16_t bcPostDec, u
     return f;
 }
 
+struct MemoryCycles
+{
+    Clock &clock;
+    Mmu &mmu;
+    ContentionModel &contention;
+
+    ZXKIT_CPU_ALWAYS_INLINE uint8_t readByte(uint16_t addr)
+    {
+        contendRead(addr, 3);
+        return mmu.read(addr);
+    }
+
+    ZXKIT_CPU_ALWAYS_INLINE uint8_t readByteInternal(uint16_t addr)
+    {
+        return mmu.read(addr);
+    }
+
+    ZXKIT_CPU_ALWAYS_INLINE void writeByte(uint16_t addr, uint8_t val)
+    {
+        contendRead(addr, 3);
+        mmu.write(addr, val);
+    }
+
+    ZXKIT_CPU_ALWAYS_INLINE void contendRead(uint16_t addr, uint32_t time)
+    {
+        if (mmu.isContended(addr) && !contention.isDisabled()) {
+            time += contention.memoryDelay(clock.frameTstates(), clock.speed());
+        }
+        clock.advance(time);
+    }
+
+    ZXKIT_CPU_ALWAYS_INLINE void contendReadNoMreq(uint16_t addr, uint32_t time)
+    {
+        // Internal cycles contend separately; uncontended spans advance together.
+        if (mmu.isContended(addr) && !contention.isDisabled() && clock.speed() == CpuSpeed::Mhz3_5
+            && contention.pattern() != ContentionPattern::SinclairPlus2A_3) {
+            for (uint32_t cycle = 0; cycle < time; ++cycle)
+                clock.advance(1 + contention.noMreqDelay(clock.frameTstates(), clock.speed()));
+        } else {
+            clock.advance(time);
+        }
+    }
+
+    ZXKIT_CPU_ALWAYS_INLINE void contendWriteNoMreq(uint16_t addr, uint32_t time)
+    {
+        contendReadNoMreq(addr, time);
+    }
+};
+
 } // namespace
 
 Z80Cpu::Z80Cpu(Clock &clock, Mmu &mmu, ContentionModel &contention, IoBus &ioBus, Im2Controller &im2)
@@ -226,45 +283,37 @@ void Z80Cpu::requestInterrupt(uint8_t vector, uint32_t elapsedTstates) noexcept
 
 uint8_t Z80Cpu::readByte(uint16_t addr)
 {
-    contendRead(addr, 3);
-    return m_mmu.read(addr);
+    return MemoryCycles{ m_clock, m_mmu, m_contention }.readByte(addr);
 }
 
 uint8_t Z80Cpu::readByteInternal(uint16_t addr)
 {
-    return m_mmu.read(addr);
+    return MemoryCycles{ m_clock, m_mmu, m_contention }.readByteInternal(addr);
 }
 
 void Z80Cpu::writeByte(uint16_t addr, uint8_t val)
 {
-    contendRead(addr, 3);
-    m_mmu.write(addr, val);
+    MemoryCycles{ m_clock, m_mmu, m_contention }.writeByte(addr, val);
 }
 
 void Z80Cpu::contendRead(uint16_t addr, uint32_t time)
 {
-    if (!m_contention.isDisabled() && m_mmu.isContended(addr)) {
-        m_clock.advance(m_contention.memoryDelay(m_clock.frameTstates(), m_clock.speed()));
-    }
-    m_clock.advance(time);
+    MemoryCycles{ m_clock, m_mmu, m_contention }.contendRead(addr, time);
 }
 
 void Z80Cpu::contendReadNoMreq(uint16_t addr, uint32_t time)
 {
-    if (!m_contention.isDisabled() && m_mmu.isContended(addr)) {
-        m_clock.advance(m_contention.noMreqDelay(m_clock.frameTstates(), m_clock.speed()));
-    }
-    m_clock.advance(time);
+    MemoryCycles{ m_clock, m_mmu, m_contention }.contendReadNoMreq(addr, time);
 }
 
 void Z80Cpu::contendWriteNoMreq(uint16_t addr, uint32_t time)
 {
-    contendReadNoMreq(addr, time);
+    MemoryCycles{ m_clock, m_mmu, m_contention }.contendWriteNoMreq(addr, time);
 }
 
 void Z80Cpu::contendPortPreIo(uint16_t port)
 {
-    if (!m_contention.isDisabled() && m_mmu.isContended(port)) {
+    if (m_mmu.isContended(port) && !m_contention.isDisabled()) {
         m_clock.advance(m_contention.noMreqDelay(m_clock.frameTstates(), m_clock.speed()));
     }
     m_clock.advance(1);
@@ -695,25 +744,47 @@ void Z80Cpu::executeZ80n(uint8_t extOpcode)
     }
 }
 
-template<bool TrackFetches>
-uint32_t Z80Cpu::stepInstructionImpl()
+template <bool TrackFetches> uint32_t Z80Cpu::stepInstructionImpl()
 {
-    const uint64_t startTs = m_clock.totalTstates();
+    return executeInstructions<TrackFetches, false>(0);
+}
 
-    if (serviceNmi())
-        return static_cast<uint32_t>(m_clock.totalTstates() - startTs);
+template <bool TrackFetches, bool RunLoop>
+uint32_t Z80Cpu::executeInstructions(uint32_t targetFrameTstates)
+{
+    // Keep the bus references live across repeated opcode dispatches.
+    MemoryCycles memory{ m_clock, m_mmu, m_contention };
+    const uint64_t startTs = memory.clock.totalTstates();
 
-    if constexpr (TrackFetches) {
-        if (!m_playbackExecution && serviceInterrupt()) {
-            m_trackedInterrupt = true;
-            return static_cast<uint32_t>(m_clock.totalTstates() - startTs);
-        }
-    } else {
-        if (serviceInterrupt())
-            return static_cast<uint32_t>(m_clock.totalTstates() - startTs);
+nextInstruction:
+    if constexpr (RunLoop) {
+        if (memory.clock.frameBaseTstates() >= targetFrameTstates || m_trapped)
+            return static_cast<uint32_t>(memory.clock.totalTstates() - startTs);
     }
 
-    if (m_activeHooksMask != 0) [[unlikely]] {
+    if (m_nmiPending && serviceNmi()) {
+        if constexpr (RunLoop)
+            goto nextInstruction;
+        return static_cast<uint32_t>(memory.clock.totalTstates() - startTs);
+    }
+
+    const bool interruptPending = m_intPending || m_im2.isHardwareIm2Enabled();
+    if constexpr (TrackFetches) {
+        if (!m_playbackExecution && interruptPending && serviceInterrupt()) {
+            m_trackedInterrupt = true;
+            return static_cast<uint32_t>(memory.clock.totalTstates() - startTs);
+        }
+    } else {
+        if (interruptPending && serviceInterrupt()) {
+            if constexpr (RunLoop)
+                goto nextInstruction;
+            return static_cast<uint32_t>(memory.clock.totalTstates() - startTs);
+        }
+    }
+
+    constexpr uint32_t beforeFetchHooks =
+            HookFlags::Debugger | HookFlags::MagicBreak | HookFlags::PreM1;
+    if (m_activeHooksMask & beforeFetchHooks) [[unlikely]] {
         if ((m_activeHooksMask & HookFlags::Debugger) && m_debuggerHook) {
             if (m_debuggerHook(m_regs.PC)) {
                 m_trapped = true;
@@ -721,13 +792,14 @@ uint32_t Z80Cpu::stepInstructionImpl()
             }
         }
         if (m_activeHooksMask & HookFlags::MagicBreak) {
-            const uint8_t b0 = m_mmu.peek(m_regs.PC);
-            const uint8_t b1 = m_mmu.peek(static_cast<uint16_t>(m_regs.PC + 1));
+            const uint8_t b0 = memory.mmu.peek(m_regs.PC);
+            const uint8_t b1 = memory.mmu.peek(static_cast<uint16_t>(m_regs.PC + 1));
             if ((b0 == 0xED && b1 == 0xFF) || (b0 == 0xDD && b1 == 0x01)) {
                 m_regs.PC = static_cast<uint16_t>(m_regs.PC + 2);
                 m_regs.incrementR(2);
-                if constexpr (TrackFetches) m_trackedFetches += 2;
-                m_clock.advance(8);
+                if constexpr (TrackFetches)
+                    m_trackedFetches += 2;
+                memory.clock.advance(8);
                 m_trapped = true;
                 return 8;
             }
@@ -786,15 +858,15 @@ uint32_t Z80Cpu::stepInstructionImpl()
 #define slt_trap(hl, a) ((void)0)
 #define IS_CMOS (m_isCmos)
 #define IR (static_cast<uint16_t>((static_cast<uint16_t>(I) << 8) | (R7 & 0x80) | (R & 0x7F)))
-#define tstates (m_clock.totalTstates())
-#define readbyte(addr) (this->readByte(addr))
-#define readbyte_internal(addr) (this->readByteInternal(addr))
-#define writebyte(addr, val) (this->writeByte((addr), (val)))
+#define tstates (memory.clock.totalTstates())
+#define readbyte(addr) (memory.readByte(addr))
+#define readbyte_internal(addr) (memory.readByteInternal(addr))
+#define writebyte(addr, val) (memory.writeByte((addr), (val)))
 #define readport(port) (this->readPort(port))
 #define writeport(port, val) (this->writePort((port), (val)))
-#define contend_read(addr, time) (this->contendRead((addr), (time)))
-#define contend_read_no_mreq(addr, time) (this->contendReadNoMreq((addr), (time)))
-#define contend_write_no_mreq(addr, time) (this->contendWriteNoMreq((addr), (time)))
+#define contend_read(addr, time) (memory.contendRead((addr), (time)))
+#define contend_read_no_mreq(addr, time) (memory.contendReadNoMreq((addr), (time)))
+#define contend_write_no_mreq(addr, time) (memory.contendWriteNoMreq((addr), (time)))
 
 #define AND(value) \
 { \
@@ -920,16 +992,14 @@ uint32_t Z80Cpu::stepInstructionImpl()
     PC = z80.memptr.w; \
 }
 
-#define JR() \
-{ \
-    int8_t jrtemp = static_cast<int8_t>(readbyte(PC)); \
-    contend_read_no_mreq(PC, 1); contend_read_no_mreq(PC, 1); \
-    contend_read_no_mreq(PC, 1); contend_read_no_mreq(PC, 1); \
-    contend_read_no_mreq(PC, 1); \
-    PC += jrtemp; \
-    PC++; \
-    z80.memptr.w = PC; \
-}
+#define JR()                                               \
+    {                                                      \
+        int8_t jrtemp = static_cast<int8_t>(readbyte(PC)); \
+        contend_read_no_mreq(PC, 5);                       \
+        PC += jrtemp;                                      \
+        PC++;                                              \
+        z80.memptr.w = PC;                                 \
+    }
 
 #define OR(value) \
 { \
@@ -1066,22 +1136,24 @@ uint32_t Z80Cpu::stepInstructionImpl()
 
     const uint16_t fetchPc = PC;
     contend_read(PC, 4);
-    if ((m_activeHooksMask & HookFlags::EvenM1) && (m_clock.frameTstates() & 1)) [[unlikely]] {
-        m_clock.advance(1);
+    if ((m_activeHooksMask & HookFlags::EvenM1) && (memory.clock.frameTstates() & 1)) [[unlikely]] {
+        memory.clock.advance(1);
     }
     uint8_t opcode = readbyte_internal(PC);
-    if (m_activeHooksMask & HookFlags::PostM1) [[unlikely]] {
-        for (const auto &h : m_postM1Hooks)
-            h.fn(fetchPc, opcode);
-    }
-    // R's bit 7 reaches the address bus in this M1's refresh, after the opcode was fetched:
-    // a change by LD R,A shows up one instruction later (the CoBra's configurator: the
-    // opcode after LD R,A, e.g. JP (HL), still comes from the old memory map)
-    if ((m_activeHooksMask & HookFlags::RfshEdge) && m_rfshHook && fetchPc != 0) [[unlikely]] {
-        const uint8_t curR7 = m_regs.R7 & 0x80;
-        if (curR7 != m_lastR7) {
-            m_lastR7 = curR7;
-            m_rfshHook(curR7);
+    if (m_activeHooksMask & (HookFlags::PostM1 | HookFlags::RfshEdge)) [[unlikely]] {
+        if (m_activeHooksMask & HookFlags::PostM1) [[unlikely]] {
+            for (const auto &h : m_postM1Hooks)
+                h.fn(fetchPc, opcode);
+        }
+        // R's bit 7 reaches the address bus in this M1's refresh, after the opcode was fetched:
+        // a change by LD R,A shows up one instruction later (the CoBra's configurator: the
+        // opcode after LD R,A, e.g. JP (HL), still comes from the old memory map)
+        if ((m_activeHooksMask & HookFlags::RfshEdge) && m_rfshHook && fetchPc != 0) [[unlikely]] {
+            const uint8_t curR7 = m_regs.R7 & 0x80;
+            if (curR7 != m_lastR7) {
+                m_lastR7 = curR7;
+                m_rfshHook(curR7);
+            }
         }
     }
     uint8_t last_Q = 0;
@@ -1148,7 +1220,9 @@ end_opcode:
     m_regs.R &= 0x7F;
     m_regs.lastQ = last_Q;
 
-    return static_cast<uint32_t>(m_clock.totalTstates() - startTs);
+    if constexpr (RunLoop)
+        goto nextInstruction;
+    return static_cast<uint32_t>(memory.clock.totalTstates() - startTs);
 }
 
 template uint32_t Z80Cpu::stepInstructionImpl<false>();
@@ -1182,9 +1256,7 @@ bool Z80Cpu::runTrackedUntil(uint32_t targetFrameTstates, uint32_t fetchLimit, b
 void Z80Cpu::runUntil(uint32_t targetFrameTstates)
 {
     m_trapped = false;
-    while (m_clock.frameBaseTstates() < targetFrameTstates && !m_trapped) {
-        stepInstructionImpl<false>();
-    }
+    executeInstructions<false, true>(targetFrameTstates);
 }
 
 void Z80Cpu::saveState(StateWriter &w) const
@@ -1222,3 +1294,5 @@ void Z80Cpu::loadState(StateReader &r)
 }
 
 } // namespace zxkit
+
+#undef ZXKIT_CPU_ALWAYS_INLINE

@@ -57,6 +57,9 @@ public:
 
     void clear() noexcept;
     void pushSnapshot(std::vector<uint8_t> stateBytes);
+    /// Empty storage from an evicted snapshot, for serializing the next frame.
+    /// One spare allocation is retained in addition to the stored history.
+    std::vector<uint8_t> takeSpareBuffer() noexcept;
     std::vector<uint8_t> popStepsBack(std::size_t steps = 1);
 
 private:
@@ -66,6 +69,7 @@ private:
     std::size_t m_maxBytes = 128 * 1024 * 1024;
     std::size_t m_totalBytes = 0;
     std::deque<std::vector<uint8_t>> m_frames;
+    std::vector<uint8_t> m_spareBuffer;
 };
 
 } // namespace zxkit

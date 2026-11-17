@@ -685,9 +685,10 @@ void Emulator::finishPlaybackPresentation()
     for (; m_line < timings.linesPerFrame; ++m_line) {
         const int32_t y = int32_t(m_line) - timings.topBorderLines + m_ula.borderMargins().top;
         if (y >= 0 && y < int32_t(m_ula.outputHeight())) {
-            auto frame = m_frame.writeLock();
-            if (m_machine->usesRasterUla()) m_ula.copyRasterScanline(y, *frame);
-            else m_machine->renderScanline(y, m_context, m_ula, *frame);
+            if (!m_machine->usesRasterUla()) {
+                auto frame = m_frame.writeLock();
+                m_machine->renderScanline(y, m_context, m_ula, *frame);
+            }
         }
     }
     endFrame();
@@ -749,11 +750,12 @@ RunStatus Emulator::runPlaybackScanline()
         m_tapeDeck.update(m_context);
         const int32_t y = int32_t(m_line) - timings.topBorderLines + m_ula.borderMargins().top;
         if (m_line < timings.linesPerFrame && y >= 0 && y < int32_t(m_ula.outputHeight())) {
-            auto frame = m_frame.writeLock();
             if (m_machine->usesRasterUla()) {
                 m_ula.renderUntil(m_clock.frameBaseTstates(), m_mmu);
-                m_ula.copyRasterScanline(y, *frame);
-            } else m_machine->renderScanline(y, m_context, m_ula, *frame);
+            } else {
+                auto frame = m_frame.writeLock();
+                m_machine->renderScanline(y, m_context, m_ula, *frame);
+            }
         }
         m_lineStarted = false;
         ++m_line;
@@ -825,11 +827,10 @@ RunStatus Emulator::runScanline()
     const int32_t visY = static_cast<int32_t>(m_line) - static_cast<int32_t>(timings.topBorderLines)
                          + static_cast<int32_t>(m_ula.borderMargins().top);
     if (visY >= 0 && visY < static_cast<int32_t>(m_ula.outputHeight())) {
-        auto frame = m_frame.writeLock();
         if (m_machine->usesRasterUla()) {
             m_ula.renderUntil(m_clock.frameBaseTstates(), m_mmu);
-            m_ula.copyRasterScanline(static_cast<uint32_t>(visY), *frame);
         } else {
+            auto frame = m_frame.writeLock();
             m_machine->renderScanline(static_cast<uint32_t>(visY), m_context, m_ula, *frame);
         }
     }
@@ -854,12 +855,18 @@ RunStatus Emulator::runScanline()
 
 void Emulator::endFrame()
 {
+    if (m_machine->usesRasterUla()) {
+        auto frame = m_frame.writeLock();
+        m_ula.copyRasterFrame(*frame);
+    }
     m_machine->onFrameEnd(m_context, m_ula);
     for (auto &periph : m_peripherals)
         periph->onFrameEnd();
 
-    if (m_rewindEnabled)
-        m_debugger.rewindBuffer().pushSnapshot(serializeState());
+    if (m_rewindEnabled) {
+        auto &rewind = m_debugger.rewindBuffer();
+        rewind.pushSnapshot(serializeState(rewind.takeSpareBuffer()));
+    }
 
     if (m_rzx.isRecording()) {
         m_rzx.endRecordedFrame(m_cpu.trackedFetches());
@@ -963,9 +970,9 @@ void Emulator::rewind(std::size_t framesBack)
     refreshFrame();
 }
 
-std::vector<uint8_t> Emulator::serializeState() const
+std::vector<uint8_t> Emulator::serializeState(std::vector<uint8_t> buffer) const
 {
-    StateWriter w(65536);
+    StateWriter w(std::move(buffer), 65536);
     m_clock.saveState(w);
     m_cpu.saveState(w);
     m_im2.saveState(w);

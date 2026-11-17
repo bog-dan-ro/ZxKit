@@ -25,25 +25,13 @@
    and included in 'z80_ops.c' */
 
     case 0x09:		/* ADD REGISTER,BC */
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      ADD16(REGISTER,BC);
-      break;
+    contend_read_no_mreq(IR, 7);
+    ADD16(REGISTER, BC);
+    break;
     case 0x19:		/* ADD REGISTER,DE */
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      ADD16(REGISTER,DE);
-      break;
+    contend_read_no_mreq(IR, 7);
+    ADD16(REGISTER, DE);
+    break;
     case 0x21:		/* LD REGISTER,nnnn */
       REGISTERL=readbyte(PC++);
       REGISTERH=readbyte(PC++);
@@ -52,10 +40,9 @@
       LD16_NNRR(REGISTERL,REGISTERH);
       break;
     case 0x23:		/* INC REGISTER */
-	contend_read_no_mreq( IR, 1 );
-	contend_read_no_mreq( IR, 1 );
-	REGISTER++;
-      break;
+    contend_read_no_mreq(IR, 2);
+    REGISTER++;
+    break;
     case 0x24:		/* INC REGISTERH */
       INC(REGISTERH);
       break;
@@ -66,23 +53,16 @@
       REGISTERH = readbyte( PC++ );
       break;
     case 0x29:		/* ADD REGISTER,REGISTER */
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      ADD16(REGISTER,REGISTER);
-      break;
+    contend_read_no_mreq(IR, 7);
+    ADD16(REGISTER, REGISTER);
+    break;
     case 0x2a:		/* LD REGISTER,(nnnn) */
       LD16_RRNN(REGISTERL,REGISTERH);
       break;
     case 0x2b:		/* DEC REGISTER */
-	contend_read_no_mreq( IR, 1 );
-	contend_read_no_mreq( IR, 1 );
-	REGISTER--;
-      break;
+    contend_read_no_mreq(IR, 2);
+    REGISTER--;
+    break;
     case 0x2c:		/* INC REGISTERL */
       INC(REGISTERL);
       break;
@@ -96,28 +76,26 @@
       {
 	libspectrum_byte offset, bytetemp;
 	offset = readbyte( PC );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); PC++;
-	z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
-	bytetemp = readbyte( z80.memptr.w );
-	contend_read_no_mreq( z80.memptr.w, 1 );
-	INC(bytetemp);
-	writebyte(z80.memptr.w,bytetemp);
+        contend_read_no_mreq(PC, 5);
+        PC++;
+        z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
+        bytetemp = readbyte(z80.memptr.w);
+        contend_read_no_mreq(z80.memptr.w, 1);
+        INC(bytetemp);
+        writebyte(z80.memptr.w, bytetemp);
       }
       break;
     case 0x35:		/* DEC (REGISTER+dd) */
       {
 	libspectrum_byte offset, bytetemp;
 	offset = readbyte( PC );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); PC++;
-	z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
-	bytetemp = readbyte( z80.memptr.w );
-	contend_read_no_mreq( z80.memptr.w, 1 );
-	DEC(bytetemp);
-	writebyte(z80.memptr.w,bytetemp);
+        contend_read_no_mreq(PC, 5);
+        PC++;
+        z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
+        bytetemp = readbyte(z80.memptr.w);
+        contend_read_no_mreq(z80.memptr.w, 1);
+        DEC(bytetemp);
+        writebyte(z80.memptr.w, bytetemp);
       }
       break;
     case 0x36:		/* LD (REGISTER+dd),nn */
@@ -125,21 +103,16 @@
 	libspectrum_byte offset, value;
 	offset = readbyte( PC++ );
 	value = readbyte( PC );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 ); PC++;
-	z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
-	writebyte( z80.memptr.w, value );
+        contend_read_no_mreq(PC, 2);
+        PC++;
+        z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
+        writebyte(z80.memptr.w, value);
       }
       break;
     case 0x39:		/* ADD REGISTER,SP */
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      ADD16(REGISTER,SP);
-      break;
+    contend_read_no_mreq(IR, 7);
+    ADD16(REGISTER, SP);
+    break;
     case 0x44:		/* LD B,REGISTERH */
       B=REGISTERH;
       break;
@@ -150,11 +123,10 @@
       {
 	libspectrum_byte offset;
 	offset = readbyte( PC );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); PC++;
-	z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
-	B = readbyte( z80.memptr.w );
+        contend_read_no_mreq(PC, 5);
+        PC++;
+        z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
+        B = readbyte(z80.memptr.w);
       }
       break;
     case 0x4c:		/* LD C,REGISTERH */
@@ -167,11 +139,10 @@
       {
 	libspectrum_byte offset;
 	offset = readbyte( PC );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); PC++;
-	z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
-	C = readbyte( z80.memptr.w );
+        contend_read_no_mreq(PC, 5);
+        PC++;
+        z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
+        C = readbyte(z80.memptr.w);
       }
       break;
     case 0x54:		/* LD D,REGISTERH */
@@ -184,11 +155,10 @@
       {
 	libspectrum_byte offset;
 	offset = readbyte( PC );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); PC++;
-	z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
-	D = readbyte( z80.memptr.w );
+        contend_read_no_mreq(PC, 5);
+        PC++;
+        z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
+        D = readbyte(z80.memptr.w);
       }
       break;
     case 0x5c:		/* LD E,REGISTERH */
@@ -201,11 +171,10 @@
       {
 	libspectrum_byte offset;
 	offset = readbyte( PC );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); PC++;
-	z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
-	E = readbyte( z80.memptr.w );
+        contend_read_no_mreq(PC, 5);
+        PC++;
+        z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
+        E = readbyte(z80.memptr.w);
       }
       break;
     case 0x60:		/* LD REGISTERH,B */
@@ -229,11 +198,10 @@
       {
 	libspectrum_byte offset;
 	offset = readbyte( PC );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); PC++;
-	z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
-	H = readbyte( z80.memptr.w );
+        contend_read_no_mreq(PC, 5);
+        PC++;
+        z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
+        H = readbyte(z80.memptr.w);
       }
       break;
     case 0x67:		/* LD REGISTERH,A */
@@ -260,11 +228,10 @@
       {
 	libspectrum_byte offset;
 	offset = readbyte( PC );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); PC++;
-	z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
-	L = readbyte( z80.memptr.w );
+        contend_read_no_mreq(PC, 5);
+        PC++;
+        z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
+        L = readbyte(z80.memptr.w);
       }
       break;
     case 0x6f:		/* LD REGISTERL,A */
@@ -274,77 +241,70 @@
       {
 	libspectrum_byte offset;
 	offset = readbyte( PC );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); PC++;
-	z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
-	writebyte( z80.memptr.w, B );
+        contend_read_no_mreq(PC, 5);
+        PC++;
+        z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
+        writebyte(z80.memptr.w, B);
       }
       break;
     case 0x71:		/* LD (REGISTER+dd),C */
       {
 	libspectrum_byte offset;
 	offset = readbyte( PC );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); PC++;
-	z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
-	writebyte( z80.memptr.w, C );
+        contend_read_no_mreq(PC, 5);
+        PC++;
+        z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
+        writebyte(z80.memptr.w, C);
       }
       break;
     case 0x72:		/* LD (REGISTER+dd),D */
       {
 	libspectrum_byte offset;
 	offset = readbyte( PC );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); PC++;
-	z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
-	writebyte( z80.memptr.w, D );
+        contend_read_no_mreq(PC, 5);
+        PC++;
+        z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
+        writebyte(z80.memptr.w, D);
       }
       break;
     case 0x73:		/* LD (REGISTER+dd),E */
       {
 	libspectrum_byte offset;
 	offset = readbyte( PC );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); PC++;
-	z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
-	writebyte( z80.memptr.w, E );
+        contend_read_no_mreq(PC, 5);
+        PC++;
+        z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
+        writebyte(z80.memptr.w, E);
       }
       break;
     case 0x74:		/* LD (REGISTER+dd),H */
       {
 	libspectrum_byte offset;
 	offset = readbyte( PC );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); PC++;
-	z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
-	writebyte( z80.memptr.w, H );
+        contend_read_no_mreq(PC, 5);
+        PC++;
+        z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
+        writebyte(z80.memptr.w, H);
       }
       break;
     case 0x75:		/* LD (REGISTER+dd),L */
       {
 	libspectrum_byte offset;
 	offset = readbyte( PC );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); PC++;
-	z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
-	writebyte( z80.memptr.w, L );
+        contend_read_no_mreq(PC, 5);
+        PC++;
+        z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
+        writebyte(z80.memptr.w, L);
       }
       break;
     case 0x77:		/* LD (REGISTER+dd),A */
       {
 	libspectrum_byte offset;
 	offset = readbyte( PC );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); PC++;
-	z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
-	writebyte( z80.memptr.w, A );
+        contend_read_no_mreq(PC, 5);
+        PC++;
+        z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
+        writebyte(z80.memptr.w, A);
       }
       break;
     case 0x7c:		/* LD A,REGISTERH */
@@ -357,11 +317,10 @@
       {
 	libspectrum_byte offset;
 	offset = readbyte( PC );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); PC++;
-	z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
-	A = readbyte( z80.memptr.w );
+        contend_read_no_mreq(PC, 5);
+        PC++;
+        z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
+        A = readbyte(z80.memptr.w);
       }
       break;
     case 0x84:		/* ADD A,REGISTERH */
@@ -374,12 +333,11 @@
       {
 	libspectrum_byte offset, bytetemp;
 	offset = readbyte( PC );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); PC++;
-	z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
-	bytetemp = readbyte( z80.memptr.w );
-	ADD(bytetemp);
+        contend_read_no_mreq(PC, 5);
+        PC++;
+        z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
+        bytetemp = readbyte(z80.memptr.w);
+        ADD(bytetemp);
       }
       break;
     case 0x8c:		/* ADC A,REGISTERH */
@@ -392,12 +350,11 @@
       {
 	libspectrum_byte offset, bytetemp;
 	offset = readbyte( PC );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); PC++;
-	z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
-	bytetemp = readbyte( z80.memptr.w );
-	ADC(bytetemp);
+        contend_read_no_mreq(PC, 5);
+        PC++;
+        z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
+        bytetemp = readbyte(z80.memptr.w);
+        ADC(bytetemp);
       }
       break;
     case 0x94:		/* SUB A,REGISTERH */
@@ -410,12 +367,11 @@
       {
 	libspectrum_byte offset, bytetemp;
 	offset = readbyte( PC );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); PC++;
-	z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
-	bytetemp = readbyte( z80.memptr.w );
-	SUB(bytetemp);
+        contend_read_no_mreq(PC, 5);
+        PC++;
+        z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
+        bytetemp = readbyte(z80.memptr.w);
+        SUB(bytetemp);
       }
       break;
     case 0x9c:		/* SBC A,REGISTERH */
@@ -428,12 +384,11 @@
       {
 	libspectrum_byte offset, bytetemp;
 	offset = readbyte( PC );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); PC++;
-	z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
-	bytetemp = readbyte( z80.memptr.w );
-	SBC(bytetemp);
+        contend_read_no_mreq(PC, 5);
+        PC++;
+        z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
+        bytetemp = readbyte(z80.memptr.w);
+        SBC(bytetemp);
       }
       break;
     case 0xa4:		/* AND A,REGISTERH */
@@ -446,12 +401,11 @@
       {
 	libspectrum_byte offset, bytetemp;
 	offset = readbyte( PC );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); PC++;
-	z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
-	bytetemp = readbyte( z80.memptr.w );
-	AND(bytetemp);
+        contend_read_no_mreq(PC, 5);
+        PC++;
+        z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
+        bytetemp = readbyte(z80.memptr.w);
+        AND(bytetemp);
       }
       break;
     case 0xac:		/* XOR A,REGISTERH */
@@ -464,12 +418,11 @@
       {
 	libspectrum_byte offset, bytetemp;
 	offset = readbyte( PC );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); PC++;
-	z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
-	bytetemp = readbyte( z80.memptr.w );
-	XOR(bytetemp);
+        contend_read_no_mreq(PC, 5);
+        PC++;
+        z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
+        bytetemp = readbyte(z80.memptr.w);
+        XOR(bytetemp);
       }
       break;
     case 0xb4:		/* OR A,REGISTERH */
@@ -482,12 +435,11 @@
       {
 	libspectrum_byte offset, bytetemp;
 	offset = readbyte( PC );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); PC++;
-	z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
-	bytetemp = readbyte( z80.memptr.w );
-	OR(bytetemp);
+        contend_read_no_mreq(PC, 5);
+        PC++;
+        z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
+        bytetemp = readbyte(z80.memptr.w);
+        OR(bytetemp);
       }
       break;
     case 0xbc:		/* CP A,REGISTERH */
@@ -500,12 +452,11 @@
       {
 	libspectrum_byte offset, bytetemp;
 	offset = readbyte( PC );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 );
-	contend_read_no_mreq( PC, 1 ); PC++;
-	z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
-	bytetemp = readbyte( z80.memptr.w );
-	CP(bytetemp);
+        contend_read_no_mreq(PC, 5);
+        PC++;
+        z80.memptr.w = REGISTER + (libspectrum_signed_byte)offset;
+        bytetemp = readbyte(z80.memptr.w);
+        CP(bytetemp);
       }
       break;
     case 0xcb:		/* shift DDFDCB */
@@ -516,7 +467,8 @@
 	    REGISTER + (libspectrum_signed_byte)readbyte_internal( PC );
 	PC++; contend_read( PC, 3 );
 	opcode3 = readbyte_internal( PC );
-	contend_read_no_mreq( PC, 1 ); contend_read_no_mreq( PC, 1 ); PC++;
+        contend_read_no_mreq(PC, 2);
+        PC++;
 #ifdef HAVE_ENOUGH_MEMORY
 	switch(opcode3) {
 #include "z80_ddfdcb.inc"
@@ -536,9 +488,9 @@
 	bytetemph = readbyte( SP + 1 ); contend_read_no_mreq( SP + 1, 1 );
 	writebyte( SP + 1, REGISTERH );
 	writebyte( SP,     REGISTERL  );
-	contend_write_no_mreq( SP, 1 ); contend_write_no_mreq( SP, 1 );
-	REGISTERL=z80.memptr.b.l=bytetempl;
-	REGISTERH=z80.memptr.b.h=bytetemph;
+        contend_write_no_mreq(SP, 2);
+        REGISTERL = z80.memptr.b.l = bytetempl;
+        REGISTERH = z80.memptr.b.h = bytetemph;
       }
       break;
     case 0xe5:		/* PUSH REGISTER */
@@ -549,10 +501,9 @@
       PC=REGISTER;		/* NB: NOT INDIRECT! */
       break;
     case 0xf9:		/* LD SP,REGISTER */
-      contend_read_no_mreq( IR, 1 );
-      contend_read_no_mreq( IR, 1 );
-      SP = REGISTER;
-      break;
+    contend_read_no_mreq(IR, 2);
+    SP = REGISTER;
+    break;
     default:		/* Instruction did not involve H or L, so backtrack
 			   one instruction and parse again */
       PC--;

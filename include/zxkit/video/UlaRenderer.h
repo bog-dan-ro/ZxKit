@@ -119,6 +119,7 @@ public:
     void beginRasterFrame(const FrameTimings &timings);
     void renderUntil(uint32_t frameTstate, const Mmu &mmu);
     void copyRasterScanline(uint32_t y, VideoFrame &frame) const;
+    void copyRasterFrame(VideoFrame &frame) const;
     void endRasterFrame() noexcept
     {
         m_rasterActive = false;
@@ -150,6 +151,9 @@ private:
     bool m_rasterActive = false;
     std::array<uint8_t, 2> m_bitmapLatch{};
     uint8_t m_attributeLatch = 0;
+    // Effective attribute (without FLASH) and bitmap for pixels already in the raster.
+    // Keys use 15 bits; 0xffff invalidates a character without a separate valid bitmap.
+    std::array<uint16_t, (kScreenWidthPx / 8) * kScreenLines> m_rasterCharacterKeys;
 
     uint8_t m_borderColor = 7;
     uint8_t m_scldReg = 0;

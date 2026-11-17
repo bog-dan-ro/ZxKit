@@ -194,8 +194,10 @@ void Mmu::clearOverlay(uint16_t startAddr, std::size_t count1k) noexcept
     const std::size_t startSlot = startAddr >> kPageShift;
     const std::size_t endSlot = std::min<std::size_t>(startSlot + count1k, kSlotCount);
     for (std::size_t slot = startSlot; slot < endSlot; ++slot) {
-        m_overlayActive[slot] = false;
-        refreshSlot(slot);
+        if (m_overlayActive[slot]) {
+            m_overlayActive[slot] = false;
+            refreshSlot(slot);
+        }
     }
 }
 

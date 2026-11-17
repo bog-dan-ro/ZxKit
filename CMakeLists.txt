@@ -276,6 +276,33 @@ add_library(ZX::VideoFilters ALIAS zxkit_video_filters)
 target_link_libraries(zxkit_video_filters PUBLIC ZX::Kit)
 set_target_properties(zxkit_video_filters PROPERTIES EXPORT_NAME VideoFilters)
 
+# Qt's Android toolchain defaults even Release builds to -Oz. The emulation
+# loops, rewind serialization and pixel scalers need speed optimizations.
+# Keep this private to our targets; MinSizeRel remains the size-first choice.
+if(ANDROID)
+    foreach(target zxkit zxkit_video_filters)
+        target_compile_options(${target} PRIVATE $<$<CONFIG:Release,RelWithDebInfo>:-O2>)
+    endforeach()
+
+    # Bind calls within the shared Android core locally so ThinLTO can inline
+    # the CPU, memory and audio paths across their translation units.
+    get_target_property(zxkitLibraryType zxkit TYPE)
+    if(zxkitLibraryType STREQUAL "SHARED_LIBRARY")
+        include(CheckIPOSupported)
+        check_ipo_supported(RESULT zxkitAndroidIpoSupported LANGUAGES CXX)
+        if(zxkitAndroidIpoSupported)
+            set_target_properties(zxkit PROPERTIES
+                INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE
+                INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO TRUE)
+            target_compile_options(zxkit PRIVATE
+                $<$<CONFIG:Release,RelWithDebInfo>:-fno-semantic-interposition>)
+            target_link_options(zxkit PRIVATE
+                $<$<CONFIG:Release,RelWithDebInfo>:-O2>
+                $<$<CONFIG:Release,RelWithDebInfo>:LINKER:-Bsymbolic-functions>)
+        endif()
+    endif()
+endif()
+
 # ----------------------------------------------------------------- tests
 
 if(ZXKIT_BUILD_TOOLS)

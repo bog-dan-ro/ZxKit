@@ -20,18 +20,23 @@
 #include "zxkit/core/Exception.h"
 
 #include <algorithm>
+#include <utility>
 
 namespace zxkit {
 
 void RewindBuffer::setCapacity(std::size_t maxFrames)
 {
     m_maxFrames = maxFrames;
+    if (!maxFrames)
+        std::vector<uint8_t>{}.swap(m_spareBuffer);
     evict();
 }
 
 void RewindBuffer::setMemoryBudget(std::size_t bytes)
 {
     m_maxBytes = bytes;
+    if (m_spareBuffer.capacity() > bytes)
+        std::vector<uint8_t>{}.swap(m_spareBuffer);
     evict();
 }
 
@@ -39,14 +44,26 @@ void RewindBuffer::clear() noexcept
 {
     m_frames.clear();
     m_totalBytes = 0;
+    std::vector<uint8_t>{}.swap(m_spareBuffer);
 }
 
 void RewindBuffer::evict()
 {
     while (!m_frames.empty() && (m_frames.size() > m_maxFrames || m_totalBytes > m_maxBytes)) {
-        m_totalBytes -= m_frames.front().size();
+        auto &discarded = m_frames.front();
+        m_totalBytes -= discarded.size();
+        if (m_maxFrames && discarded.capacity() <= m_maxBytes
+            && discarded.capacity() > m_spareBuffer.capacity()) {
+            m_spareBuffer = std::move(discarded);
+            m_spareBuffer.clear();
+        }
         m_frames.pop_front();
     }
+}
+
+std::vector<uint8_t> RewindBuffer::takeSpareBuffer() noexcept
+{
+    return std::exchange(m_spareBuffer, {});
 }
 
 void RewindBuffer::pushSnapshot(std::vector<uint8_t> stateBytes)

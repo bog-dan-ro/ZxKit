@@ -85,8 +85,9 @@ public:
 
     void setSpeed(CpuSpeed speed) noexcept
     {
+        m_baseFrameAtCheckpoint = frameBaseTstates();
+        m_baseCpuCheckpoint = m_totalTstates;
         m_speed = speed;
-        m_baseRemainder = 0;
     }
     CpuSpeed speed() const noexcept
     {
@@ -102,22 +103,17 @@ public:
     /// Advance by base T-states (or scaled CPU cycles).
     void advance(uint32_t tstates) noexcept
     {
+        // Memory cycles update one timestamp; frame positions are derived below.
         m_totalTstates += tstates;
-        m_frameTstates += tstates;
-        // The frame timeline (video, audio) runs at the base 3.5MHz clock
-        m_baseRemainder += tstates;
-        const uint8_t shift = static_cast<uint8_t>(m_speed);
-        m_frameBaseTstates += m_baseRemainder >> shift;
-        m_baseRemainder &= (1u << shift) - 1;
     }
 
     void beginNewFrame() noexcept;
 
     void setFrameTstates(uint32_t ts) noexcept
     {
-        m_frameTstates = ts;
-        m_frameBaseTstates = ts >> static_cast<uint8_t>(m_speed);
-        m_baseRemainder = 0;
+        m_frameTstateOrigin = static_cast<uint32_t>(m_totalTstates) - ts;
+        m_baseFrameAtCheckpoint = ts >> static_cast<uint8_t>(m_speed);
+        m_baseCpuCheckpoint = m_totalTstates;
     }
 
     uint64_t totalTstates() const noexcept
@@ -127,13 +123,15 @@ public:
     /// CPU T-states since the frame started (at the current CPU speed).
     uint32_t frameTstates() const noexcept
     {
-        return m_frameTstates;
+        return static_cast<uint32_t>(m_totalTstates) - m_frameTstateOrigin;
     }
     /// Position in the frame in base (3.5MHz) T-states, whatever the CPU speed:
     /// the timeline of the video and audio.
     uint32_t frameBaseTstates() const noexcept
     {
-        return m_frameBaseTstates;
+        return m_baseFrameAtCheckpoint
+                + static_cast<uint32_t>((m_totalTstates - m_baseCpuCheckpoint)
+                                        >> static_cast<uint8_t>(m_speed));
     }
     uint64_t frameCount() const noexcept
     {
@@ -165,9 +163,9 @@ public:
 private:
     FrameTimings m_timings{};
     uint64_t m_totalTstates = 0;
-    uint32_t m_frameTstates = 0;
-    uint32_t m_frameBaseTstates = 0;
-    uint32_t m_baseRemainder = 0;
+    uint32_t m_frameTstateOrigin = 0;
+    uint32_t m_baseFrameAtCheckpoint = 0;
+    uint64_t m_baseCpuCheckpoint = 0;
     uint64_t m_frameCount = 0;
     CpuSpeed m_speed = CpuSpeed::Mhz3_5;
 };

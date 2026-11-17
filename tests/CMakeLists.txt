@@ -23,6 +23,11 @@ add_executable(test_foundation test_foundation.cpp)
 target_link_libraries(test_foundation PRIVATE ZX::Kit)
 add_test(NAME test_foundation COMMAND test_foundation)
 
+add_executable(test_cpu_run test_cpu_run.cpp)
+target_link_libraries(test_cpu_run PRIVATE ZX::Kit)
+target_compile_options(test_cpu_run PRIVATE $<IF:$<CXX_COMPILER_ID:MSVC>,/UNDEBUG,-UNDEBUG>)
+add_test(NAME test_cpu_run COMMAND test_cpu_run)
+
 add_executable(test_audio test_audio.cpp)
 target_link_libraries(test_audio PRIVATE ZX::Kit)
 target_compile_options(test_audio PRIVATE $<IF:$<CXX_COMPILER_ID:MSVC>,/UNDEBUG,-UNDEBUG>)

@@ -21,6 +21,7 @@
 #include <cassert>
 #include <chrono>
 #include <functional>
+#include <limits>
 #include <print>
 #include <string>
 #include <thread>
@@ -344,6 +345,107 @@ void testSchedulerAndStateStream()
     assert(r.eof());
 }
 
+void testClockCounterCheckpoints()
+{
+    Clock clock;
+    clock.advance(7);
+    assert(clock.totalTstates() == 7 && clock.frameTstates() == 7 && clock.frameBaseTstates() == 7);
+    clock.setSpeed(CpuSpeed::Mhz7);
+    clock.advance(3);
+    assert(clock.totalTstates() == 10 && clock.frameTstates() == 10
+           && clock.frameBaseTstates() == 8);
+    clock.advance(1);
+    assert(clock.frameBaseTstates() == 9);
+    clock.setSpeed(CpuSpeed::Mhz28);
+    clock.advance(15);
+    assert(clock.frameBaseTstates() == 10);
+    clock.setSpeed(CpuSpeed::Mhz3_5);
+    clock.advance(2);
+    assert(clock.totalTstates() == 28 && clock.frameTstates() == 28
+           && clock.frameBaseTstates() == 12);
+
+    Clock fractional;
+    fractional.setSpeed(CpuSpeed::Mhz7);
+    fractional.setFrameTstates(2 * (kTimings48k.tstatesPerFrame() - 1));
+    fractional.advance(3);
+    fractional.beginNewFrame();
+    assert(fractional.frameCount() == 1 && fractional.frameTstates() == 0
+           && fractional.frameBaseTstates() == 0);
+    fractional.advance(1);
+    assert(fractional.frameTstates() == 1 && fractional.frameBaseTstates() == 1);
+
+    // Setting even the same speed discards the previous fractional base clock.
+    fractional.setFrameTstates(0);
+    fractional.advance(1);
+    fractional.setSpeed(CpuSpeed::Mhz7);
+    fractional.advance(1);
+    assert(fractional.frameBaseTstates() == 0);
+
+    // The state format stores positions, not origins, and excludes fractional clocks.
+    StateWriter saved;
+    fractional.saveState(saved);
+    Clock restored;
+    StateReader reader(saved.data());
+    restored.loadState(reader);
+    restored.advance(1);
+    assert(restored.frameTstates() == 3 && restored.frameBaseTstates() == 0);
+
+    Clock wrapping;
+    wrapping.setFrameTstates(0xfffffff0u);
+    wrapping.advance(32);
+    assert(wrapping.frameTstates() == 16 && wrapping.frameBaseTstates() == 16);
+    StateWriter nearWrap;
+    nearWrap.write<uint64_t>(std::numeric_limits<uint64_t>::max() - 3);
+    nearWrap.write<uint32_t>(123);
+    nearWrap.write<uint32_t>(66);
+    nearWrap.write<uint64_t>(9);
+    nearWrap.write<uint8_t>(1);
+    StateReader wrapReader(nearWrap.data());
+    wrapping.loadState(wrapReader);
+    wrapping.advance(10);
+    assert(wrapping.totalTstates() == 6 && wrapping.frameTstates() == 133
+           && wrapping.frameBaseTstates() == 71 && wrapping.frameCount() == 9);
+}
+
+void testRewindStorageReuse()
+{
+    RewindBuffer rewind(2);
+    std::vector<uint8_t> first(64, 1);
+    first.reserve(256);
+    const auto *allocation = first.data();
+    rewind.pushSnapshot(std::move(first));
+    rewind.pushSnapshot(std::vector<uint8_t>(64, 2));
+    rewind.pushSnapshot(std::vector<uint8_t>(64, 3));
+    assert(rewind.size() == 2 && rewind.memoryUsed() == 128);
+
+    auto spare = rewind.takeSpareBuffer();
+    assert(spare.empty() && spare.capacity() >= 256 && spare.data() == allocation);
+    StateWriter writer(std::move(spare), 128);
+    writer.write<uint64_t>(0x123456789abcdef0);
+    assert(writer.data().data() == allocation);
+    rewind.pushSnapshot(writer.takeBuffer());
+    assert(rewind.size() == 2 && rewind.memoryUsed() == 72);
+    const auto newest = rewind.popStepsBack(1);
+    StateReader reader(newest);
+    assert(reader.read<uint64_t>() == 0x123456789abcdef0 && reader.eof());
+    assert(rewind.popStepsBack(1) == std::vector<uint8_t>(64, 3));
+
+    rewind.setCapacity(0);
+    assert(rewind.takeSpareBuffer().capacity() == 0);
+    rewind.setCapacity(1);
+    rewind.pushSnapshot(std::vector<uint8_t>(128, 4));
+    rewind.pushSnapshot(std::vector<uint8_t>(128, 5));
+    rewind.setMemoryBudget(64);
+    assert(rewind.empty() && rewind.memoryUsed() == 0);
+    assert(rewind.takeSpareBuffer().capacity() == 0);
+
+    rewind.setMemoryBudget(1024);
+    rewind.pushSnapshot(std::vector<uint8_t>(128, 6));
+    rewind.pushSnapshot(std::vector<uint8_t>(128, 7));
+    rewind.clear();
+    assert(rewind.empty() && rewind.takeSpareBuffer().capacity() == 0);
+}
+
 } // namespace
 
 int main()
@@ -356,6 +458,8 @@ int main()
     testEmulatorAudioFrameBoundaries();
     testMachineScopedRoms();
     testSchedulerAndStateStream();
+    testClockCounterCheckpoints();
+    testRewindStorageReuse();
     std::println("test_foundation: ALL PASSED");
     return 0;
 }

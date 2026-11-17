@@ -18,6 +18,7 @@
 #include "zxkit/video/UlaRenderer.h"
 
 #include <algorithm>
+#include <array>
 #include <utility>
 
 namespace zxkit {
@@ -29,8 +30,11 @@ UlaRenderer::UlaRenderer()
 
 void UlaRenderer::setBorderMargins(BorderMargins margins) noexcept
 {
-    m_margins = {std::min<uint16_t>(margins.left, 128), std::min<uint16_t>(margins.top, 128),
-                 std::min<uint16_t>(margins.right, 128), std::min<uint16_t>(margins.bottom, 128)};
+    margins = { std::min<uint16_t>(margins.left, 128), std::min<uint16_t>(margins.top, 128),
+                std::min<uint16_t>(margins.right, 128), std::min<uint16_t>(margins.bottom, 128) };
+    if (margins != m_margins)
+        m_rasterCharacterKeys.fill(0xffff);
+    m_margins = margins;
 }
 
 void UlaRenderer::reset() noexcept
@@ -45,6 +49,7 @@ void UlaRenderer::reset() noexcept
     m_flashInvert = false;
     m_flashFrameCounter = 0;
     m_palette = kStandardZxPalette;
+    m_rasterCharacterKeys.fill(0xffff);
 }
 
 void UlaRenderer::setVramSource(BankId bankId, uint16_t page16k, uint16_t offsetBytes) noexcept
@@ -192,6 +197,22 @@ void UlaRenderer::renderUntil(uint32_t frameTstate, const Mmu &mmu)
         auto row = m_rasterFrame.scanline(y);
         const int32_t screenY = int32_t(y) - m_margins.top;
         const bool screenLine = screenY >= 0 && screenY < int32_t(kScreenLines) && !vram.empty();
+        if (!screenLine) {
+            // No fetches occur on border lines. Fill just the clocks before the
+            // requested stop, including partial pixels at odd crop boundaries.
+            const int32_t firstPixel = (int32_t(tick) - int32_t(prefix)) * 2 + m_margins.left;
+            const int32_t lastPixel = firstPixel + int32_t(lineEnd - m_rasterCursor) * 2;
+            const auto beginPixel = std::clamp(firstPixel, 0, int32_t(row.size()));
+            const auto endPixel = std::clamp(lastPixel, 0, int32_t(row.size()));
+            std::ranges::fill(row.subspan(beginPixel, endPixel - beginPixel),
+                              m_palette[m_borderColor]);
+            if (screenY >= 0 && screenY < int32_t(kScreenLines)) {
+                // With VRAM disconnected, border pixels replace the cached paper.
+                std::fill_n(m_rasterCharacterKeys.begin() + screenY * 32, 32, uint16_t(0xffff));
+            }
+            m_rasterCursor = lineEnd;
+            continue;
+        }
         // Divide and resolve the row once per span, retaining every fetch clock
         // and the exact stop position before a host changes VRAM or the border.
         while (m_rasterCursor < lineEnd) {
@@ -200,7 +221,58 @@ void UlaRenderer::renderUntil(uint32_t frameTstate, const Mmu &mmu)
                 m_rasterCursor = lineEnd;
                 break;
             }
-            if (!screenLine || screenTick < 0 || screenTick >= 128) {
+            if (screenTick >= -1 && screenTick < 123 && ((screenTick + 1) & 7) == 0
+                && lineEnd - m_rasterCursor >= 4) {
+                const uint32_t pairs = std::min((lineEnd - m_rasterCursor + 4) / 8,
+                                                uint32_t(127 - screenTick) / 8);
+                const uint32_t firstCol = uint32_t(screenTick + 1) / 4;
+                const uint32_t count = pairs * 2;
+                const uint16_t bitmapLine =
+                        ((screenY & 0xc0) << 5) | ((screenY & 7) << 8) | ((screenY & 0x38) << 2);
+                const uint16_t attrLine = 0x1800 + (screenY / 8) * 32;
+                const uint32_t bitmapStart = (m_vramOffsetBytes + bitmapLine + firstCol) & 0x3fff;
+                const uint32_t attrStart = (m_vramOffsetBytes + attrLine + firstCol) & 0x3fff;
+                if (bitmapStart + count <= 0x4000 && attrStart + count <= 0x4000) {
+                    if (screenTick == -1) {
+                        const int32_t borderX = int32_t(m_margins.left) - 2;
+                        for (int32_t x = borderX; x < borderX + 2; ++x)
+                            if (x >= 0 && x < int32_t(row.size()))
+                                row[x] = m_palette[m_borderColor];
+                    }
+                    const uint8_t *bits = vram.data() + bitmapStart;
+                    const uint8_t *attributes = vram.data() + attrStart;
+                    std::array<uint16_t, 32> keys;
+                    for (uint32_t index = 0; index < count; ++index) {
+                        uint8_t colors = attributes[index] & 0x7f;
+                        if ((attributes[index] & 0x80) && m_flashInvert)
+                            colors = (colors & 0x40) | ((colors & 7) << 3) | ((colors >> 3) & 7);
+                        keys[index] = (uint16_t(colors) << 8) | bits[index];
+                    }
+                    auto *previous = m_rasterCharacterKeys.data() + screenY * 32 + firstCol;
+                    if (!std::equal(keys.begin(), keys.begin() + count, previous)) {
+                        for (uint32_t index = 0; index < count; ++index) {
+                            if (keys[index] == previous[index])
+                                continue;
+                            previous[index] = keys[index];
+                            const uint8_t colors = keys[index] >> 8;
+                            const uint8_t bright = (colors & 0x40) ? 8 : 0;
+                            const uint32_t ink = m_palette[(colors & 7) + bright];
+                            const uint32_t paper = m_palette[((colors >> 3) & 7) + bright];
+                            for (uint32_t x = 0; x < 8; ++x)
+                                row[m_margins.left + (firstCol + index) * 8 + x] =
+                                        (bits[index] & (0x80 >> x)) ? ink : paper;
+                        }
+                    }
+                    m_bitmapLatch[0] = bits[count - 2];
+                    m_bitmapLatch[1] = bits[count - 1];
+                    m_attributeLatch = attributes[count - 1];
+                    const uint32_t elapsed = std::min(pairs * 8, lineEnd - m_rasterCursor);
+                    m_rasterCursor += elapsed;
+                    tick += elapsed;
+                    continue;
+                }
+            }
+            if (screenTick < 0 || screenTick >= 128) {
                 const int32_t x = screenTick * 2 + m_margins.left;
                 if (uint32_t(x) < row.size() - 1) {
                     row[x] = row[x + 1] = m_palette[m_borderColor];
@@ -215,9 +287,15 @@ void UlaRenderer::renderUntil(uint32_t frameTstate, const Mmu &mmu)
             // A pair of characters is fetched on four consecutive clocks followed
             // by four idle clocks. Attribute fetch completes each character latch;
             // later writes cannot change the eight pixels already in that latch.
-            if (screenLine && screenTick >= -1 && screenTick < 123) {
+            if (screenTick >= -1 && screenTick < 123) {
                 const uint32_t fetchTick = screenTick + 1;
                 const uint32_t phase = fetchTick & 7;
+                if (phase >= 4) {
+                    const uint32_t idle = std::min(8 - phase, lineEnd - m_rasterCursor);
+                    m_rasterCursor += idle;
+                    tick += idle;
+                    continue;
+                }
                 if (phase < 4) {
                     const uint32_t col = (fetchTick / 8) * 2 + phase / 2;
                     const uint16_t bitmapOffset = ((screenY & 0xc0) << 5) | ((screenY & 7) << 8)
@@ -227,14 +305,21 @@ void UlaRenderer::renderUntil(uint32_t frameTstate, const Mmu &mmu)
                     } else {
                         const uint16_t attrOffset = 0x1800 + (screenY / 8) * 32 + col;
                         m_attributeLatch = vram[(m_vramOffsetBytes + attrOffset) & 0x3fff];
-                        const uint8_t bright = (m_attributeLatch & 0x40) ? 8 : 0;
-                        uint8_t ink = (m_attributeLatch & 7) + bright;
-                        uint8_t paper = ((m_attributeLatch >> 3) & 7) + bright;
+                        uint8_t colors = m_attributeLatch & 0x7f;
                         if ((m_attributeLatch & 0x80) && m_flashInvert)
-                            std::swap(ink, paper);
+                            colors = (colors & 0x40) | ((colors & 7) << 3) | ((colors >> 3) & 7);
                         const uint8_t bits = m_bitmapLatch[phase / 2];
-                        for (uint32_t x = 0; x < 8; ++x)
-                            row[m_margins.left + col * 8 + x] = m_palette[(bits & (0x80 >> x)) ? ink : paper];
+                        const uint16_t key = (uint16_t(colors) << 8) | bits;
+                        auto &previousKey = m_rasterCharacterKeys[screenY * 32 + col];
+                        if (key != previousKey) {
+                            previousKey = key;
+                            const uint8_t bright = (colors & 0x40) ? 8 : 0;
+                            const uint8_t ink = (colors & 7) + bright;
+                            const uint8_t paper = ((colors >> 3) & 7) + bright;
+                            for (uint32_t x = 0; x < 8; ++x)
+                                row[m_margins.left + col * 8 + x] =
+                                        m_palette[(bits & (0x80 >> x)) ? ink : paper];
+                        }
                     }
                 }
             }
@@ -242,6 +327,13 @@ void UlaRenderer::renderUntil(uint32_t frameTstate, const Mmu &mmu)
             ++tick;
         }
     }
+}
+
+void UlaRenderer::copyRasterFrame(VideoFrame &frame) const
+{
+    frame.resize(m_rasterFrame.width(), m_rasterFrame.height());
+    frame.setPaperRect({ m_margins.left, m_margins.top, kScreenWidthPx, kScreenLines });
+    std::ranges::copy(m_rasterFrame.pixels(), frame.pixels().begin());
 }
 
 void UlaRenderer::copyRasterScanline(uint32_t y, VideoFrame &frame) const

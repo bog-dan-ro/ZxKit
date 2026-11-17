@@ -414,7 +414,7 @@ private:
     void updateDebuggerHook() noexcept;
     VideoFramePtr acquireFrame();
     BorderMargins effectiveBorderMargins() const noexcept;
-    std::vector<uint8_t> serializeState() const;
+    std::vector<uint8_t> serializeState(std::vector<uint8_t> buffer = {}) const;
     void deserializeState(std::span<const uint8_t> bytes);
 
     EmulatorConfig m_config;

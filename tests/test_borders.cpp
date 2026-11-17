@@ -17,8 +17,11 @@
 
 #include <zxkit/zxkit.h>
 #include <algorithm>
+#include <array>
+#include <vector>
 #include <cassert>
 #include <print>
+#include <string>
 
 using namespace zxkit;
 
@@ -125,6 +128,61 @@ void frameBoundaries()
     assert(reference.lastFrame().readLock()->width() == 320);
 }
 
+void rasterCacheTransitions()
+{
+    using namespace std::literals;
+    Mmu mmu;
+    const auto bank = mmu.registerBank("ram"s, 16384, true);
+    auto bytes = mmu.bank(bank).bytes();
+    for (std::size_t i = 0; i < bytes.size(); ++i)
+        bytes[i] = uint8_t(i * 37 + i / 11);
+
+    UlaRenderer cached;
+    cached.setVramSource(bank, 0);
+    for (unsigned frame = 0; frame < 40; ++frame) {
+        // Include equal-size crops with different paper origins, FLASH changes,
+        // reset, and reconnecting VRAM after border pixels replaced the paper.
+        if (frame == 1)
+            cached.setBorderMargins({ 1, 3, 7, 5 });
+        if (frame == 2)
+            cached.setBorderMargins({ 7, 5, 1, 3 });
+        if (frame == 3)
+            cached.setBorderMargins({ 128, 32, 64, 32 });
+        if (frame == 4)
+            cached.setBorderMargins({ 0, 0, 0, 0 });
+        if (frame == 5)
+            cached.setBorderMargins({ 48, 56, 48, 56 });
+        if (frame == 10)
+            cached.setVramSource(0, 0);
+        if (frame == 11)
+            cached.setVramSource(bank, 0);
+        if (frame == 20) {
+            cached.reset();
+            cached.setVramSource(bank, 0);
+        }
+        bytes[(frame * 17) % 0x1800] ^= uint8_t(frame + 1);
+        bytes[0x1800 + frame] ^= 0xc7;
+
+        StateWriter saved;
+        cached.saveState(saved);
+        UlaRenderer reference;
+        StateReader reader(saved.data());
+        reference.loadState(reader);
+        reference.setBorderMargins(cached.borderMargins());
+
+        cached.beginRasterFrame(kTimings48k);
+        cached.renderUntil(kTimings48k.tstatesPerFrame(), mmu);
+        VideoFrame actual;
+        VideoFrame expected;
+        for (uint32_t y = 0; y < cached.outputHeight(); ++y) {
+            cached.copyRasterScanline(y, actual);
+            reference.renderScanline(y, mmu, expected);
+        }
+        assert(std::ranges::equal(actual.pixels(), expected.pixels()));
+        cached.advanceFlashCounter();
+    }
+}
+
 void machineCrops()
 {
     for (const char *id :
@@ -173,12 +231,65 @@ void hiddenCopper()
     }
 }
 
+void framePublication()
+{
+    using namespace std::literals;
+    Emulator frames({ .fullBorder = true });
+    Emulator scanlines({ .fullBorder = true });
+    for (auto *emulator : { &frames, &scanlines }) {
+        auto &mmu = emulator->mmu();
+        auto bytes = mmu.bank(mmu.findBank("ram"sv)).bytes();
+        for (std::size_t index = 0; index < 0x1b00; ++index)
+            bytes[index] = uint8_t(index * 37 + index / 11);
+        // Change the border and speaker throughout the visible raster.
+        constexpr std::array<uint8_t, 9> program{
+            0x3e, 0, 0xd3, 0xfe, 0x3c, 0xe6, 0x1f, 0x18, 0xf9
+        };
+        for (std::size_t index = 0; index < program.size(); ++index)
+            mmu.poke(uint16_t(0x8000 + index), program[index]);
+        emulator->cpu().registers().PC = 0x8000;
+    }
+
+    VideoFramePtr retained;
+    std::vector<uint32_t> retainedPixels;
+    for (unsigned frameNumber = 0; frameNumber < 4; ++frameNumber) {
+        unsigned line = 0;
+        for (;;) {
+            // A paused preview must preserve the partially completed raster.
+            if (frameNumber == 1 && line == 100)
+                scanlines.refreshFrame();
+            const auto published = scanlines.lastFrame();
+            const auto status = scanlines.runScanline();
+            if (status == RunStatus::FrameDone)
+                break;
+            assert(status == RunStatus::LineDone);
+            assert(scanlines.lastFrame().owner() == published.owner());
+            ++line;
+        }
+        assert(frames.runFrame() == RunStatus::FrameDone);
+        const auto complete = frames.lastFrame().readLock();
+        const auto stepped = scanlines.lastFrame().readLock();
+        assert(std::ranges::equal(complete->pixels(), stepped->pixels()));
+        assert(std::ranges::equal(frames.audioSamples(), scanlines.audioSamples()));
+        assert(frames.saveSnapshot() == scanlines.saveSnapshot());
+        if (frameNumber == 0) {
+            retained = frames.lastFrame();
+            retainedPixels.assign(complete->pixels().begin(), complete->pixels().end());
+        } else {
+            const auto previous = retained.readLock();
+            assert(std::ranges::equal(previous->pixels(), retainedPixels));
+        }
+    }
+}
+
 int main()
 {
     rasterCrops();
     rasterChunking();
+    rasterCacheTransitions();
     frameBoundaries();
     machineCrops();
     hiddenCopper();
+    framePublication();
     std::println("Full border frames: raster effects, paper metadata, machine state and Copper passed");
 }
