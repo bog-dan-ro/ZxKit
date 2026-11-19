@@ -68,6 +68,19 @@ locates the 256×192 ULA paper in the frame's native pixel coordinates (includin
 Crop each side in the host to change the displayed margins and aspect ratio without altering emulation or
 resetting the machine. Next layers and CoBra's extra text columns can also draw outside the ULA paper rectangle.
 
+### Sinclair Interface 1
+
+Supply the 8 KiB `if1-2.rom` through the ROM resolver, then attach an
+`Interface1Peripheral`. `loadMediaFile("cartridge.mdr")` inserts a cartridge
+into the first empty drive. Use `Emulator::interface1()` to insert, eject or
+export a specific drive by its zero-based index.
+
+The 16K, 48K, 48K NTSC, 128K, grey +2, TC2048 and Spectrum SE profiles support
+the Sinclair interface. The emulator disconnects it on incompatible profiles
+and reconnects it with the mounted cartridges when returning to a compatible
+profile. Microdrive transfers use sector timing approximations. The serial
+and ZX Net ports represent disconnected lines.
+
 ## Building and testing
 
 Requires CMake 3.25 or newer, a compiler with C++23 support, zlib and threads.

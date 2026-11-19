@@ -49,6 +49,10 @@ public:
     {
         return false;
     }
+    virtual bool supportsInterface1() const noexcept
+    {
+        return false;
+    }
     virtual bool hasFloatingBus() const noexcept;
     virtual bool supportsZ80n() const noexcept;
     /// Software sees a 48K Spectrum: a 16K/48K machine (or clone), or a 128K one with its paging

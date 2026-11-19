@@ -57,6 +57,8 @@
 
 namespace zxkit {
 
+class Interface1Peripheral;
+
 class ZxNextMachine;
 
 struct EmulatorConfig
@@ -146,6 +148,8 @@ public:
     void attachPeripheral(std::unique_ptr<Peripheral> peripheral);
     void detachPeripheral(std::string_view peripheralId);
     OptionalRef<Peripheral> findPeripheral(std::string_view peripheralId) noexcept;
+    OptionalRef<Interface1Peripheral> interface1() noexcept;
+    OptionalRef<const Interface1Peripheral> interface1() const noexcept;
     /// The floppy drives of the machine's own controller, or of the first attached disk interface.
     std::size_t diskDriveCount() const noexcept;
     OptionalRef<DiskImage> diskDrive(std::size_t drive) noexcept;

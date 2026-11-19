@@ -1,6 +1,6 @@
 // Copyright (c) 2026, BogDan Vatra. SPDX-License-Identifier: GPL-3.0-or-later
 #include "ArchiveInternal.h"
-#include <set>
+#include "../MdrFormat.h"
 #include <string>
 #include <string_view>
 namespace zxkit::archive {
@@ -13,34 +13,47 @@ uint8_t sum255(View b)
         n += c;
     return uint8_t(n % 255);
 }
+bool validSectorHeader(View sector)
+{
+    return (sector[0] & 1) && sector[1] > 0 && sector[1] <= mdr::kMaxSectors
+            && sum255(sector.first(14)) == sector[14];
+}
+
 struct Microdrive final : Backend
 {
     Bytes image;
+
+    std::size_t sectorCount() const
+    {
+        return image.size() / mdr::kSectorSize;
+    }
+
+    bool writeProtected() const
+    {
+        return image.size() % mdr::kSectorSize == 1 && image.back() != 0;
+    }
+
     struct File
     {
         MediaEntry entry;
         Bytes bytes;
-        std::vector<unsigned> records;
+        std::vector<std::size_t> records;
     };
     std::vector<File> files() const
     {
-        std::map<std::string, std::map<unsigned, unsigned>> records;
-        for (unsigned i = 0; i < 254; ++i) {
-            auto record = slice(image, i * 543, 543);
-            auto flags = record[15];
-            auto size = word(record, 17);
-            if (!(flags & 2) && size != 512)
+        std::map<std::string, std::multimap<unsigned, std::size_t>> records;
+        for (std::size_t i = 0; i < sectorCount(); ++i) {
+            auto record = slice(image, i * mdr::kSectorSize, mdr::kSectorSize);
+            const auto flags = record[15];
+            const auto size = word(record, 17);
+            // Zero-length EOF marks a bad sector, and erased records have no data checksum.
+            if ((flags & 1) || size == 0 || size > 512 || (!(flags & 2) && size != 512))
                 continue;
-            if ((flags & 2) && !size)
+            if (!validSectorHeader(record) || sum255(record.subspan(15, 14)) != record[29]
+                || sum255(record.subspan(30, 512)) != record[542])
                 continue;
-            require(size <= 512, "Invalid Microdrive record length"sv);
-            require(sum255(record.first(14)) == record[14]
-                            && sum255(record.subspan(15, 14)) == record[29]
-                            && sum255(record.subspan(30, 512)) == record[542],
-                    "Microdrive checksum mismatch"sv);
             auto name = nameField(record.subspan(19, 10));
-            require(records[name].emplace(record[16], i).second,
-                    "Duplicate Microdrive file record"sv);
+            records[name].emplace(record[16], i);
         }
         std::vector<File> out;
         for (auto &[name, map] : records) {
@@ -49,17 +62,23 @@ struct Microdrive final : Backend
             unsigned next = 0;
             bool eof = false;
             for (auto &[number, index] : map) {
-                require(number == next++ && !eof, "Incomplete Microdrive file"sv);
+                if (number != next++ || eof) {
+                    eof = false;
+                    break;
+                }
                 f.records.push_back(index);
-                auto rec = slice(image, index * 543, 543);
+                auto rec = slice(image, index * mdr::kSectorSize, mdr::kSectorSize);
                 append(f.bytes, rec.subspan(30, word(rec, 17)));
                 eof = rec[15] & 2;
             }
-            require(eof, "Microdrive EOF record missing"sv);
-            if (image[f.records[0] * 543 + 15] & 4) {
-                require(f.bytes.size() >= 9, "Microdrive Spectrum header missing"sv);
+            if (!eof)
+                continue;
+            if (image[f.records[0] * mdr::kSectorSize + 15] & 4) {
+                if (f.bytes.size() < 9)
+                    continue;
                 auto size = word(f.bytes, 1);
-                require(size <= f.bytes.size() - 9, "Microdrive Spectrum length exceeds file"sv);
+                if (size > f.bytes.size() - 9)
+                    continue;
                 f.entry.attributes = { { "type"s, f.bytes[0] },
                                        { "param1"s,
                                          f.bytes[0] == 0 ? word(f.bytes, 7) : word(f.bytes, 3) },
@@ -95,12 +114,12 @@ struct Microdrive final : Backend
     }
     void remove(std::string_view name) override
     {
-        require(!image.back(), "Microdrive cartridge is write-protected"sv);
+        require(!writeProtected(), "Microdrive cartridge is write-protected"sv);
         for (auto &f : files())
             if (f.entry.name == name) {
                 for (auto n : f.records) {
-                    std::size_t p = n * 543;
-                    std::fill_n(image.begin() + p + 15, 528, 0);
+                    std::size_t p = n * mdr::kSectorSize;
+                    std::fill_n(image.begin() + p + mdr::kHeaderSize, mdr::kRecordSize, 0);
                 }
                 return;
             }
@@ -110,7 +129,7 @@ struct Microdrive final : Backend
     {
         validName(name, 10);
         checkAttrs(changes, { "type"sv, "param1"sv, "param2"sv });
-        require(!image.back(), "Microdrive cartridge is write-protected"sv);
+        require(!writeProtected(), "Microdrive cartridge is write-protected"sv);
         MediaAttributes a;
         for (auto &f : files())
             if (f.entry.name == name) {
@@ -138,18 +157,22 @@ struct Microdrive final : Backend
             a["type"s] = 3;
         }
         std::size_t count = (payload.size() + 511) / 512;
-        std::vector<unsigned> free;
-        for (unsigned i = 0; i < 254; ++i) {
-            auto r = slice(image, i * 543, 543);
-            if (!(r[15] & 2) && word(r, 17) == 0)
+        std::vector<std::size_t> free;
+        for (std::size_t i = 0; i < sectorCount(); ++i) {
+            auto r = slice(image, i * mdr::kSectorSize, mdr::kSectorSize);
+            if (!validSectorHeader(r))
+                continue;
+            if (!(r[15] & 3) && word(r, 17) == 0)
                 free.push_back(i);
+            else if (!(r[15] & 1) && word(r, 17) != 0 && nameField(r.subspan(19, 10)) == name)
+                throw FormatException("An unreadable Microdrive file already uses that name"sv);
         }
         require(count <= free.size(), "Microdrive full"sv);
         for (unsigned n = 0; n < count; ++n) {
-            auto pos = free[n] * 543;
+            auto pos = free[n] * mdr::kSectorSize;
             std::size_t offset = n * 512,
                         size = std::min<std::size_t>(512, payload.size() - offset);
-            std::fill_n(image.begin() + pos + 15, 528, 0);
+            std::fill_n(image.begin() + pos + mdr::kHeaderSize, mdr::kRecordSize, 0);
             image[pos + 15] = uint8_t((a.contains("type"sv) ? 4 : 0) | (n + 1 == count ? 2 : 0));
             image[pos + 16] = uint8_t(n);
             setWord(image, pos + 17, size);
@@ -173,20 +196,18 @@ std::unique_ptr<Backend> microdrive(View b, const MediaOptions &opts, bool creat
     auto r = std::make_unique<Microdrive>();
     if (create) {
         validName(opts.label, 10);
-        r->image.resize(254 * 543 + 1);
-        for (unsigned i = 0; i < 254; ++i) {
-            auto p = i * 543;
+        r->image.resize(mdr::kMaxSectors * mdr::kSectorSize + 1);
+        for (std::size_t i = 0; i < mdr::kMaxSectors; ++i) {
+            auto p = i * mdr::kSectorSize;
             r->image[p] = 1;
-            r->image[p + 1] = uint8_t(254 - i);
+            r->image[p + 1] = uint8_t(mdr::kMaxSectors - i);
             std::fill_n(r->image.begin() + p + 4, 10, ' ');
             textAt(r->image, p + 4, opts.label);
             r->image[p + 14] = sum255(slice(r->image, p, 14));
         }
     } else {
-        require(b.size() == 254 * 543 + 1,
-                "MDR image must have 254 sectors and a protection byte"sv);
+        mdr::sectors(b);
         r->image.assign(b.begin(), b.end());
-        r->files();
     }
     return r;
 }

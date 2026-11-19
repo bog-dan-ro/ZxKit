@@ -35,6 +35,7 @@
 namespace zxkit {
 
 class Z80Cpu;
+class MachineProfile;
 class AudioMixer;
 class KeyboardMatrix;
 class DiskImage;
@@ -79,6 +80,12 @@ public:
 
     virtual std::string_view id() const noexcept = 0;
     virtual std::string_view name() const noexcept = 0;
+
+    /// A configured peripheral stays disconnected while an incompatible machine is selected.
+    virtual bool supportsMachine(const MachineProfile &) const noexcept
+    {
+        return true;
+    }
 
     virtual void onAttach(MachineContext &ctx) = 0;
     virtual void onDetach(MachineContext & /*ctx*/) { }

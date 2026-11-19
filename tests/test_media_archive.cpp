@@ -568,6 +568,23 @@ void microdrive()
     bytes.back() = 1;
     auto protectedMedia = MediaArchive::open(bytes, "mdr"sv);
     fails([&] { protectedMedia.remove("TEST"sv); });
+
+    // Short images may omit the protection byte. An unreadable record must not
+    // prevent a good file from opening or be recycled as a free sector.
+    bytes.resize(10 * 543);
+    auto shortImage = MediaArchive::open(bytes, "mdr"sv);
+    shortImage.put("GOOD"sv, std::span(data).first(10));
+    bytes = shortImage.encode();
+    assert(bytes.size() == 10 * 543);
+    bytes[542] ^= 1;
+    auto damaged = MediaArchive::open(bytes, "mdr"sv);
+    assert(damaged.list().size() == 1 && damaged.read("GOOD"sv).size() == 10);
+    assert(damaged.encode() == bytes);
+    bytes.push_back(1);
+    protectedMedia = MediaArchive::open(bytes, "mdr"sv);
+    fails([&] { protectedMedia.remove("GOOD"sv); });
+    bytes.push_back(0);
+    fails([&] { MediaArchive::open(bytes, "mdr"sv); });
 }
 void numberParsing()
 {

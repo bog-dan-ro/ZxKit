@@ -21,6 +21,7 @@
 
 #include <array>
 #include <cstdint>
+#include <optional>
 #include <span>
 #include <vector>
 
@@ -34,36 +35,49 @@ public:
     static constexpr std::size_t kMdrBlockSize =
             543; // 15 header + 15 record + 512 data + 1 checksum
 
-    struct Cartridge
-    {
-        std::vector<uint8_t> data;
-        std::size_t headPos = 0;
-        bool writeProtected = false;
-        bool inserted = false;
-    };
-
     std::string_view id() const noexcept override;
     std::string_view name() const noexcept override;
+    bool supportsMachine(const MachineProfile &machine) const noexcept override;
 
     void onAttach(MachineContext &ctx) override;
     void onDetach(MachineContext &ctx) override;
     void reset(MachineContext &ctx, ResetKind kind) override;
 
+    /// Inserts into the specified drive, or the first empty drive. Drive indices are zero-based.
     void insertCartridge(std::size_t driveIdx, std::span<const uint8_t> mdrBytes);
+    std::size_t insertCartridge(std::span<const uint8_t> mdrBytes);
+    void ejectCartridge(std::size_t driveIdx);
+    bool hasCartridge(std::size_t driveIdx) const noexcept;
+    bool cartridgeModified(std::size_t driveIdx) const noexcept;
+    std::vector<uint8_t> saveCartridge(std::size_t driveIdx) const;
+    /// Clears the modified flag if the saved bytes still match the cartridge.
+    void markCartridgeSaved(std::size_t driveIdx, std::span<const uint8_t> savedBytes) noexcept;
 
     BankId romBankId() const noexcept;
 
 private:
+    struct Cartridge
+    {
+        std::vector<uint8_t> data;
+        std::optional<uint8_t> protection;
+        std::size_t position = 0;
+        std::size_t transferred = 0;
+        std::size_t blockSize = 0;
+        unsigned statusPolls = 0;
+        uint8_t lastByte = 0xFF;
+        bool modified = false;
+    };
+
     uint8_t readMdrByte() noexcept;
-    void writeMdrByte(uint8_t val) noexcept;
-    uint8_t readMdrStatus() const noexcept;
-    void writeMdrControl(uint8_t val) noexcept;
+    void writeMdrByte(uint8_t value) noexcept;
+    uint8_t readMdrStatus() noexcept;
+    void writeMdrControl(uint8_t value) noexcept;
+    void restartTransfers() noexcept;
 
     BankId m_romBank = 0;
     std::array<Cartridge, kMaxCartridges> m_cartridges{};
-    int m_activeDrive = -1;
-    uint8_t m_commsData = 0;
-    bool m_commsClk = false;
+    uint8_t m_motors = 0;
+    uint8_t m_control = 0;
 };
 
 } // namespace zxkit

@@ -25,6 +25,7 @@
 #include "zxkit/media/ScreenshotFormat.h"
 #include "zxkit/media/SnapshotFormats.h"
 #include "zxkit/peripherals/expansion/ExpansionPeripherals.h"
+#include "zxkit/peripherals/storage/Interface1.h"
 
 #include <algorithm>
 #include <array>
@@ -265,14 +266,17 @@ void Emulator::installMachine(std::unique_ptr<MachineProfile> machine)
         });
     }
 
-
-    for (auto &periph : m_peripherals)
-        periph->onAttach(m_context);
+    for (auto &periph : m_peripherals) {
+        if (periph->supportsMachine(*m_machine))
+            periph->onAttach(m_context);
+    }
 
     m_cpu.reset(true);
     m_machine->reset(m_context, m_ula, ResetKind::Hard);
-    for (auto &periph : m_peripherals)
-        periph->reset(m_context, ResetKind::Hard);
+    for (auto &periph : m_peripherals) {
+        if (periph->supportsMachine(*m_machine))
+            periph->reset(m_context, ResetKind::Hard);
+    }
 
     m_debugger.breakpoints().syncMmuWatchFlags(m_mmu);
 
@@ -296,6 +300,9 @@ void Emulator::attachPeripheral(std::unique_ptr<Peripheral> peripheral)
         throw PeripheralException("Cannot attach a null Peripheral");
     if (findPeripheral(peripheral->id()))
         throw PeripheralException(std::format("Peripheral '{}' is already attached", peripheral->id()));
+    if (!peripheral->supportsMachine(*m_machine))
+        throw PeripheralException(
+                std::format("'{}' is unavailable on {}", peripheral->name(), m_machine->name()));
     peripheral->onAttach(m_context);
     peripheral->reset(m_context, ResetKind::Hard);
     m_peripherals.push_back(std::move(peripheral));
@@ -306,7 +313,8 @@ void Emulator::detachPeripheral(std::string_view peripheralId)
     const auto it = std::ranges::find_if(m_peripherals, [peripheralId](const auto &p) { return p->id() == peripheralId; });
     if (it == m_peripherals.end())
         throw PeripheralException(std::format("Peripheral '{}' is not attached", peripheralId));
-    (*it)->onDetach(m_context);
+    if ((*it)->supportsMachine(*m_machine))
+        (*it)->onDetach(m_context);
     m_peripherals.erase(it);
 }
 
@@ -315,6 +323,28 @@ OptionalRef<Peripheral> Emulator::findPeripheral(std::string_view peripheralId) 
     for (const auto &p : m_peripherals) {
         if (p->id() == peripheralId)
             return *p;
+    }
+    return std::nullopt;
+}
+
+OptionalRef<Interface1Peripheral> Emulator::interface1() noexcept
+{
+    if (!m_machine->supportsInterface1())
+        return std::nullopt;
+    for (const auto &peripheral : m_peripherals) {
+        if (auto *interface = dynamic_cast<Interface1Peripheral *>(peripheral.get()))
+            return *interface;
+    }
+    return std::nullopt;
+}
+
+OptionalRef<const Interface1Peripheral> Emulator::interface1() const noexcept
+{
+    if (!m_machine->supportsInterface1())
+        return std::nullopt;
+    for (const auto &peripheral : m_peripherals) {
+        if (const auto *interface = dynamic_cast<const Interface1Peripheral *>(peripheral.get()))
+            return *interface;
     }
     return std::nullopt;
 }
@@ -353,8 +383,10 @@ void Emulator::reset(ResetKind kind)
     m_audioSamples = {};
     m_cpu.reset(kind == ResetKind::Hard);
     m_machine->reset(m_context, m_ula, kind);
-    for (auto &p : m_peripherals)
-        p->reset(m_context, kind);
+    for (auto &p : m_peripherals) {
+        if (p->supportsMachine(*m_machine))
+            p->reset(m_context, kind);
+    }
     m_line = 0;
     m_frameStarted = false;
     m_lineStarted = false;
@@ -772,8 +804,10 @@ void Emulator::beginFrame()
     if (m_machine->usesRasterUla())
         m_ula.beginRasterFrame(m_clock.timings());
     m_tapeDeck.onFrameStart(m_machine->is48kMode(), m_rzx.isPlaying() || m_rzx.isRecording());
-    for (auto &periph : m_peripherals)
-        periph->onFrameStart();
+    for (auto &periph : m_peripherals) {
+        if (periph->supportsMachine(*m_machine))
+            periph->onFrameStart();
+    }
     // The ULA frame interrupt (machines may gate or redirect it)
     if (!m_rzx.isPlaying())
         m_machine->onFrameStart(m_context);
@@ -860,8 +894,10 @@ void Emulator::endFrame()
         m_ula.copyRasterFrame(*frame);
     }
     m_machine->onFrameEnd(m_context, m_ula);
-    for (auto &periph : m_peripherals)
-        periph->onFrameEnd();
+    for (auto &periph : m_peripherals) {
+        if (periph->supportsMachine(*m_machine))
+            periph->onFrameEnd();
+    }
 
     if (m_rewindEnabled) {
         auto &rewind = m_debugger.rewindBuffer();
@@ -1031,6 +1067,11 @@ void Emulator::loadMedia(const MediaFile &file)
         if (!diskDrive(0))
             throw PeripheralException("This machine has no floppy drive");
         insertDisk(0, file.data, ext);
+    } else if (ext == ".mdr"sv) {
+        auto interface = interface1();
+        if (!interface)
+            throw PeripheralException("ZX Interface 1 is required to mount an MDR cartridge"sv);
+        interface->get().insertCartridge(file.data);
     } else if (ext == ".rzx") {
         if (m_rzx.isRecording() || m_rzx.isReviewing()) throw FormatException("Stop recording before opening an RZX file");
         m_rzx.loadRzx(file.data, m_ioBus);
@@ -1062,6 +1103,11 @@ std::vector<uint8_t> Emulator::saveMedia(std::string_view extension)
         return m_tapeDeck.saveTap();
     if (ext == ".tzx")
         return m_tapeDeck.saveTzx();
+    if (ext == ".mdr"sv) {
+        if (auto interface = interface1())
+            return interface->get().saveCartridge(0);
+        throw PeripheralException("ZX Interface 1 is required to export an MDR cartridge"sv);
+    }
     if (ext == ".png")
         return screenshotPng();
     throw FormatException(std::format("Unsupported save file extension '{}'", ext));

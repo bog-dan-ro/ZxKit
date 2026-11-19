@@ -163,8 +163,8 @@ Keep these after all of the work above. Standalone DivMMC remains postponed.
 - [ ] Pre-M1 hooks: only the Beta 128 names the pages it watches (`addPreM1Hook(fn, owner, pages)`); the
       Interface 1, +D, DivMMC, Multiface, Spectranet and Next hooks still run on every instruction.
 - [ ] IDE: the +3e ROMs boot but have no drive; DivIDE; `.hdf` images.
-- [ ] Interface 1: a microdrive cartridge API (`.mdr` insert, eject, save) and RS232. The cartridge API is needed
-      for the microdrive part of [Spectacol #152](https://github.com/bog-dan-ro/spectacol/issues/152).
+- [x] Sinclair Interface 1 Microdrives: ROM paging, BASIC storage commands and cartridge insert, eject and export.
+- [ ] Sinclair Interface 1: connect RS-232 and ZX Net to host endpoints.
 - [ ] Spectranet: Ethernet (W5100); only its paging is emulated.
 - [x] TC2068 / TS2068: AY on 0xF5/0xF6 and both joystick inputs through register 14,
       with A8/A9 player selection, active-low directions/fire and AY input/output gating.

@@ -30,6 +30,8 @@ std::unique_ptr<archive::Backend> make(archive::View b, std::string_view ext,
     using namespace archive;
     using namespace std::literals;
     auto e = extension(ext);
+    if (e == ".mdr"sv)
+        return microdrive(b, options, create);
     if (!create) {
         auto magic = [&](std::string_view signature) {
             return b.size() >= signature.size()

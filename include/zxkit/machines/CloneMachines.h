@@ -103,6 +103,10 @@ public:
     std::string_view id() const noexcept override;
     std::string_view name() const noexcept override;
     FrameTimings timings() const noexcept override;
+    bool supportsInterface1() const noexcept override
+    {
+        return m_variant == Variant::Tc2048 || m_variant == Variant::SpecSe;
+    }
 
     void initialize(MachineContext &ctx, UlaRenderer &ula) override;
     void reset(MachineContext &ctx, UlaRenderer &ula, ResetKind kind) override;

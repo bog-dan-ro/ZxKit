@@ -236,10 +236,89 @@ void testRomanianCpmBankingAndIf1Fdc()
         assert(io.read(0x0085) == 0x80);
     }
 
-    // A detached peripheral must not leave CPU hooks behind
+    // The built-in floppy interface occupies the expansion hardware on the HC-2000.
+    bool rejected = false;
+    try {
+        emulator.attachPeripheral(std::make_unique<Interface1Peripheral>());
+    } catch (const PeripheralException &) {
+        rejected = true;
+    }
+    assert(rejected && !emulator.interface1());
+}
+
+void testSinclairInterface1()
+{
+    EmulatorConfig config;
+    config.machineId = "48k"s;
+    config.romResolver = [](std::string_view name, std::size_t size) {
+        auto rom = std::vector<uint8_t>(size, 0);
+        if (name == "if1-2.rom"sv)
+            rom[0x0700] = 0xC9; // RET must be fetched before the ROM is paged out
+        return rom;
+    };
+    Emulator emulator(config);
     emulator.attachPeripheral(std::make_unique<Interface1Peripheral>());
-    emulator.detachPeripheral("interface1");
-    emulator.runFrames(2);
+    auto &interface = emulator.interface1()->get();
+    auto &cpu = emulator.cpu();
+    cpu.registers().PC = 0x0008;
+    cpu.stepInstruction();
+    assert(emulator.romcs().isActive("interface1"sv));
+    assert(emulator.mmu().peek(0x2700) == 0xC9);
+    cpu.registers().PC = 0x0700;
+    cpu.registers().SP = 0x8000;
+    emulator.mmu().poke(0x8000, 0x34);
+    emulator.mmu().poke(0x8001, 0x82);
+    cpu.stepInstruction();
+    assert(cpu.registers().PC == 0x8234 && !emulator.romcs().isActive("interface1"sv));
+
+    std::vector<uint8_t> bytes(Interface1Peripheral::kMdrBlockSize + 1, 0x42);
+    bytes[15] = 0x19;
+    bytes.back() = 1;
+    emulator.loadMedia(MediaFile::fromBytes(bytes, "mdr"sv));
+    assert(interface.hasCartridge(0) && emulator.saveMedia("mdr"sv) == bytes);
+    auto &io = emulator.ioBus();
+    io.write(0xEF, 0xEE);
+    io.write(0xEF, 0xEC);
+    assert((io.read(0xEF) & 7) == 6);
+    for (int poll = 0; poll < 15; ++poll)
+        io.read(0xEF);
+    assert((io.read(0xEF) & 7) == 0);
+    for (int n = 0; n < 16; ++n)
+        assert(io.read(0xE7) == 0x42);
+    io.write(0xEF, 0xEE);
+    assert(io.read(0xE7) == 0x19);
+    io.write(0xEF, 0xE2);
+    for (int n = 0; n < 13; ++n)
+        io.write(0xE7, 0);
+    assert(!interface.cartridgeModified(0) && interface.saveCartridge(0) == bytes);
+
+    bytes.pop_back();
+    interface.insertCartridge(0, bytes);
+    io.write(0xEF, 0xE2);
+    for (int n = 0; n < 12; ++n)
+        io.write(0xE7, n < 10 ? 0 : 0xFF);
+    io.write(0xE7, 0x23);
+    assert(interface.cartridgeModified(0) && interface.saveCartridge(0)[0] == 0x23);
+    interface.markCartridgeSaved(0, bytes);
+    assert(interface.cartridgeModified(0));
+    bytes[0] = 0x23;
+    interface.markCartridgeSaved(0, bytes);
+    assert(!interface.cartridgeModified(0));
+
+    emulator.selectMachine("cobra_64k"sv);
+    assert(!emulator.interface1() && !emulator.mmu().findBank("if1_rom"sv));
+    cpu.registers().PC = 0x0008;
+    cpu.stepInstruction();
+    assert(!emulator.romcs().isActive("interface1"sv));
+    emulator.selectMachine("128k"sv);
+    assert(emulator.interface1()->get().saveCartridge(0) == bytes);
+    cpu.registers().PC = 0x1708;
+    cpu.stepInstruction();
+    assert(emulator.romcs().isActive("interface1"sv));
+    emulator.detachPeripheral("interface1"sv);
+    cpu.registers().PC = 0x1708;
+    cpu.stepInstruction();
+    assert(!emulator.romcs().isActive("interface1"sv));
 }
 
 // Custom user-defined peripheral to verify zero-internal-change extensibility
@@ -683,6 +762,7 @@ int main()
 {
     testZ80nOpcodes();
     testRomanianCpmBankingAndIf1Fdc();
+    testSinclairInterface1();
     testExtensibilityAndZxNextAndDebugger();
     testEngineThreading();
     testAssemblerAndDisassembler();

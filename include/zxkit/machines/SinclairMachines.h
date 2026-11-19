@@ -70,6 +70,10 @@ public:
     std::string_view id() const noexcept override;
     std::string_view name() const noexcept override;
     FrameTimings timings() const noexcept override;
+    bool supportsInterface1() const noexcept override
+    {
+        return true;
+    }
     bool usesRasterUla() const noexcept override
     {
         return true;
@@ -91,6 +95,10 @@ public:
     std::string_view id() const noexcept override;
     std::string_view name() const noexcept override;
     FrameTimings timings() const noexcept override;
+    bool supportsInterface1() const noexcept override
+    {
+        return true;
+    }
     bool usesRasterUla() const noexcept override
     {
         return true;

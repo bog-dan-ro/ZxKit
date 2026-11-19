@@ -17,34 +17,53 @@
 
 #include "zxkit/peripherals/storage/Interface1.h"
 
+#include "../../media/MdrFormat.h"
 #include "zxkit/core/Exception.h"
 #include "zxkit/cpu/Z80Cpu.h"
+#include "zxkit/machines/MachineProfile.h"
+
+#include <algorithm>
+#include <string>
+#include <string_view>
 
 namespace zxkit {
 
+using namespace std::literals;
+
+namespace {
+constexpr uint8_t kClock = 0x02;
+constexpr uint8_t kReadMode = 0x04;
+constexpr std::size_t kPreambleSize = 12;
+} // namespace
+
 std::string_view Interface1Peripheral::id() const noexcept
 {
-    return "interface1";
+    return "interface1"sv;
 }
 
 std::string_view Interface1Peripheral::name() const noexcept
 {
-    return "ZX Interface 1 + Microdrive";
+    return "ZX Interface 1 + Microdrive"sv;
+}
+
+bool Interface1Peripheral::supportsMachine(const MachineProfile &machine) const noexcept
+{
+    return machine.supportsInterface1();
 }
 
 void Interface1Peripheral::onAttach(MachineContext &ctx)
 {
-    m_romBank = ctx.mmu.registerBank("if1_rom", 8 * 1024, false, false);
+    const auto rom = ctx.loadRom("if1-2.rom"sv, 8 * 1024);
+    m_romBank = ctx.mmu.findBank("if1_rom"sv);
+    if (!m_romBank)
+        m_romBank = ctx.mmu.registerBank("if1_rom"s, rom.size(), false, false);
+    ctx.mmu.bank(m_romBank).loadData(0, rom);
 
-    ctx.romcs.registerProvider(
-        std::string(id()),
-        20,
-        [this](Mmu &mmu) {
-            mmu.mapOverlay1k(0x0000, m_romBank, 0, 8, false);
-            mmu.mapOverlay1k(0x2000, m_romBank, 0, 8, false);
-        });
+    ctx.romcs.registerProvider(std::string(id()), 20, [this](Mmu &mmu) {
+        mmu.mapOverlay1k(0x0000, m_romBank, 0, 8, false);
+        mmu.mapOverlay1k(0x2000, m_romBank, 0, 8, false);
+    });
 
-    // M1 page-in at 0x0008 or 0x1708; M1 page-out after opcode fetch at 0x0700
     ctx.cpu.addPreM1Hook([this, &ctx](uint16_t pc) {
         if (pc == 0x0008 || pc == 0x1708)
             ctx.romcs.setActive(id(), true);
@@ -54,61 +73,98 @@ void Interface1Peripheral::onAttach(MachineContext &ctx)
             ctx.romcs.setActive(id(), false);
     }, std::string(id()));
 
-    // Port 0xE7: Microdrive data (mask 0x0018 == 0x0000)
     ctx.ioBus.registerSimpleHandler(
-        std::string(id()) + "_mdr_data",
-        0x0018,
-        0x0000,
-        [this](uint16_t) -> uint8_t { return readMdrByte(); },
-        [this](uint16_t, uint8_t val) { writeMdrByte(val); });
-
-    // Port 0xEF: Microdrive control/status (mask 0x0018 == 0x0008)
+            std::string(id()), 0x0018, 0x0000, [this](uint16_t) { return readMdrByte(); },
+            [this](uint16_t, uint8_t value) { writeMdrByte(value); });
     ctx.ioBus.registerSimpleHandler(
-        std::string(id()) + "_mdr_ctrl",
-        0x0018,
-        0x0008,
-        [this](uint16_t) -> uint8_t { return readMdrStatus(); },
-        [this](uint16_t, uint8_t val) { writeMdrControl(val); });
-
-    // Port 0xF7: RS-232 / ZX Net (mask 0x0018 == 0x0010)
+            std::string(id()), 0x0018, 0x0008, [this](uint16_t) { return readMdrStatus(); },
+            [this](uint16_t, uint8_t value) { writeMdrControl(value); });
+    // RS-232 and ZX Net lines with no external device connected.
     ctx.ioBus.registerSimpleHandler(
-        std::string(id()) + "_rs232",
-        0x0018,
-        0x0010,
-        [](uint16_t) -> uint8_t { return 0xFF; },
-        [](uint16_t, uint8_t) {});
+            std::string(id()), 0x0018, 0x0010, [](uint16_t) -> uint8_t { return 0xFF; },
+            [this](uint16_t, uint8_t) { restartTransfers(); });
 }
 
 void Interface1Peripheral::onDetach(MachineContext &ctx)
 {
     ctx.cpu.removeHooks(id());
     ctx.romcs.unregisterProvider(id());
-    ctx.ioBus.unregisterOwner(std::string(id()) + "_mdr_data");
-    ctx.ioBus.unregisterOwner(std::string(id()) + "_mdr_ctrl");
-    ctx.ioBus.unregisterOwner(std::string(id()) + "_rs232");
+    ctx.ioBus.unregisterOwner(id());
 }
 
-void Interface1Peripheral::reset(MachineContext & /*ctx*/, ResetKind)
+void Interface1Peripheral::reset(MachineContext &ctx, ResetKind)
 {
-    m_activeDrive = -1;
-    m_commsData = 0;
-    m_commsClk = false;
+    ctx.romcs.setActive(id(), false);
+    m_motors = 0;
+    m_control = kReadMode;
+    for (auto &cartridge : m_cartridges)
+        cartridge.position = 0;
+    restartTransfers();
 }
 
 void Interface1Peripheral::insertCartridge(std::size_t driveIdx, std::span<const uint8_t> mdrBytes)
 {
     if (driveIdx >= kMaxCartridges)
-        throw InvalidArgumentException("Microdrive index out of range (0..7)");
-    auto &c = m_cartridges[driveIdx];
-    if (mdrBytes.size() % kMdrBlockSize == 1) {
-        c.writeProtected = (mdrBytes.back() != 0);
-        c.data.assign(mdrBytes.begin(), mdrBytes.end() - 1);
-    } else {
-        c.writeProtected = false;
-        c.data.assign(mdrBytes.begin(), mdrBytes.end());
+        throw InvalidArgumentException("Microdrive index out of range (0..7)"sv);
+    const auto sectors = mdr::sectors(mdrBytes);
+    Cartridge cartridge;
+    cartridge.data.assign(sectors.begin(), sectors.end());
+    cartridge.blockSize = mdr::kHeaderSize;
+    if (mdrBytes.size() != sectors.size())
+        cartridge.protection = mdrBytes.back();
+    m_cartridges[driveIdx] = std::move(cartridge);
+}
+
+std::size_t Interface1Peripheral::insertCartridge(std::span<const uint8_t> mdrBytes)
+{
+    for (std::size_t drive = 0; drive < kMaxCartridges; ++drive) {
+        if (!hasCartridge(drive)) {
+            insertCartridge(drive, mdrBytes);
+            return drive;
+        }
     }
-    c.headPos = 0;
-    c.inserted = !c.data.empty();
+    throw PeripheralException("All eight Microdrives have cartridges inserted"sv);
+}
+
+void Interface1Peripheral::ejectCartridge(std::size_t driveIdx)
+{
+    if (driveIdx >= kMaxCartridges)
+        throw InvalidArgumentException("Microdrive index out of range (0..7)"sv);
+    m_cartridges[driveIdx] = {};
+}
+
+bool Interface1Peripheral::hasCartridge(std::size_t driveIdx) const noexcept
+{
+    return driveIdx < kMaxCartridges && !m_cartridges[driveIdx].data.empty();
+}
+
+bool Interface1Peripheral::cartridgeModified(std::size_t driveIdx) const noexcept
+{
+    return hasCartridge(driveIdx) && m_cartridges[driveIdx].modified;
+}
+
+std::vector<uint8_t> Interface1Peripheral::saveCartridge(std::size_t driveIdx) const
+{
+    if (!hasCartridge(driveIdx))
+        throw PeripheralException("No cartridge in that Microdrive"sv);
+    const auto &cartridge = m_cartridges[driveIdx];
+    auto bytes = cartridge.data;
+    if (cartridge.protection)
+        bytes.push_back(*cartridge.protection);
+    return bytes;
+}
+
+void Interface1Peripheral::markCartridgeSaved(std::size_t driveIdx,
+                                              std::span<const uint8_t> savedBytes) noexcept
+{
+    if (!hasCartridge(driveIdx))
+        return;
+    auto &cartridge = m_cartridges[driveIdx];
+    const auto size = cartridge.data.size();
+    if (savedBytes.size() == size + cartridge.protection.has_value()
+        && (!cartridge.protection || *cartridge.protection == savedBytes.back())
+        && std::ranges::equal(cartridge.data, savedBytes.first(size)))
+        cartridge.modified = false;
 }
 
 BankId Interface1Peripheral::romBankId() const noexcept
@@ -118,52 +174,80 @@ BankId Interface1Peripheral::romBankId() const noexcept
 
 uint8_t Interface1Peripheral::readMdrByte() noexcept
 {
-    if (m_activeDrive < 0 || m_activeDrive >= static_cast<int>(kMaxCartridges))
-        return 0xFF;
-    auto &c = m_cartridges[m_activeDrive];
-    if (!c.inserted || c.data.empty())
-        return 0xFF;
-    const uint8_t b = c.data[c.headPos];
-    c.headPos = (c.headPos + 1) % c.data.size();
-    return b;
+    uint8_t value = 0xFF;
+    for (std::size_t drive = 0; drive < kMaxCartridges; ++drive) {
+        if (!(m_motors & (1u << drive)) || !hasCartridge(drive))
+            continue;
+        auto &cartridge = m_cartridges[drive];
+        if (cartridge.transferred < cartridge.blockSize) {
+            ++cartridge.transferred;
+            cartridge.lastByte = cartridge.data[cartridge.position];
+            cartridge.position = (cartridge.position + 1) % cartridge.data.size();
+        }
+        value &= cartridge.lastByte;
+    }
+    return value;
 }
 
-void Interface1Peripheral::writeMdrByte(uint8_t val) noexcept
+void Interface1Peripheral::writeMdrByte(uint8_t value) noexcept
 {
-    if (m_activeDrive < 0 || m_activeDrive >= static_cast<int>(kMaxCartridges))
+    if (m_control & kReadMode)
         return;
-    auto &c = m_cartridges[m_activeDrive];
-    if (!c.inserted || c.writeProtected || c.data.empty())
-        return;
-    c.data[c.headPos] = val;
-    c.headPos = (c.headPos + 1) % c.data.size();
+    for (std::size_t drive = 0; drive < kMaxCartridges; ++drive) {
+        if (!(m_motors & (1u << drive)) || !hasCartridge(drive))
+            continue;
+        auto &cartridge = m_cartridges[drive];
+        if (cartridge.protection.value_or(0)
+            || cartridge.transferred >= kPreambleSize + cartridge.blockSize)
+            continue;
+        // The physical block starts with ten zero bytes and two sync bytes, omitted from MDR.
+        if (cartridge.transferred++ < kPreambleSize)
+            continue;
+        cartridge.data[cartridge.position] = value;
+        cartridge.position = (cartridge.position + 1) % cartridge.data.size();
+        cartridge.modified = true;
+    }
 }
 
-uint8_t Interface1Peripheral::readMdrStatus() const noexcept
+uint8_t Interface1Peripheral::readMdrStatus() noexcept
 {
-    uint8_t status = 0xFE; // Bit 0 = write protect (0 = protected)
-    if (m_activeDrive >= 0 && m_activeDrive < static_cast<int>(kMaxCartridges)) {
-        const auto &c = m_cartridges[m_activeDrive];
-        if (!c.writeProtected)
-            status |= 0x01;
+    uint8_t status = 0xFF;
+    for (std::size_t drive = 0; drive < kMaxCartridges; ++drive) {
+        if (!(m_motors & (1u << drive)) || !hasCartridge(drive))
+            continue;
+        auto &cartridge = m_cartridges[drive];
+        // Supply a run of gap polls followed by sync so the ROM can find each block.
+        if (cartridge.statusPolls >= 15)
+            status &= 0xF9;
+        cartridge.statusPolls = (cartridge.statusPolls + 1) % 31;
+        if (cartridge.protection.value_or(0))
+            status &= 0xFE;
     }
     return status;
 }
 
-void Interface1Peripheral::writeMdrControl(uint8_t val) noexcept
+void Interface1Peripheral::writeMdrControl(uint8_t value) noexcept
 {
-    const bool clk = (val & 0x02) != 0;
-    if (!clk && m_commsClk) {
-        m_commsData = static_cast<uint8_t>((m_commsData << 1) | ((val & 0x01) ? 0 : 1));
-        m_activeDrive = -1;
-        for (int i = 0; i < 8; ++i) {
-            if (m_commsData & (1u << i)) {
-                m_activeDrive = i;
-                break;
-            }
+    if (!(value & kClock) && (m_control & kClock))
+        m_motors = uint8_t((m_motors << 1) | ((value & 1) == 0));
+    m_control = value;
+    restartTransfers();
+}
+
+void Interface1Peripheral::restartTransfers() noexcept
+{
+    for (auto &cartridge : m_cartridges) {
+        if (cartridge.data.empty())
+            continue;
+        const auto offset = cartridge.position % mdr::kSectorSize;
+        if (offset != 0 && offset != mdr::kHeaderSize) {
+            const auto next = offset < mdr::kHeaderSize ? mdr::kHeaderSize : mdr::kSectorSize;
+            cartridge.position = (cartridge.position + next - offset) % cartridge.data.size();
         }
+        cartridge.transferred = 0;
+        cartridge.blockSize =
+                cartridge.position % mdr::kSectorSize == 0 ? mdr::kHeaderSize : mdr::kRecordSize;
     }
-    m_commsClk = clk;
 }
 
 } // namespace zxkit
