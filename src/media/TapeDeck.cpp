@@ -247,6 +247,36 @@ bool isLoaderRead(const Mmu &mmu, uint16_t pc) noexcept
     return isLoaderLoop(mmu, pc) || isMovieloadLoader(mmu, pc) || readUsesEar(mmu, pc);
 }
 
+bool hasSpectrumBytes(const TapeBlock &block) noexcept
+{
+    return block.usedBits == 8
+            && (block.type == TapeBlockType::StandardData || block.type == TapeBlockType::TurboData
+                || block.type == TapeBlockType::PzxData);
+}
+
+bool endsManualStartBasic(std::span<const TapeBlock> blocks, std::size_t index) noexcept
+{
+    const auto &data = blocks[index];
+    if (!hasSpectrumBytes(data) || data.data.size() < 2 || data.data.front() != 0xFF)
+        return false;
+
+    while (index > 0) {
+        const auto &header = blocks[--index];
+        if (header.isMetadata()
+            || (data.type == TapeBlockType::PzxData
+                && (header.type == TapeBlockType::PzxPulses
+                    || header.type == TapeBlockType::PzxPause)))
+            continue;
+        const auto &bytes = header.data;
+        // A type-zero header with bit 15 of the start line set waits for RUN.
+        return hasSpectrumBytes(header) && bytes.size() == 19 && bytes[0] == 0 && bytes[1] == 0
+                && (bytes[15] & 0x80) != 0
+                && (std::size_t{ bytes[12] } | (std::size_t{ bytes[13] } << 8))
+                == data.data.size() - 2;
+    }
+    return false;
+}
+
 // Loaders are detected after a few reads, so the playback starts between two samples
 constexpr int kDetectionReads = 10;
 constexpr int kMovieloadDetectionReads = 128;
@@ -492,6 +522,7 @@ void TapeDeck::nextEdge(MachineContext &ctx, uint64_t at, bool fromAcceleration)
         return;
     }
 
+    const auto block = m_cursor.blockIndex();
     const TapeEdge edge = m_cursor.next(m_blocks);
     setLevel(edge.level, at, ctx);
 
@@ -502,13 +533,18 @@ void TapeDeck::nextEdge(MachineContext &ctx, uint64_t at, bool fromAcceleration)
     m_nextEdgeAt = at + pulseToCpu(edge.length, ctx);
     m_edgeSpeed = ctx.clock.speedMultiplier();
 
-    // A tape the loader detection started stops before a standard block: the ROM trap loads it
-    if (!m_stopPending && (edge.flags & TapeEdge::Flags::BlockEnd) && m_autoPlaying && m_options.romTraps
-        && !m_rzxActive && nextDataBlockIsRom()) {
-        m_lastNow = std::max(m_lastNow, at);
-        stop();
-        m_pausedRemaining = 0;
-        return;
+    if (!m_stopPending && (edge.flags & TapeEdge::Flags::BlockEnd) && m_autoPlaying
+        && !m_rzxActive) {
+        // BASIC saved without an auto-start line waits for the user. Stop before the next file.
+        const bool basicEnded =
+                m_cursor.blockIndex() == block + 1 && endsManualStartBasic(m_blocks, block);
+        // A standard block following real-time playback can be loaded by the ROM trap.
+        if (basicEnded || (m_options.romTraps && nextDataBlockIsRom())) {
+            m_lastNow = std::max(m_lastNow, at);
+            stop();
+            m_pausedRemaining = 0;
+            return;
+        }
     }
 
     // What the pulse that starts now is, for the acceleration

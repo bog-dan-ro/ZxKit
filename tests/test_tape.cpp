@@ -639,6 +639,55 @@ void testRomLoading(const std::filesystem::path &romDir)
     assert(realTime > 500 && realTime < 1000);
 }
 
+void testAutoStopAfterBasic(Emulator &emulator)
+{
+    const auto realTimeBlocks = [](std::span<const uint8_t> program) {
+        auto blocks = TapeFormats::parseTap(programTap(program));
+        // The ROM can read these timings, but the blocks use the physical signal.
+        for (auto &block : blocks) {
+            block.type = TapeBlockType::TurboData;
+            --block.pilotPulse;
+        }
+        return blocks;
+    };
+    const auto program = BasicCodec::compile("10 PRINT \"TAPE TEST\"\n20 STOP"sv);
+    auto tape = realTimeBlocks(program);
+    tape.insert(tape.begin(), TapeBlock::standard({ 0xFF, 0xFF }));
+    const auto followingProgram = basicProgram(32);
+    const auto following = realTimeBlocks(followingProgram);
+    tape.insert(tape.end(), following.begin(), following.end());
+
+    const auto loaded = [&emulator](std::span<const uint8_t> expected) {
+        const auto pointer = emulator.readMemory(0x5C53, 2);
+        const auto address = static_cast<uint16_t>(pointer[0] | (pointer[1] << 8));
+        return std::ranges::equal(emulator.readMemory(address, expected.size()), expected);
+    };
+    for (const bool detectLoaders : { false, true }) {
+        emulator.tapeDeck().setOptions({ .autoPlay = detectLoaders });
+        emulator.tapeDeck().load(tape);
+        assert(emulator.autoLoadTape(1));
+        emulator.runFrames(575);
+        assert(loaded(program));
+        assert(emulator.tapeDeck().currentBlockIndex() == 3);
+        assert(!emulator.tapeDeck().isPlaying());
+
+        tap(emulator, { ZxKey::R }); // RUN
+        tap(emulator, { ZxKey::Enter });
+        emulator.runFrames(180);
+        assert(emulator.readMemory(0x5C3A, 1)[0] == 0x08); // 9 STOP statement
+        assert(!emulator.tapeDeck().isPlaying());
+        assert(emulator.tapeDeck().currentBlockIndex() == 3);
+
+        tap(emulator, { ZxKey::J }); // LOAD ""
+        tap(emulator, { ZxKey::SymbolShift, ZxKey::P });
+        tap(emulator, { ZxKey::SymbolShift, ZxKey::P });
+        tap(emulator, { ZxKey::Enter });
+        emulator.runFrames(650);
+        assert(loaded(followingProgram));
+        assert(!emulator.tapeDeck().isPlaying());
+    }
+}
+
 } // namespace
 
 void testBootActions(const std::filesystem::path &romDir)
@@ -660,6 +709,7 @@ void testBootActions(const std::filesystem::path &romDir)
     const auto at = static_cast<uint16_t>(pointers[0] | (pointers[1] << 8));
     assert(emulator.readMemory(at,program.size()) == program);
     assert(emulator.tapeDeck().currentBlockIndex() == 3);
+    testAutoStopAfterBasic(emulator);
 
     config.machineId = "plus3";
     Emulator plus3(config);
