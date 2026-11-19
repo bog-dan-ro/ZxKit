@@ -321,6 +321,64 @@ void testSinclairInterface1()
     assert(!emulator.romcs().isActive("interface1"sv));
 }
 
+void testSzxRoms()
+{
+    EmulatorConfig config;
+    config.romResolver = [](std::string_view name, std::size_t size) {
+        assert(name == "48.rom"sv);
+        return std::vector<uint8_t>(size, 0x48);
+    };
+    Emulator emulator(config);
+    const auto plain = emulator.saveSnapshot(".szx"sv);
+    StateWriter chunks;
+    chunks.writeBytes(plain);
+    chunks.writeTag("ROM\0"sv);
+    chunks.write<uint32_t>(6 + 16384);
+    chunks.write<uint16_t>(0);
+    chunks.write<uint32_t>(16384);
+    chunks.writeBytes(std::vector<uint8_t>(16384, 0x42));
+    const std::vector<uint8_t> withMachineRom(chunks.data().begin(), chunks.data().end());
+
+    chunks.writeTag("IF1\0"sv);
+    chunks.write<uint32_t>(40 + 16384);
+    chunks.write<uint16_t>(5); // Enabled and paged in.
+    chunks.write<uint8_t>(8);
+    chunks.writeBytes(std::array<uint8_t, 35>{});
+    chunks.write<uint16_t>(16384);
+    chunks.writeBytes(std::vector<uint8_t>(8192, 0x11));
+    chunks.writeBytes(std::vector<uint8_t>(8192, 0x22));
+    const auto snapshot = chunks.takeBuffer();
+
+    emulator.loadMedia({ snapshot, ".szx"s });
+    assert(emulator.interface1());
+    assert(emulator.mmu().peek(0x0000) == 0x11);
+    assert(emulator.mmu().peek(0x2000) == 0x22);
+    assert(emulator.mmu().bank(emulator.machine().romBankId()).bytes().back() == 0x42);
+
+    const auto resaved = emulator.saveSnapshot(".szx"sv);
+    Emulator copy(config);
+    copy.loadSnapshot(resaved, ".szx"sv);
+    assert(copy.mmu().peek(0x2000) == 0x22);
+    copy.cpu().registers().PC = 0x0700;
+    copy.stepInstruction();
+    assert(!copy.romcs().isActive("interface1"sv));
+    assert(copy.mmu().peek(0) == 0x42);
+
+    copy.loadSnapshot(withMachineRom, ".szx"sv);
+    assert(!copy.interface1());
+    assert(copy.mmu().peek(0) == 0x42);
+    copy.loadSnapshot(plain, ".szx"sv);
+    assert(copy.mmu().peek(0) == 0x48);
+
+    bool rejected = false;
+    try {
+        emulator.loadSnapshot(std::span(snapshot).first(snapshot.size() - 1), ".szx"sv);
+    } catch (const FormatException &) {
+        rejected = true;
+    }
+    assert(rejected && emulator.mmu().peek(0x2000) == 0x22);
+}
+
 // Custom user-defined peripheral to verify zero-internal-change extensibility
 class CustomCounterPeripheral : public Peripheral {
 public:
@@ -763,6 +821,7 @@ int main()
     testZ80nOpcodes();
     testRomanianCpmBankingAndIf1Fdc();
     testSinclairInterface1();
+    testSzxRoms();
     testExtensibilityAndZxNextAndDebugger();
     testEngineThreading();
     testAssemblerAndDisassembler();

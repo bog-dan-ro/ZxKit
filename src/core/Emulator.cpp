@@ -176,6 +176,8 @@ void Emulator::selectMachine(std::unique_ptr<MachineProfile> machine)
 
 void Emulator::installMachine(std::unique_ptr<MachineProfile> machine)
 {
+    clearSnapshotInterface1();
+    m_romBeforeSnapshot.clear();
     m_mediaBootFrame = 0;
     m_scheduler.clear();
     m_ioBus.clear();
@@ -315,6 +317,8 @@ void Emulator::detachPeripheral(std::string_view peripheralId)
         throw PeripheralException(std::format("Peripheral '{}' is not attached", peripheralId));
     if ((*it)->supportsMachine(*m_machine))
         (*it)->onDetach(m_context);
+    if (peripheralId == "interface1"sv)
+        m_snapshotInterface1 = SnapshotInterface1::None;
     m_peripherals.erase(it);
 }
 
@@ -375,6 +379,10 @@ void Emulator::reset(ResetKind kind)
 {
     if (m_rzx.isRecording() || m_rzx.isReviewing()) throw FormatException("Stop RZX recording before resetting the machine");
     stopRzxPlayback();
+    if (kind == ResetKind::Hard && !m_romBeforeSnapshot.empty()) {
+        restoreConfiguredRom();
+        m_debugger.rewindBuffer().clear();
+    }
     m_mediaBootFrame = 0;
     m_keyboard.reset();
     m_ula.endRasterFrame();
@@ -1118,6 +1126,101 @@ void Emulator::saveMediaFile(const std::filesystem::path &path)
     writeFileBytes(path, saveMedia(path.extension().string()));
 }
 
+std::array<std::span<uint8_t>, 2> Emulator::szxMachineRomBanks()
+{
+    auto rom = m_mmu.bank(m_machine->romBankId()).bytes();
+    const auto id = m_machine->id();
+    if (id == "pentagon"sv)
+        rom = rom.first(32 * 1024); // TR-DOS is a separate SZX block.
+    if (id == "tc2068"sv || id == "ts2068"sv)
+        return { rom, m_mmu.bank(m_mmu.findBank("exrom"sv)).bytes() };
+    return { rom, {} };
+}
+
+void Emulator::restoreConfiguredRom()
+{
+    if (m_romBeforeSnapshot.empty())
+        return;
+    auto saved = std::span(m_romBeforeSnapshot);
+    for (auto bank : szxMachineRomBanks()) {
+        std::ranges::copy(saved.first(bank.size()), bank.begin());
+        saved = saved.subspan(bank.size());
+    }
+    m_romBeforeSnapshot.clear();
+}
+
+void Emulator::clearSnapshotInterface1()
+{
+    if (m_snapshotInterface1 == SnapshotInterface1::None)
+        return;
+    auto device = interface1();
+    if (!device)
+        return;
+    auto &interface = device->get();
+    if (m_snapshotInterface1 == SnapshotInterface1::Configured) {
+        interface.setSnapshotRom(m_context, {}, Interface1Peripheral::kMaxCartridges, false);
+        m_snapshotInterface1 = SnapshotInterface1::None;
+    } else if (std::ranges::none_of(interface.m_cartridges, [](const auto &cartridge) {
+                   return !cartridge.data.empty();
+               })) {
+        detachPeripheral(interface.id());
+    } else {
+        // A cartridge mounted after loading the snapshot still belongs to the host.
+        interface.reset(m_context, ResetKind::Soft);
+    }
+}
+
+void Emulator::applySzxRoms(SzxRomState roms)
+{
+    if (roms.interface1 && m_machine->supportsInterface1()) {
+        auto &saved = *roms.interface1;
+        if (!interface1()) {
+            auto device = std::make_unique<Interface1Peripheral>(std::move(saved.rom));
+            device->m_driveCount = saved.driveCount;
+            attachPeripheral(std::move(device));
+            m_snapshotInterface1 = SnapshotInterface1::Attached;
+            m_romcs.setActive("interface1"sv, saved.paged);
+        } else {
+            interface1()->get().setSnapshotRom(m_context, std::move(saved.rom), saved.driveCount,
+                                               saved.paged);
+            if (m_snapshotInterface1 == SnapshotInterface1::None)
+                m_snapshotInterface1 = SnapshotInterface1::Configured;
+        }
+    } else {
+        clearSnapshotInterface1();
+    }
+
+    restoreConfiguredRom();
+    if (!roms.machineRom.empty()) {
+        const auto banks = szxMachineRomBanks();
+        if (roms.machineRom.size() != banks[0].size() + banks[1].size())
+            throw FormatException("SZX ROM size does not match the machine ROM banks"sv);
+        m_romBeforeSnapshot.reserve(roms.machineRom.size());
+        auto bytes = std::span(roms.machineRom);
+        for (auto bank : banks) {
+            m_romBeforeSnapshot.insert(m_romBeforeSnapshot.end(), bank.begin(), bank.end());
+            std::ranges::copy(bytes.first(bank.size()), bank.begin());
+            bytes = bytes.subspan(bank.size());
+        }
+    }
+}
+
+SzxRomState Emulator::szxRoms()
+{
+    SzxRomState result;
+    if (!m_romBeforeSnapshot.empty()) {
+        result.machineRom.reserve(m_romBeforeSnapshot.size());
+        for (auto bank : szxMachineRomBanks())
+            result.machineRom.insert(result.machineRom.end(), bank.begin(), bank.end());
+    }
+    if (const auto device = interface1()) {
+        const auto &interface = device->get();
+        result.interface1.emplace(interface.m_snapshotRom, interface.m_driveCount,
+                                  m_romcs.isActive(interface.id()));
+    }
+    return result;
+}
+
 void Emulator::loadSnapshot(std::span<const uint8_t> data, std::string_view extension)
 {
     cancelRunControl();
@@ -1158,6 +1261,7 @@ void Emulator::loadSnapshot(std::span<const uint8_t> data, std::string_view exte
             return;
         }
     }
+    auto roms = ext == ".szx"sv ? SnapshotFormats::readSzxRoms(data) : SzxRomState{};
     if (!m_applyingRzxSnapshot) {
         const auto id = SnapshotFormats::machineId(data, ext);
         if (id != m_machine->id()) selectMachine(id);
@@ -1181,6 +1285,12 @@ void Emulator::loadSnapshot(std::span<const uint8_t> data, std::string_view exte
         SnapshotFormats::loadNex(data, state);
     else
         throw FormatException(std::format("Unsupported snapshot format '{}'", ext));
+
+    if (!m_romBeforeSnapshot.empty() || m_snapshotInterface1 != SnapshotInterface1::None
+        || !roms.machineRom.empty() || roms.interface1) {
+        applySzxRoms(std::move(roms));
+        m_debugger.rewindBuffer().clear();
+    }
 
     if (m_machine->usesRasterUla())
         m_ula.beginRasterFrame(m_clock.timings());
@@ -1222,7 +1332,7 @@ std::vector<uint8_t> Emulator::saveSnapshot(std::string_view extension)
         return out.takeBuffer();
     }
     if (ext == ".szx")
-        return SnapshotFormats::saveSzx(state);
+        return SnapshotFormats::saveSzx(state, szxRoms());
     throw FormatException(std::format("Unsupported snapshot save format '{}'", ext));
 }
 

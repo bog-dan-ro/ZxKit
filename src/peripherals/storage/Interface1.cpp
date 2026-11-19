@@ -25,6 +25,7 @@
 #include <algorithm>
 #include <string>
 #include <string_view>
+#include <utility>
 
 namespace zxkit {
 
@@ -35,6 +36,12 @@ constexpr uint8_t kClock = 0x02;
 constexpr uint8_t kReadMode = 0x04;
 constexpr std::size_t kPreambleSize = 12;
 } // namespace
+
+Interface1Peripheral::Interface1Peripheral(std::vector<uint8_t> rom) : m_snapshotRom(std::move(rom))
+{
+    if (!m_snapshotRom.empty() && m_snapshotRom.size() != 8192 && m_snapshotRom.size() != 16384)
+        throw InvalidArgumentException("Interface 1 ROM must be 8 KiB or 16 KiB"sv);
+}
 
 std::string_view Interface1Peripheral::id() const noexcept
 {
@@ -53,15 +60,17 @@ bool Interface1Peripheral::supportsMachine(const MachineProfile &machine) const 
 
 void Interface1Peripheral::onAttach(MachineContext &ctx)
 {
-    const auto rom = ctx.loadRom("if1-2.rom"sv, 8 * 1024);
+    if (m_snapshotRom.empty())
+        m_configuredRom = ctx.loadRom("if1-2.rom"sv, 8 * 1024);
     m_romBank = ctx.mmu.findBank("if1_rom"sv);
     if (!m_romBank)
-        m_romBank = ctx.mmu.registerBank("if1_rom"s, rom.size(), false, false);
-    ctx.mmu.bank(m_romBank).loadData(0, rom);
+        m_romBank = ctx.mmu.registerBank("if1_rom"s, 16 * 1024, false, false);
+    installRom(ctx);
 
     ctx.romcs.registerProvider(std::string(id()), 20, [this](Mmu &mmu) {
+        const auto upperPage = m_snapshotRom.size() == 16384 ? 8 : 0;
         mmu.mapOverlay1k(0x0000, m_romBank, 0, 8, false);
-        mmu.mapOverlay1k(0x2000, m_romBank, 0, 8, false);
+        mmu.mapOverlay1k(0x2000, m_romBank, upperPage, 8, false);
     });
 
     ctx.cpu.addPreM1Hook([this, &ctx](uint16_t pc) {
@@ -83,6 +92,25 @@ void Interface1Peripheral::onAttach(MachineContext &ctx)
     ctx.ioBus.registerSimpleHandler(
             std::string(id()), 0x0018, 0x0010, [](uint16_t) -> uint8_t { return 0xFF; },
             [this](uint16_t, uint8_t) { restartTransfers(); });
+}
+
+void Interface1Peripheral::installRom(MachineContext &ctx)
+{
+    auto &bank = ctx.mmu.bank(m_romBank);
+    const auto &rom = m_snapshotRom.empty() ? m_configuredRom : m_snapshotRom;
+    bank.loadData(0, rom);
+}
+
+void Interface1Peripheral::setSnapshotRom(MachineContext &ctx, std::vector<uint8_t> rom,
+                                          uint8_t driveCount, bool paged)
+{
+    if (rom.empty() && m_configuredRom.empty())
+        m_configuredRom = ctx.loadRom("if1-2.rom"sv, 8 * 1024);
+    reset(ctx, ResetKind::Soft);
+    m_snapshotRom = std::move(rom);
+    m_driveCount = driveCount;
+    installRom(ctx);
+    ctx.romcs.setActive(id(), paged);
 }
 
 void Interface1Peripheral::onDetach(MachineContext &ctx)
@@ -228,8 +256,10 @@ uint8_t Interface1Peripheral::readMdrStatus() noexcept
 
 void Interface1Peripheral::writeMdrControl(uint8_t value) noexcept
 {
-    if (!(value & kClock) && (m_control & kClock))
-        m_motors = uint8_t((m_motors << 1) | ((value & 1) == 0));
+    if (!(value & kClock) && (m_control & kClock)) {
+        const auto driveMask = (1u << m_driveCount) - 1;
+        m_motors = static_cast<uint8_t>(((m_motors << 1) | ((value & 1) == 0)) & driveMask);
+    }
     m_control = value;
     restartTransfers();
 }

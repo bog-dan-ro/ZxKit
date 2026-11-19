@@ -31,6 +31,8 @@ namespace zxkit {
 class Interface1Peripheral : public Peripheral
 {
 public:
+    explicit Interface1Peripheral(std::vector<uint8_t> rom = {});
+
     static constexpr std::size_t kMaxCartridges = 8;
     static constexpr std::size_t kMdrBlockSize =
             543; // 15 header + 15 record + 512 data + 1 checksum
@@ -56,6 +58,12 @@ public:
     BankId romBankId() const noexcept;
 
 private:
+    friend class Emulator;
+
+    void setSnapshotRom(MachineContext &ctx, std::vector<uint8_t> rom, uint8_t driveCount,
+                        bool paged);
+    void installRom(MachineContext &ctx);
+
     struct Cartridge
     {
         std::vector<uint8_t> data;
@@ -78,6 +86,10 @@ private:
     std::array<Cartridge, kMaxCartridges> m_cartridges{};
     uint8_t m_motors = 0;
     uint8_t m_control = 0;
+
+    std::vector<uint8_t> m_configuredRom;
+    std::vector<uint8_t> m_snapshotRom;
+    uint8_t m_driveCount = kMaxCartridges;
 };
 
 } // namespace zxkit

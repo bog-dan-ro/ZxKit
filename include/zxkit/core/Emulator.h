@@ -58,6 +58,7 @@
 namespace zxkit {
 
 class Interface1Peripheral;
+struct SzxRomState;
 
 class ZxNextMachine;
 
@@ -400,6 +401,11 @@ public:
 
 private:
     void installMachine(std::unique_ptr<MachineProfile> machine);
+    std::array<std::span<uint8_t>, 2> szxMachineRomBanks();
+    void restoreConfiguredRom();
+    void clearSnapshotInterface1();
+    void applySzxRoms(SzxRomState roms);
+    SzxRomState szxRoms();
     void beginFrame();
     RunStatus runPlaybackScanline();
     void advanceMediaBoot() noexcept;
@@ -498,6 +504,10 @@ private:
     std::optional<uint16_t>
             m_stoppedAtBreakpoint; // the next instruction there runs without breaking again
     bool m_rewindEnabled = false;
+
+    std::vector<uint8_t> m_romBeforeSnapshot;
+    enum class SnapshotInterface1 { None, Configured, Attached };
+    SnapshotInterface1 m_snapshotInterface1 = SnapshotInterface1::None;
 };
 
 } // namespace zxkit

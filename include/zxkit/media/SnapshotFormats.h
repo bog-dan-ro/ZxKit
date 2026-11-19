@@ -44,6 +44,19 @@ struct SnapshotJoystickInfo
     std::optional<JoystickType> type;
 };
 
+struct SzxRomState
+{
+    struct Interface1
+    {
+        std::vector<uint8_t> rom;
+        uint8_t driveCount = 8;
+        bool paged = false;
+    };
+
+    std::vector<uint8_t> machineRom;
+    std::optional<Interface1> interface1;
+};
+
 /// Loads and saves .sna, .z80 (v1/v2/v3), .szx (ZX-State), and .nex (ZX Spectrum Next) snapshots.
 class SnapshotFormats
 {
@@ -69,8 +82,10 @@ public:
     static void loadZ80(std::span<const uint8_t> data, SnapshotMachineState &state);
 
     // ── SZX Format (ZX-State) ─────────────────────────────────────────────
+    static SzxRomState readSzxRoms(std::span<const uint8_t> data);
     static void loadSzx(std::span<const uint8_t> data, SnapshotMachineState &state);
-    static std::vector<uint8_t> saveSzx(const SnapshotMachineState &state);
+    static std::vector<uint8_t> saveSzx(const SnapshotMachineState &state,
+                                        const SzxRomState &roms = {});
 
     // ── NEX Format (ZX Spectrum Next) ─────────────────────────────────────
     static void loadNex(std::span<const uint8_t> data, SnapshotMachineState &state);

@@ -41,6 +41,22 @@ constexpr std::array<JoystickType, 9> szxJoystickTypes{
     JoystickType::Sinclair1, JoystickType::Sinclair2, JoystickType::None,
     JoystickType::Timex1, JoystickType::Timex2, JoystickType::None};
 
+constexpr uint16_t szxRomCompressed = 1;
+constexpr uint16_t szxIf1Enabled = 1;
+constexpr uint16_t szxIf1Compressed = 2;
+constexpr uint16_t szxIf1Paged = 4;
+
+std::vector<uint8_t> readSzxRom(std::span<const uint8_t> bytes, std::size_t size, bool compressed)
+{
+    if (!compressed && bytes.size() != size)
+        throw FormatException("Invalid SZX ROM data size"sv);
+    auto rom = compressed ? zlibDecompressBounded(bytes, size)
+                          : std::vector<uint8_t>(bytes.begin(), bytes.end());
+    if (rom.size() != size)
+        throw FormatException("Invalid SZX ROM data size"sv);
+    return rom;
+}
+
 // Z80 v3 programmable keys: left, right, down, up, fire. The low byte
 // selects a keyboard row; the high byte selects a column within that row.
 constexpr std::array<std::array<uint16_t, 5>, 3> z80JoystickKeys{{
@@ -530,6 +546,42 @@ void SnapshotFormats::loadZ80(std::span<const uint8_t> data, SnapshotMachineStat
     }
 }
 
+SzxRomState SnapshotFormats::readSzxRoms(std::span<const uint8_t> data)
+{
+    machineId(data, ".szx"sv);
+    // Total size in KiB, indexed by the SZX machine ID. Timex 2068 includes its EXROM.
+    constexpr std::array sizes{ 16, 16, 32, 32, 64, 64, 64, 32, 16, 24, 64, 32, 24, 64, 64, 16 };
+    SzxRomState result;
+    StateReader chunks(data.subspan(8));
+    while (!chunks.eof()) {
+        const auto tag = chunks.readSpan(4);
+        const auto chunk = chunks.readSpan(chunks.read<uint32_t>());
+        if (!std::memcmp(tag.data(), "ROM\0", 4)) {
+            if (chunk.size() < 6 || readLe32(chunk, 2) != sizes[data[6]] * 1024u)
+                throw FormatException("Invalid SZX machine ROM size"sv);
+            result.machineRom = readSzxRom(chunk.subspan(6), readLe32(chunk, 2),
+                                           readLe16(chunk, 0) & szxRomCompressed);
+        } else if (!std::memcmp(tag.data(), "IF1\0", 4)) {
+            if (chunk.size() < 40)
+                throw FormatException("Truncated SZX Interface 1 block"sv);
+            const auto flags = readLe16(chunk, 0);
+            if (!(flags & szxIf1Enabled)) {
+                result.interface1.reset();
+                continue;
+            }
+            const auto size = readLe16(chunk, 38);
+            if (size && size != 8192 && size != 16384)
+                throw FormatException("Invalid SZX Interface 1 ROM size"sv);
+            auto &interface = result.interface1.emplace();
+            interface.paged = (flags & szxIf1Paged) != 0;
+            interface.driveCount = std::clamp<uint8_t>(chunk[2] ? chunk[2] : 8, 1, 8);
+            if (size)
+                interface.rom = readSzxRom(chunk.subspan(40), size, flags & szxIf1Compressed);
+        }
+    }
+    return result;
+}
+
 void SnapshotFormats::loadSzx(std::span<const uint8_t> data, SnapshotMachineState &state)
 {
     if (data.size() < 8 || std::memcmp(data.data(), "ZXST", 4) != 0)
@@ -611,7 +663,8 @@ void SnapshotFormats::loadSzx(std::span<const uint8_t> data, SnapshotMachineStat
     }
 }
 
-std::vector<uint8_t> SnapshotFormats::saveSzx(const SnapshotMachineState &state)
+std::vector<uint8_t> SnapshotFormats::saveSzx(const SnapshotMachineState &state,
+                                              const SzxRomState &roms)
 {
     StateWriter w(65536);
     // Header: 'ZXST', major 1, minor 4, machineId (1 = 48K, 2 = 128K), flags 0
@@ -627,6 +680,27 @@ std::vector<uint8_t> SnapshotFormats::saveSzx(const SnapshotMachineState &state)
         : (ram.count16kPages() > 3 ? 2 : 1); // Next has its native extension in Emulator.
     w.write(machine);
     w.write<uint8_t>(0);
+
+    if (!roms.machineRom.empty()) {
+        const auto compressed = zlibCompress(roms.machineRom);
+        w.writeTag("ROM\0"sv);
+        w.write<uint32_t>(static_cast<uint32_t>(6 + compressed.size()));
+        w.write<uint16_t>(szxRomCompressed);
+        w.write<uint32_t>(static_cast<uint32_t>(roms.machineRom.size()));
+        w.writeBytes(compressed);
+    }
+    if (const auto &interface = roms.interface1) {
+        const auto compressed =
+                interface->rom.empty() ? std::vector<uint8_t>{} : zlibCompress(interface->rom);
+        w.writeTag("IF1\0"sv);
+        w.write<uint32_t>(static_cast<uint32_t>(40 + compressed.size()));
+        w.write<uint16_t>(szxIf1Enabled | (interface->paged ? szxIf1Paged : 0)
+                          | (compressed.empty() ? 0 : szxIf1Compressed));
+        w.write(interface->driveCount);
+        w.writeBytes(std::array<uint8_t, 35>{});
+        w.write<uint16_t>(static_cast<uint16_t>(interface->rom.size()));
+        w.writeBytes(compressed);
+    }
 
     // Z80R chunk (37 bytes)
     const auto &regs = state.ctx.cpu.registers();
