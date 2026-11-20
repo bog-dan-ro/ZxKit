@@ -109,7 +109,7 @@ void Spectrum128kMachine::initialize(MachineContext &ctx, UlaRenderer &ula)
     m_ramBank = ctx.mmu.registerBank("ram", 8 * 16 * 1024, true, true);
 
     registerStandardUlaPort(ctx, ula);
-    registerStandardAyPorts(ctx);
+    registerStandardAyPorts(ctx, true);
 
     // 128K paging port 0x7FFD (mask 0x8002 == 0x0000)
     ctx.ioBus.registerSimpleHandler(
@@ -228,7 +228,11 @@ void SpectrumPlus3Machine::initialize(MachineContext &ctx, UlaRenderer &ula)
     m_ramBank = ctx.mmu.registerBank("ram", 8 * 16 * 1024, true, true);
 
     registerStandardUlaPort(ctx, ula);
-    registerStandardAyPorts(ctx);
+    registerStandardAyPorts(ctx, true);
+    // The virtual Centronics port is ready to accept a byte even without capture.
+    ctx.ioBus.registerSimpleHandler(
+            std::string(id()) + "_printer", 0xF002, 0x0000,
+            [](uint16_t) -> uint8_t { return 0xFE; }, nullptr);
 
     // +2A/+3 port 0x7FFD (mask 0xC002 == 0x4000)
     ctx.ioBus.registerSimpleHandler(

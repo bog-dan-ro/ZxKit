@@ -335,7 +335,7 @@ void PentagonMachine::initialize(MachineContext &ctx, UlaRenderer &ula)
     m_ramBank = ctx.mmu.registerBank("ram", ramPages * 16 * 1024, true, true);
 
     registerStandardUlaPort(ctx, ula);
-    registerStandardAyPorts(ctx);
+    registerStandardAyPorts(ctx, true);
 
     ctx.ioBus.registerSimpleHandler(
         std::string(id()) + "_7ffd",
@@ -363,13 +363,17 @@ void PentagonMachine::initialize(MachineContext &ctx, UlaRenderer &ula)
             });
     }
 
-    // The Beta 128: TR-DOS is ROM 2. Like in FUSE, it pages in and out whatever ROM is selected
-    // (the 128K's interface needs the 48K BASIC one), and the Pentagon starts in the 128 menu
-    // (FUSE marks the Beta active at reset but doesn't map its ROM: TR-DOS's own reset code, a
-    // 48K style RAM test, would take 3 seconds more)
+    // The 128 BASIC editor executes code at $3Dxx, so the Beta can only
+    // page there when the 48 BASIC ROM is selected. The Pentagon starts
+    // in the 128 menu with TR-DOS (ROM 2) paged out.
     m_beta = std::make_unique<Beta128Peripheral>(Beta128Options{
-        .machineRomBank = m_romBank,
-        .machineRomPage = 2,
+            .machineRomBank = m_romBank,
+            .machineRomPage = 2,
+            .basicRomSelected =
+                    [this] {
+                        return (m_port7ffd & 0x10)
+                                && !(m_variant == Variant::Pentagon1024 && (m_portEff7 & 0x08));
+                    },
     });
     m_beta->onAttach(ctx);
 }
@@ -459,7 +463,14 @@ void ScorpionMachine::initialize(MachineContext &ctx, UlaRenderer &ula)
 
     ctx.cpu.setEvenM1(true);
     registerStandardUlaPort(ctx, ula);
-    registerStandardAyPorts(ctx);
+    registerStandardAyPorts(ctx, true);
+    // SuperROM polls the printer BUSY line on D7 of the ULA port.
+    ctx.ioBus.registerHandler(
+            "scorpion_printer", 0xFFFF, 0xFFFE,
+            [this](uint16_t) -> IoReadResult {
+                return { 0, uint8_t((m_port1ffd & 0x02) ? 0x80 : 0) };
+            },
+            nullptr);
 
     ctx.ioBus.registerSimpleHandler(
         "scorpion_7ffd",
@@ -486,10 +497,14 @@ void ScorpionMachine::initialize(MachineContext &ctx, UlaRenderer &ula)
             updateMemoryMap(ctx, ula);
         });
 
-    // The Beta 128: TR-DOS is ROM 3; it pages in and out whatever ROM is selected (FUSE)
+    // Match Fuse's paging rule for the built-in TR-DOS (ROM 3).
     m_beta = std::make_unique<Beta128Peripheral>(Beta128Options{
-        .machineRomBank = m_romBank,
-        .machineRomPage = 3,
+            .machineRomBank = m_romBank,
+            .machineRomPage = 3,
+            .basicRomSelected =
+                    [this] {
+                        return !(m_port1ffd & 0x01) && ((m_port7ffd & 0x10) || (m_port1ffd & 0x02));
+                    },
     });
     m_beta->onAttach(ctx);
 }

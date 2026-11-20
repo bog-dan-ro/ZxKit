@@ -163,41 +163,6 @@ BankId UsourcePeripheral::romBankId() const noexcept
     return m_romBank;
 }
 
-std::string_view ZxPrinterPeripheral::id() const noexcept
-{
-    return "zxprinter";
-}
-
-std::string_view ZxPrinterPeripheral::name() const noexcept
-{
-    return "Sinclair ZX Printer";
-}
-
-void ZxPrinterPeripheral::onAttach(MachineContext &ctx)
-{
-    ctx.ioBus.registerSimpleHandler(
-        std::string(id()),
-        0x0004,
-        0x0000,
-        [](uint16_t) -> uint8_t {
-            // Bit 0 = stylus ready (1), Bit 7 = new line sync
-            return 0x81;
-        },
-        [this](uint16_t, uint8_t val) {
-            m_lastCommand = val;
-        });
-}
-
-void ZxPrinterPeripheral::onDetach(MachineContext &ctx)
-{
-    ctx.ioBus.unregisterOwner(id());
-}
-
-void ZxPrinterPeripheral::reset(MachineContext & /*ctx*/, ResetKind)
-{
-    m_lastCommand = 0;
-}
-
 std::string_view Interface2Peripheral::id() const noexcept
 {
     return "interface2";

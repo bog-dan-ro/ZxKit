@@ -66,6 +66,7 @@ struct MachineContext
     RomResolverFn romResolver;
     /// Optional overrides, before bundled/SD ROMs. Empty means use the default.
     RomResolverFn romOverrideResolver;
+    const MachineProfile *machine = nullptr;
 
     std::vector<uint8_t> loadRom(std::string_view romName, std::size_t expectedSize = 0) const;
 };

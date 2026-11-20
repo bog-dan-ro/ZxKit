@@ -150,22 +150,28 @@ void MachineProfile::registerStandardUlaPort(MachineContext &ctx, UlaRenderer &u
         });
 }
 
-void MachineProfile::registerStandardAyPorts(MachineContext &ctx)
+void MachineProfile::registerStandardAyPorts(MachineContext &ctx, bool rs232Ready)
 {
     ctx.audioMixer.setAyChipCount(1);
     // Select register: 0xFFFD (mask 0xC002 == 0xC000)
     ctx.ioBus.registerSimpleHandler(
-        std::string(id()) + "_ay_reg",
-        0xC002,
-        0xC000,
-        [&ctx](uint16_t) -> uint8_t { return ctx.audioMixer.activeAy().readRegister(); },
-        [&ctx](uint16_t, uint8_t val) {
-            if ((val & 0xFE) == 0xFE) {
-                ctx.audioMixer.setActiveAyChip(val & 0x01);
-            } else {
-                ctx.audioMixer.activeAy().selectRegister(val);
-            }
-        });
+            std::string(id()) + "_ay_reg", 0xC002, 0xC000,
+            [&ctx, rs232Ready](uint16_t) -> uint8_t {
+                const auto &ay = ctx.audioMixer.activeAy();
+                if (!rs232Ready || ctx.audioMixer.activeAyChipIndex() != 0
+                    || ay.selectedRegister() != 14)
+                    return ay.readRegister();
+                // Leave the built-in serial port ready for output, as Fuse does.
+                constexpr uint8_t inputs = 0xBF;
+                return (ay.registers()[7] & 0x40) ? ay.readRegister() & inputs : inputs;
+            },
+            [&ctx](uint16_t, uint8_t val) {
+                if ((val & 0xFE) == 0xFE) {
+                    ctx.audioMixer.setActiveAyChip(val & 0x01);
+                } else {
+                    ctx.audioMixer.activeAy().selectRegister(val);
+                }
+            });
     // Data port: 0xBFFD (mask 0xC002 == 0x8000)
     ctx.ioBus.registerSimpleHandler(
         std::string(id()) + "_ay_data",

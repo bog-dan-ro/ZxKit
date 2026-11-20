@@ -110,7 +110,7 @@ void ZxNextMachine::initialize(MachineContext &ctx, UlaRenderer &ula)
             ula.setBorderColor(value & 7);
             ctx.audioMixer.writeBeeper(ctx.clock.frameBaseTstates(), value & 0x10, value & 8);
         });
-    registerStandardAyPorts(ctx);
+    registerStandardAyPorts(ctx, true);
 
     wireNextRegs(ctx, ula);
     wirePorts(ctx, ula);
@@ -379,6 +379,14 @@ void ZxNextMachine::wireNextRegs(MachineContext &ctx, UlaRenderer &ula)
 
 void ZxNextMachine::wirePorts(MachineContext &ctx, UlaRenderer &ula)
 {
+    // +3 compatibility firmware polls the virtual Centronics BUSY input.
+    ctx.ioBus.registerHandler(
+            "next_parallel_printer", 0xF002, 0x0000,
+            [this](uint16_t) -> IoReadResult {
+                return { 0xFE, uint8_t(m_machineType == 3 ? 0xFF : 0) };
+            },
+            nullptr);
+
     // 128K / +3 paging ports; bit 5 of 0x7FFD locks all of them
     ctx.ioBus.registerSimpleHandler(
         "next_7ffd",

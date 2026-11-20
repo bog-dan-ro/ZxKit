@@ -95,6 +95,7 @@ set(ZXKIT_PUBLIC_HEADERS
     include/zxkit/input/KeyboardMatrix.h
     include/zxkit/input/Mouse.h
     include/zxkit/peripherals/expansion/ExpansionPeripherals.h
+    include/zxkit/peripherals/expansion/ZxPrinter.h
     include/zxkit/peripherals/net/NetworkPeripherals.h
     include/zxkit/peripherals/next/Copper.h
     include/zxkit/peripherals/next/NextUart.h
@@ -165,6 +166,7 @@ set(ZXKIT_SOURCES
     src/input/KeyboardMatrix.cpp
     src/input/Mouse.cpp
     src/peripherals/expansion/ExpansionPeripherals.cpp
+    src/peripherals/expansion/ZxPrinter.cpp
     src/peripherals/net/NetworkPeripherals.cpp
     src/peripherals/next/Copper.cpp
     src/peripherals/next/NextUart.cpp

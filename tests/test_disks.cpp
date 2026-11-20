@@ -307,13 +307,19 @@ void testBeta128Paging()
 
 void testPentagonBeta()
 {
-    // The Pentagon has four drives, and starts in the 128 ROM, as in FUSE
+    // The Pentagon starts in 128 BASIC, which uses $3Dxx for the editor.
     Emulator emulator({.machineId = "pentagon"});
     assert(emulator.diskDriveCount() == 4);
     auto &pentagon = static_cast<PentagonMachine &>(emulator.machine());
     assert(!pentagon.beta().isPaged());
-    // TR-DOS pages in on a jump to 0x3D00 from any ROM (here the blank 128 ROM)
     Z80Registers regs = emulator.registers();
+    regs.PC = 0x3D9D;
+    emulator.setRegisters(regs);
+    emulator.stepInstruction();
+    assert(!pentagon.beta().isPaged());
+
+    // The disk entry point still works once the 48 BASIC ROM is selected.
+    emulator.ioBus().write(0x7FFD, 0x10);
     regs.PC = 0x3D00;
     emulator.setRegisters(regs);
     emulator.stepInstruction();

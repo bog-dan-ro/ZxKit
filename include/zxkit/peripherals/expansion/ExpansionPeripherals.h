@@ -19,6 +19,7 @@
 
 #include "zxkit/bus/Peripheral.h"
 #include "zxkit/cpu/Z80Cpu.h"
+#include "zxkit/peripherals/expansion/ZxPrinter.h"
 
 #include <cstdint>
 
@@ -71,21 +72,6 @@ public:
 private:
     BankId m_romBank = 0;
     bool m_active = false;
-};
-
-/// Sinclair ZX Printer Peripheral (Port 0xFB)
-class ZxPrinterPeripheral : public Peripheral
-{
-public:
-    std::string_view id() const noexcept override;
-    std::string_view name() const noexcept override;
-
-    void onAttach(MachineContext &ctx) override;
-    void onDetach(MachineContext &ctx) override;
-    void reset(MachineContext &ctx, ResetKind kind) override;
-
-private:
-    uint8_t m_lastCommand = 0;
 };
 
 /// Sinclair ZX Interface 2 ROM Cartridge Peripheral (16KB ROM at 0x0000..0x3FFF)

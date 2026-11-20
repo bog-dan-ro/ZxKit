@@ -64,6 +64,11 @@ public:
     void onFrameEnd(MachineContext &ctx, UlaRenderer &ula) override;
 
     uint8_t lastPort7ffd() const noexcept override;
+    bool isPlus3Mode() const noexcept
+    {
+        return m_machineType == 3;
+    }
+
     bool is48kMode() const noexcept override
     {
         return (m_port7ffd & 0x20) != 0;

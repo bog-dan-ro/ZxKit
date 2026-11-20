@@ -70,6 +70,12 @@ target_compile_definitions(test_tape PRIVATE ZXKIT_TEST_ROM_DIR="${ZXKIT_TEST_RO
 # ROM fixtures are part of ZxKit; no application checkout is required.
 add_test(NAME test_tape COMMAND test_tape ${ZXKIT_TEST_ROM_DIR})
 
+add_executable(test_zx_printer test_zx_printer.cpp)
+target_link_libraries(test_zx_printer PRIVATE ZX::Kit)
+target_compile_definitions(test_zx_printer PRIVATE ZXKIT_TEST_ROM_DIR="${ZXKIT_TEST_ROM_DIR}")
+target_compile_options(test_zx_printer PRIVATE $<IF:$<CXX_COMPILER_ID:MSVC>,/UNDEBUG,-UNDEBUG>)
+add_test(NAME test_zx_printer COMMAND test_zx_printer)
+
 add_executable(test_disks test_disks.cpp)
 target_link_libraries(test_disks PRIVATE ZX::Kit)
 add_test(NAME test_disks COMMAND test_disks)

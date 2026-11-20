@@ -91,7 +91,7 @@ public:
     virtual void loadState(StateReader &r, MachineContext &ctx, UlaRenderer &ula);
 
     /// Also used when a snapshot declares a 128K-style AY interface on a 48K machine.
-    void registerStandardAyPorts(MachineContext &ctx);
+    void registerStandardAyPorts(MachineContext &ctx, bool rs232Ready = false);
 
 protected:
     /// `keyMask`: the keyboard columns read (bits 0-4; 0x3F adds the CoBra's sixth column)

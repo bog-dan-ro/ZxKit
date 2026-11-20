@@ -35,6 +35,7 @@
 #include <format>
 #include <fstream>
 #include <limits>
+#include <ranges>
 #include <string_view>
 
 namespace zxkit {
@@ -49,6 +50,15 @@ constexpr std::size_t kMaxPooledFrames = 8;
 constexpr std::array kSnapshotExtensions{".sna"sv, ".z80"sv, ".szx"sv, ".nex"sv};
 constexpr std::array kDiskExtensions{".dsk"sv, ".trd"sv, ".scl"sv, ".img"sv,
                                      ".mgt"sv, ".opd"sv, ".td0"sv};
+
+// The host's printer connection is optional. Next snapshots carry its
+// unfinished output separately from the required peripheral configuration.
+auto nextSnapshotPeripherals(const std::vector<std::unique_ptr<Peripheral>> &peripherals)
+{
+    return peripherals | std::views::filter([](const auto &peripheral) {
+               return peripheral->id() != ZxPrinterPeripheral::kId;
+           });
+}
 
 // Normalizes a file extension to ".ext" in lower case. Accepts "ext", ".ext",
 // a multi-part suffix ("tar.dsk") or a whole file name.
@@ -256,6 +266,7 @@ void Emulator::installMachine(std::unique_ptr<MachineProfile> machine)
     m_interruptDebugArmed = false;
     m_cpu.setInterruptObserver({});
     m_machine = std::move(machine);
+    m_context.machine = m_machine.get();
     m_machine->initialize(m_context, m_ula);
     m_nextDebugMachine = dynamic_cast<ZxNextMachine *>(m_machine.get());
     if (m_machine->usesRasterUla()) {
@@ -308,6 +319,8 @@ void Emulator::attachPeripheral(std::unique_ptr<Peripheral> peripheral)
     peripheral->onAttach(m_context);
     peripheral->reset(m_context, ResetKind::Hard);
     m_peripherals.push_back(std::move(peripheral));
+    // Rewind states use the current peripheral layout.
+    m_debugger.rewindBuffer().clear();
 }
 
 void Emulator::detachPeripheral(std::string_view peripheralId)
@@ -320,6 +333,7 @@ void Emulator::detachPeripheral(std::string_view peripheralId)
     if (peripheralId == "interface1"sv)
         m_snapshotInterface1 = SnapshotInterface1::None;
     m_peripherals.erase(it);
+    m_debugger.rewindBuffer().clear();
 }
 
 OptionalRef<Peripheral> Emulator::findPeripheral(std::string_view peripheralId) noexcept
@@ -1024,9 +1038,22 @@ std::vector<uint8_t> Emulator::serializeState(std::vector<uint8_t> buffer) const
     m_ula.saveState(w);
     m_audioMixer.saveState(w);
     m_machine->saveState(w);
-    for (const auto &p : m_peripherals)
-        p->saveState(w);
-    w.write(m_mediaBootFrame); w.writeBool(m_mediaBoot48k);
+    const Peripheral *nextPrinter = nullptr;
+    for (const auto &p : m_peripherals) {
+        if (m_machine->id() == "next"sv && p->id() == ZxPrinterPeripheral::kId)
+            nextPrinter = p.get();
+        else
+            p->saveState(w);
+    }
+    w.write(m_mediaBootFrame);
+    w.writeBool(m_mediaBoot48k);
+    if (nextPrinter) {
+        StateWriter printer;
+        nextPrinter->saveState(printer);
+        w.writeTag("ZXPT"sv);
+        w.write<uint32_t>(static_cast<uint32_t>(printer.size()));
+        w.writeBytes(printer.data());
+    }
     return w.takeBuffer();
 }
 
@@ -1040,10 +1067,31 @@ void Emulator::deserializeState(std::span<const uint8_t> bytes)
     m_ula.loadState(r);
     m_audioMixer.loadState(r);
     m_machine->loadState(r, m_context, m_ula);
-    for (auto &p : m_peripherals)
-        p->loadState(r);
-    m_mediaBootFrame = r.read<uint16_t>(); m_mediaBoot48k = r.readBool();
-    if (!r.eof()) throw FormatException("Trailing native state data");
+    const bool next = m_machine->id() == "next"sv;
+    Peripheral *nextPrinter = nullptr;
+    for (auto &p : m_peripherals) {
+        if (next && p->id() == ZxPrinterPeripheral::kId)
+            nextPrinter = p.get();
+        else
+            p->loadState(r);
+    }
+    m_mediaBootFrame = r.read<uint16_t>();
+    m_mediaBoot48k = r.readBool();
+    if (next && !r.eof()) {
+        const auto tag = r.readSpan(4);
+        if (std::memcmp(tag.data(), "ZXPT", tag.size()) != 0)
+            throw FormatException("Invalid optional Next printer state"sv);
+        StateReader printer(r.readSpan(r.read<uint32_t>()));
+        if (nextPrinter) {
+            nextPrinter->loadState(printer);
+            if (!printer.eof())
+                throw FormatException("Trailing Next printer state data"sv);
+        }
+    } else if (nextPrinter) {
+        nextPrinter->reset(m_context, ResetKind::Soft);
+    }
+    if (!r.eof())
+        throw FormatException("Trailing native state data"sv);
     // Rewind snapshots are taken at frame ends
     m_line = 0;
     m_frameStarted = false;
@@ -1236,13 +1284,24 @@ void Emulator::loadSnapshot(std::span<const uint8_t> data, std::string_view exte
             const auto chunk = chunks.readSpan(chunks.read<uint32_t>());
             if (std::memcmp(tag.data(), "ZKNX", 4)) continue;
             StateReader body(chunk);
-            if (body.read<uint32_t>() != 1) throw FormatException("Unsupported ZxKit Next SZX state version");
+            const auto version = body.read<uint32_t>();
+            if (version != 1 && version != 2)
+                throw FormatException("Unsupported ZxKit Next SZX state version"sv);
             const auto line = body.read<uint16_t>();
             const auto frameStarted = body.readBool(), lineStarted = body.readBool();
-            const auto peripherals = body.read<uint32_t>();
-            if (peripherals != m_peripherals.size()) throw FormatException("Next SZX requires the same attached peripherals");
-            for (const auto &p : m_peripherals)
-                if (body.readString() != p->id()) throw FormatException("Next SZX peripheral configuration does not match");
+            const auto count = body.read<uint32_t>();
+            auto peripherals = nextSnapshotPeripherals(m_peripherals);
+            auto attached = peripherals.begin();
+            for (uint32_t i = 0; i < count; ++i) {
+                const auto id = body.readString();
+                if (id == ZxPrinterPeripheral::kId) // The old printer stub had no state.
+                    continue;
+                if (attached == peripherals.end() || id != (*attached)->id())
+                    throw FormatException("Next SZX peripheral configuration does not match"sv);
+                ++attached;
+            }
+            if (attached != peripherals.end())
+                throw FormatException("Next SZX requires the same attached peripherals"sv);
             const auto decoded = zlibDecompressBounded(body.readSpan(body.remaining()), 32 * 1024 * 1024);
             if (m_machine->id() != "next") selectMachine("next");
             m_mediaBootFrame = 0;
@@ -1320,11 +1379,14 @@ std::vector<uint8_t> Emulator::saveSnapshot(std::string_view extension)
     if (ext == ".szx" && m_machine->id() == "next") {
         auto base = SnapshotFormats::saveSzx(state);
         StateWriter body;
-        body.write<uint32_t>(1); // ZKNX native state schema; increment when serializeState changes.
+        // Version 2 can carry the optional printer transport after the version 1 state.
+        body.write<uint32_t>(findPeripheral(ZxPrinterPeripheral::kId) ? 2 : 1);
         body.write<uint16_t>(m_line);
         body.writeBool(m_frameStarted); body.writeBool(m_lineStarted);
-        body.write<uint32_t>(static_cast<uint32_t>(m_peripherals.size()));
-        for (const auto &p : m_peripherals) body.writeString(p->id());
+        auto peripherals = nextSnapshotPeripherals(m_peripherals);
+        body.write<uint32_t>(static_cast<uint32_t>(std::ranges::distance(peripherals)));
+        for (const auto &p : peripherals)
+            body.writeString(p->id());
         body.writeBytes(zlibCompress(serializeState()));
         StateWriter out;
         out.writeBytes(base); out.writeTag("ZKNX");
