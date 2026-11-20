@@ -42,6 +42,14 @@ std::string normalizedExt(std::string_view fileName)
     return ext;
 }
 
+// The first 6912 bytes: a screen's bitmap and attributes
+std::vector<uint8_t> screenOf(std::span<const uint8_t> bytes)
+{
+    if (bytes.size() < 6912)
+        throw FormatException("SCR buffer must be at least 6912 bytes");
+    return { bytes.begin(), bytes.begin() + 6912 };
+}
+
 } // namespace
 
 MediaClass classifyMediaFile(std::string_view fileName, std::span<const uint8_t> data) noexcept
@@ -106,21 +114,22 @@ VideoFrame renderScrToVideoFrame(std::span<const uint8_t> scr6912)
     return frame;
 }
 
-VideoFrame extractMediaPreview(std::span<const uint8_t> fileBytes, std::string_view fileName)
+std::vector<uint8_t> extractMediaScreen(std::span<const uint8_t> fileBytes,
+                                        std::string_view fileName)
 {
     const std::string ext = normalizedExt(fileName);
 
     if (ext == ".zip" || (fileBytes.size() >= 4 && fileBytes[0] == 'P' && fileBytes[1] == 'K' && fileBytes[2] == 0x03 && fileBytes[3] == 0x04)) {
         const auto unzipped = extractFirstFromZip(fileBytes);
-        return extractMediaPreview(unzipped.data, unzipped.filename);
+        return extractMediaScreen(unzipped.data, unzipped.filename);
     }
 
     if (ext == ".scr" || fileBytes.size() == 6912) {
-        return renderScrToVideoFrame(fileBytes);
+        return screenOf(fileBytes);
     }
 
     if (ext == ".sna" && fileBytes.size() >= 27 + 6912) {
-        return renderScrToVideoFrame(fileBytes.subspan(27, 6912));
+        return screenOf(fileBytes.subspan(27, 6912));
     }
 
     if (ext == ".z80" && fileBytes.size() >= 30) {
@@ -134,9 +143,9 @@ VideoFrame extractMediaPreview(std::span<const uint8_t> fileBytes, std::string_v
             const auto payload = fileBytes.subspan(30);
             if (flags1 & 0x20) {
                 const auto unpacked = SnapshotFormats::decompressZ80Block(payload, 6912, true);
-                return renderScrToVideoFrame(unpacked);
+                return screenOf(unpacked);
             }
-            return renderScrToVideoFrame(payload);
+            return screenOf(payload);
         }
 
         // Version 2/3 Z80: find page 8 (48K 0x4000..0x7FFF or 128K bank 5)
@@ -152,9 +161,9 @@ VideoFrame extractMediaPreview(std::span<const uint8_t> fileBytes, std::string_v
                     break;
                 if (pageCode == 8) {
                     if (compLen == 0xFFFF)
-                        return renderScrToVideoFrame(fileBytes.subspan(pos, 6912));
+                        return screenOf(fileBytes.subspan(pos, 6912));
                     const auto unpacked = SnapshotFormats::decompressZ80Block(fileBytes.subspan(pos, compLen), 6912, false);
-                    return renderScrToVideoFrame(unpacked);
+                    return screenOf(unpacked);
                 }
                 pos += chunkLen;
             }
@@ -177,9 +186,9 @@ VideoFrame extractMediaPreview(std::span<const uint8_t> fileBytes, std::string_v
                     const auto rawPage = fileBytes.subspan(pos + 11, blockSize - 3);
                     if (flags & 0x01) {
                         const auto unpacked = zlibDecompress(rawPage, 16384);
-                        return renderScrToVideoFrame(unpacked);
+                        return screenOf(unpacked);
                     }
-                    return renderScrToVideoFrame(rawPage);
+                    return screenOf(rawPage);
                 }
             }
             pos += 8 + blockSize;
@@ -193,12 +202,20 @@ VideoFrame extractMediaPreview(std::span<const uint8_t> fileBytes, std::string_v
         for (const auto &blk : blocks) {
             // Standard 6912-byte SCREEN$ tape block has 1 flag byte + 6912 data bytes + 1 checksum = 6914 bytes
             if (blk.data.size() == 6914) {
-                return renderScrToVideoFrame(std::span<const uint8_t>(blk.data.data() + 1, 6912));
+                return screenOf(std::span<const uint8_t>(blk.data.data() + 1, 6912));
             }
         }
     }
 
-    throw FormatException(std::format("Preview extraction not available for '{}'", fileName));
+    return {};
+}
+
+VideoFrame extractMediaPreview(std::span<const uint8_t> fileBytes, std::string_view fileName)
+{
+    const auto screen = extractMediaScreen(fileBytes, fileName);
+    if (screen.empty())
+        throw FormatException(std::format("Preview extraction not available for '{}'", fileName));
+    return renderScrToVideoFrame(screen);
 }
 
 } // namespace zxkit

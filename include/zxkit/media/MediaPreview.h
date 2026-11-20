@@ -22,6 +22,7 @@
 #include <cstdint>
 #include <span>
 #include <string_view>
+#include <vector>
 
 namespace zxkit {
 
@@ -45,7 +46,13 @@ MediaClass classifyMediaFile(std::string_view fileName,
 /// into a 256x192 RGBA8888 VideoFrame without needing a running Engine instance.
 VideoFrame renderScrToVideoFrame(std::span<const uint8_t> scr6912);
 
-/// Standalone fast preview extractor for .scr, .sna, .z80, .szx, .tap, .tzx, .nex, and .zip files.
+/// The 6912-byte screen a .scr, .sna, .z80, .szx, .tap, .tzx, .pzx or .csw file shows (also inside
+/// a .zip): the screen itself, a snapshot's screen memory or a tape's SCREEN$ block. Empty when the
+/// file has none; a malformed file throws FormatException. Small enough to keep for many files.
+std::vector<uint8_t> extractMediaScreen(std::span<const uint8_t> fileBytes,
+                                        std::string_view fileName);
+
+/// Standalone fast preview: extractMediaScreen() rendered; throws FormatException without a screen.
 VideoFrame extractMediaPreview(std::span<const uint8_t> fileBytes, std::string_view fileName);
 
 } // namespace zxkit

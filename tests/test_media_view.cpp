@@ -2,6 +2,7 @@
 #include "zxkit/media/BasicCodec.h"
 #include "zxkit/media/FatImage.h"
 #include "zxkit/media/MediaArchive.h"
+#include "zxkit/media/MediaPreview.h"
 #include "zxkit/media/MediaView.h"
 #include "zxkit/media/TapeFormats.h"
 
@@ -210,6 +211,41 @@ void probing()
 }
 } // namespace
 
+void screens()
+{
+    Bytes scr(6912);
+    for (std::size_t i = 0; i < scr.size(); ++i)
+        scr[i] = uint8_t(i * 7);
+    assert(extractMediaScreen(scr, "title.scr"sv) == scr);
+
+    Bytes sna(27, 0);
+    sna.insert(sna.end(), scr.begin(), scr.end());
+    sna.resize(27 + 49152);
+    assert(extractMediaScreen(sna, "game.sna"sv) == scr);
+
+    // A tape's SCREEN$ block: its flag, the screen and the checksum
+    const auto block = [](Bytes data) {
+        Bytes out{ uint8_t(data.size()), uint8_t(data.size() >> 8) };
+        out.insert(out.end(), data.begin(), data.end());
+        return out;
+    };
+    Bytes header{ 0,   3,   'S',  'C',  'R',  'E',  'E',  'N',  ' ', ' ',
+                  ' ', ' ', 0x00, 0x1B, 0x00, 0x40, 0x00, 0x80, 0 };
+    Bytes data{ 0xFF };
+    data.insert(data.end(), scr.begin(), scr.end());
+    data.push_back(0);
+    Bytes tap = block(header);
+    const auto screenBlock = block(data);
+    tap.insert(tap.end(), screenBlock.begin(), screenBlock.end());
+    assert(extractMediaScreen(tap, "game.tap"sv) == scr);
+    assert(extractMediaPreview(tap, "game.tap"sv).width() == 256);
+
+    // Files without a screen: nothing to keep, and no preview
+    assert(extractMediaScreen(block(header), "basic.tap"sv).empty());
+    assert(extractMediaScreen(bytesOf("notes"sv), "notes.txt"sv).empty());
+    fails([] { extractMediaPreview(bytesOf("notes"sv), "notes.txt"sv); });
+}
+
 int main()
 {
     contents();
@@ -218,5 +254,6 @@ int main()
     views();
     fatInPlace();
     probing();
+    screens();
     std::cout << "Media view tests passed\n"sv;
 }
