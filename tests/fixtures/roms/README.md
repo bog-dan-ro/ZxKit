@@ -2,8 +2,8 @@
 
 These ROMs are bundled so ZxKit's tests and fixture audit are self-contained.
 `48.rom` serves the 48K tape and timing tests; `128-0.rom` and `128-1.rom`
-serve the 128K timing tests. The +2 and +3 ROM sets support manual runs of the
-fixtures grouped for those machines. `test_timex` boots the Timex
+serve the 128K timing tests. `test_zx_printer` exercises **Edit → Print**
+on the 128K, +2, +2A, +3 and +3e ROM sets. `test_timex` boots the Timex
 (`tc2048.rom`, `tc2068-0.rom`, `tc2068-1.rom`) and Spectrum SE (`se-0.rom`,
 `se-1.rom`) ROMs; `test_cobra` boots the CoBra (`cobra_*.rom`) ROMs and
 the CP/M system disk in [`../cobra`](../cobra).

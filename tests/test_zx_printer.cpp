@@ -146,7 +146,8 @@ void testHcSerial()
 
 void enter128Basic(Emulator &emulator, bool compatibilityMode)
 {
-    emulator.runFrames(emulator.machine().id() == "plus3"sv ? 200 : 100);
+    const bool plus3Family = dynamic_cast<const SpectrumPlus3Machine *>(&emulator.machine());
+    emulator.runFrames(plus3Family ? 350 : 100);
     const int menuMoves = compatibilityMode ? 3 : 1;
     for (int i = 0; i < menuMoves; ++i)
         test::tap(emulator, { ZxKey::CapsShift, ZxKey::Num6 });
@@ -178,6 +179,34 @@ void testDirectPrint(std::string machine, bool connected)
     test::type(emulator, "1\n"sv);
     emulator.runFrames(20);
     assert(emulator.mmu().peek(32768) == 1);
+}
+
+void testEditorPrint(std::string machine)
+{
+    Emulator emulator(test::romConfig(ZXKIT_TEST_ROM_DIR, std::move(machine)));
+    auto paper = std::make_shared<ZxPrinterPaper>();
+    emulator.attachPeripheral(std::make_unique<ZxPrinterPeripheral>(paper));
+    enter128Basic(emulator, false);
+
+    const auto printFromEditMenu = [&emulator] {
+        test::tap(emulator, { ZxKey::CapsShift, ZxKey::Num1 }); // EDIT
+        for (int i = 0; i < 3; ++i)
+            test::tap(emulator, { ZxKey::CapsShift, ZxKey::Num6 }); // Down to Print.
+        test::tap(emulator, { ZxKey::Enter });
+        emulator.runFrames(20);
+    };
+
+    test::type(emulator, "test"sv);
+    printFromEditMenu();
+    assert(paper->rows().empty());
+    test::tap(emulator, { ZxKey::Space }); // Dismiss the report.
+    emulator.runFrames(40);
+
+    test::type(emulator, "10 rem test\n"sv);
+    emulator.runFrames(40);
+    printFromEditMenu();
+    assert(paper->text() == "  10 REM test\n"sv);
+    assert(paper->rows().size() == 8);
 }
 
 void testParallelCopy()
@@ -271,6 +300,11 @@ int main()
     testDirectPrint("128k"s, true);
     testDirectPrint("plus3"s, false);
     testDirectPrint("plus3"s, true);
+    testEditorPrint("128k"s);
+    testEditorPrint("plus2"s);
+    testEditorPrint("plus2a"s);
+    testEditorPrint("plus3"s);
+    testEditorPrint("plus3e"s);
     testParallelCopy();
     testBasic("48k"s);
     testBasic("128k"s);
