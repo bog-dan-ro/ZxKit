@@ -34,8 +34,9 @@ namespace zxkit {
 /// NextREG control plane, Layer 2 / Sprites / Tilemap / Copper video compositor,
 /// ZXN-DMA, 4-channel CTC, 14-vector IM2 daisy-chain, 3x AY TurboSound, and 4x DACs.
 ///
-/// NextZXOS is booted directly, like CSpect does: instead of running the
-/// TBBLUE.FW firmware, the machine takes the NextZXOS (enNextZX.rom), DivMMC
+/// With an 8 KiB FPGA loader supplied in the emulator configuration, hard reset starts
+/// the FPGA loader, which boots TBBLUE.FW from the SD card.
+/// Otherwise the machine takes the NextZXOS (enNextZX.rom), DivMMC
 /// (enNxtmmc.rom) and alt (enAltZX.rom) ROMs from /machines/next on the SD card
 /// (`Emulator::insertSdCard`), sets the NextREGs the way the firmware hands them
 /// over and starts at 0x0000. The built-in DivMMC (port 0xE3, NR 0xB8..0xBB
@@ -71,7 +72,7 @@ public:
 
     bool is48kMode() const noexcept override
     {
-        return (m_port7ffd & 0x20) != 0;
+        return m_machineType == 1 || (m_port7ffd & 0x20) != 0;
     }
     uint8_t lastPort1ffd() const noexcept override;
     void setPagingPorts(uint8_t port7ffd, uint8_t port1ffd, MachineContext &ctx,
@@ -113,6 +114,8 @@ private:
     void rebuildExtendedMatrix() noexcept;
     void wireMultiface(MachineContext &ctx, UlaRenderer &ula);
     void loadRoms(MachineContext &ctx);
+    void loadBootRom(MachineContext &ctx);
+    void setConfigMode(MachineContext &ctx, bool enabled);
     void wireNextRegs(MachineContext &ctx, UlaRenderer &ula);
     void wirePorts(MachineContext &ctx, UlaRenderer &ula);
     void wireDivMmc(MachineContext &ctx);
@@ -122,6 +125,7 @@ private:
     void updateMemoryMap(MachineContext &ctx, UlaRenderer &ula);
     void mapSlot(MachineContext &ctx, uint8_t slot);
     void mapRomSlot(MachineContext &ctx, uint8_t slot);
+    void mapConfigSlot(MachineContext &ctx, uint8_t slot);
     void updateLayer2MemoryMapping(MachineContext &ctx);
     void updateLegacyPaging(MachineContext &ctx, UlaRenderer &ula, bool rebuildTop = true);
     uint8_t machineType() const noexcept
@@ -160,6 +164,9 @@ private:
     BankId m_altRomBank = 0; // two 16KB alt ROMs (enAltZX.rom), writable through NR 0x8C
     BankId m_divRomBank = 0; // DivMMC 8KB ROM (enNxtmmc.rom)
     BankId m_divRamBank = 0; // DivMMC 128KB RAM (16 x 8KB)
+    BankId m_bootRomBank = 0;
+    bool m_bootRomEnabled = false;
+    bool m_configMode = false;
 
     uint8_t m_machineType = 3; // NR 0x03: 1 = 48K, 2 = 128K, 3 = +3, 4 = Pentagon
     uint8_t m_timing = 3;

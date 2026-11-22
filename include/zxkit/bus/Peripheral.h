@@ -29,6 +29,7 @@
 
 #include <cstdint>
 #include <functional>
+#include <span>
 #include <string_view>
 #include <vector>
 
@@ -67,6 +68,7 @@ struct MachineContext
     /// Optional overrides, before bundled/SD ROMs. Empty means use the default.
     RomResolverFn romOverrideResolver;
     const MachineProfile *machine = nullptr;
+    std::span<const uint8_t> nextBootRom;
 
     std::vector<uint8_t> loadRom(std::string_view romName, std::size_t expectedSize = 0) const;
 };

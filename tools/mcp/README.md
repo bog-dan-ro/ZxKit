@@ -164,6 +164,14 @@ image; an empty image path selects the default. SD storage is attached before
 selecting the machine so ROMs can load from the card. `runFrames`, keyboard and
 screenshot tools then drive NextZXOS normally.
 
+To start from the FPGA loader, supply the 8 KiB loader as `nextboot.rom`
+in the directory passed to `--roms`. In that mode a hard reset runs the loader
+and the card's `TBBLUE.FW` on the guest CPU. The firmware reads the menu, loads
+the selected personality and soft-resets into its ROM. Use a disposable
+writable SD image when choosing a different personality because the editor saves
+the choice to `config.ini`. Native firmware snapshots require a session with
+the FPGA loader configured.
+
 Next tools inspect/write Next registers, attach/eject SD images and list, read,
 write, rename or remove FAT files/directories. Multiple sessions may share a
 read-only image. A writable image cannot be shared, even with a read-only session;

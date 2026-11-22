@@ -17,13 +17,17 @@ constexpr auto defaultDistro = "https://www.specnext.com/distro/24.11/sn-emulato
 constexpr auto distroPage = "https://www.specnext.com/latestdistro/"sv;
 constexpr auto imageName = "cspect-next-1gb.img"sv;
 
-Object validateCard(const std::filesystem::path &path)
+Object validateCard(const std::filesystem::path &path, bool nativeBoot = false)
 {
     SdCard card;
     card.insert(path, true);
     FatVolume volume([&card](uint64_t lba, std::span<uint8_t, 512> bytes) {
         return card.readBlock(lba, bytes);
     });
+    if (nativeBoot)
+        return { { "path", path.string() },
+                 { "bytes", card.sizeBytes() },
+                 { "fatBits", volume.fatBits() } };
     Array roms;
     for (auto [name, expected] :
          std::array{ std::pair{ "enNextZX.rom"sv, 65536 }, std::pair{ "enNxtmmc.rom"sv, 8192 },
@@ -179,11 +183,12 @@ std::string Tools::createNextSession(std::string sessionId, std::string image, b
         if (!std::filesystem::is_regular_file(path))
             throw std::invalid_argument(
                     "Prepare the Next SD image with prepareNextSdCard or supply an existing image"s);
-        validateCard(path);
+        auto configuration = config("48k"s);
+        validateCard(path, !configuration.nextBootRom.empty());
         checkSdSharing(path, readOnly);
         // Install SD storage before selecting Next so the machine's constructor
         // can resolve its ROMs from the card. The bootstrap uses an embedded ROM.
-        auto emulator = std::make_unique<Emulator>(config("48k"s));
+        auto emulator = std::make_unique<Emulator>(std::move(configuration));
         emulator->insertSdCard(path, readOnly);
         emulator->selectMachine("next"sv);
         auto [iterator, inserted] =

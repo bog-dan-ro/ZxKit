@@ -143,6 +143,7 @@ Emulator::Emulator(EmulatorConfig config)
           .romResolver = m_config.romResolver
       }
 {
+    m_context.nextBootRom = m_config.nextBootRom;
     if (m_config.machineRomResolver) {
         m_context.romOverrideResolver = [this](std::string_view name, std::size_t size) {
             return m_config.machineRomResolver(m_machine ? m_machine->id() : std::string_view(m_config.machineId), name, size);

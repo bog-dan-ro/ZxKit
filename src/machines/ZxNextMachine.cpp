@@ -83,9 +83,11 @@ void ZxNextMachine::initialize(MachineContext &ctx, UlaRenderer &ula)
     m_divRamBank = ctx.mmu.registerBank("divmmc_ram", 16 * 8 * 1024, true, true);
     m_mfRomBank = ctx.mmu.registerBank("next_mf_rom", 8 * 1024, false, false);
     m_mfRamBank = ctx.mmu.registerBank("next_mf_ram", 8 * 1024, true, true);
+    loadBootRom(ctx);
     // Scoped host overrides can change between hard resets. Those load below,
     // once per reset; the traditional no-override path keeps its existing policy.
-    if (!ctx.romOverrideResolver) loadRoms(ctx);
+    if (!m_bootRomBank && !ctx.romOverrideResolver)
+        loadRoms(ctx);
 
     ctx.cpu.setZ80nEnabled(true);
     ctx.audioMixer.setAyChipCount(3);
@@ -116,6 +118,24 @@ void ZxNextMachine::initialize(MachineContext &ctx, UlaRenderer &ula)
     wirePorts(ctx, ula);
     wireDivMmc(ctx);
     wireMultiface(ctx, ula);
+}
+
+void ZxNextMachine::loadBootRom(MachineContext &ctx)
+{
+    constexpr std::size_t size = 8 * 1024;
+    if (ctx.nextBootRom.empty())
+        return;
+    if (ctx.nextBootRom.size() != size)
+        throw RomMissingException("nextboot.rom must be exactly 8192 bytes"sv);
+    m_bootRomBank = ctx.mmu.registerBank("next_boot_rom", size, false, false);
+    ctx.mmu.bank(m_bootRomBank).loadData(0, ctx.nextBootRom);
+}
+
+void ZxNextMachine::setConfigMode(MachineContext &ctx, bool enabled)
+{
+    m_configMode = enabled;
+    for (const auto bank : { m_romBank, m_divRomBank, m_mfRomBank })
+        ctx.mmu.bank(bank).setWritable(enabled);
 }
 
 void ZxNextMachine::loadRoms(MachineContext &ctx)
@@ -186,7 +206,9 @@ void ZxNextMachine::wireNextRegs(MachineContext &ctx, UlaRenderer &ula)
     });
 
     // Identification: a ZX Spectrum Next with core 3.02.03 (NextZXOS needs >= 3.01.10)
-    m_nextReg.setReadHandler(0x00, [](uint8_t, uint8_t) -> uint8_t { return 0x0A; });
+    m_nextReg.setReadHandler(0x00, [this](uint8_t, uint8_t) -> uint8_t {
+        return m_bootRomBank ? 0x08 : 0x0A; // TBBlue's emulator ID bypasses physical flash probes.
+    });
     m_nextReg.setReadHandler(0x01, [](uint8_t, uint8_t) -> uint8_t { return 0x32; });
     m_nextReg.setReadHandler(0x0E, [](uint8_t, uint8_t) -> uint8_t { return 0x03; });
 
@@ -224,17 +246,26 @@ void ZxNextMachine::wireNextRegs(MachineContext &ctx, UlaRenderer &ula)
         });
     }
 
-    // NR 0x03: machine type (only changeable in config mode) and display timing
+    // NR 0x03: writing disables the FPGA boot ROM; 7 enters config mode.
     m_nextReg.setReadHandler(0x03, [this](uint8_t, uint8_t) -> uint8_t {
         return static_cast<uint8_t>((m_timing << 4) | m_machineType);
     });
     m_nextReg.setWriteHandler(0x03, [this, &ctx, &ula](uint8_t, uint8_t val) {
         if (val & 0x80)
             m_timing = (val >> 4) & 0x07;
-        if (m_machineType == 0 && (val & 0x07) != 0) {
-            m_machineType = val & 0x07;
+        const auto type = uint8_t(val & 7);
+        if (m_configMode && type >= 1 && type <= 4)
+            m_machineType = type;
+        const bool config = type == 7 || (type == 0 && m_configMode);
+        if (m_bootRomEnabled || config != m_configMode) {
+            m_bootRomEnabled = false;
+            setConfigMode(ctx, config);
             updateMemoryMap(ctx, ula);
         }
+    });
+    m_nextReg.setWriteHandler(0x04, [this, &ctx, &ula](uint8_t, uint8_t) {
+        if (m_configMode)
+            updateMemoryMap(ctx, ula);
     });
 
     // NR 0x07: CPU speed; reads report the actual speed in bits 5:4
@@ -388,39 +419,33 @@ void ZxNextMachine::wirePorts(MachineContext &ctx, UlaRenderer &ula)
             nullptr);
 
     // 128K / +3 paging ports; bit 5 of 0x7FFD locks all of them
-    ctx.ioBus.registerSimpleHandler(
-        "next_7ffd",
-        0xC002,
-        0x4000,
-        nullptr,
-        [this, &ctx, &ula](uint16_t, uint8_t val) {
-            if (m_port7ffd & 0x20)
-                return;
-            m_port7ffd = val;
-            updateLegacyPaging(ctx, ula);
-        });
-    ctx.ioBus.registerSimpleHandler(
-        "next_1ffd",
-        0xF002,
-        0x1000,
-        nullptr,
-        [this, &ctx, &ula](uint16_t, uint8_t val) {
-            if (m_port7ffd & 0x20)
-                return;
-            m_port1ffd = val;
-            updateLegacyPaging(ctx, ula);
-        });
-    ctx.ioBus.registerSimpleHandler(
-        "next_dffd",
-        0xF002,
-        0xD000,
-        nullptr,
-        [this, &ctx, &ula](uint16_t, uint8_t val) {
-            if (m_port7ffd & 0x20)
-                return;
-            m_portDffd = val;
-            updateLegacyPaging(ctx, ula);
-        });
+    ctx.ioBus.registerSimpleHandler("next_7ffd", 0xC002, 0x4000, nullptr,
+                                    [this, &ctx, &ula](uint16_t, uint8_t val) {
+                                        if (!(m_nextReg.peek(0x82) & 0x02) || (m_port7ffd & 0x20)) {
+                                            ctx.ioBus.declineWrite();
+                                            return;
+                                        }
+                                        m_port7ffd = val;
+                                        updateLegacyPaging(ctx, ula);
+                                    });
+    ctx.ioBus.registerSimpleHandler("next_1ffd", 0xF002, 0x1000, nullptr,
+                                    [this, &ctx, &ula](uint16_t, uint8_t val) {
+                                        if (!(m_nextReg.peek(0x82) & 0x08) || (m_port7ffd & 0x20)) {
+                                            ctx.ioBus.declineWrite();
+                                            return;
+                                        }
+                                        m_port1ffd = val;
+                                        updateLegacyPaging(ctx, ula);
+                                    });
+    ctx.ioBus.registerSimpleHandler("next_dffd", 0xF002, 0xD000, nullptr,
+                                    [this, &ctx, &ula](uint16_t, uint8_t val) {
+                                        if (!(m_nextReg.peek(0x82) & 0x04) || (m_port7ffd & 0x20)) {
+                                            ctx.ioBus.declineWrite();
+                                            return;
+                                        }
+                                        m_portDffd = val;
+                                        updateLegacyPaging(ctx, ula);
+                                    });
 
     // Layer 2 control port 0x123B
     ctx.ioBus.registerSimpleHandler(
@@ -861,7 +886,7 @@ uint8_t ZxNextMachine::romNumber() const noexcept
     const uint8_t locks = (m_nextReg.peek(0x8C) >> 4) & 0x03;
     switch (m_machineType) {
     case 1: // 48K
-        return locks;
+        return 0;
     case 3: // +3
         if (locks)
             return locks;
@@ -888,7 +913,7 @@ bool ZxNextMachine::isRom3Paged() const noexcept
     const uint8_t nr8c = m_nextReg.peek(0x8C);
     if ((nr8c & 0xC0) == 0x80) // alt ROM read enabled
         return altRomHalf() == 1;
-    return romNumber() == 3;
+    return m_machineType == 1 || romNumber() == 3;
 }
 
 void ZxNextMachine::mapRomSlot(MachineContext &ctx, uint8_t slot)
@@ -907,6 +932,26 @@ void ZxNextMachine::mapRomSlot(MachineContext &ctx, uint8_t slot)
         ctx.mmu.mapPages1k(addr, m_altRomBank, altPage1k, 8, false, true);
 }
 
+void ZxNextMachine::mapConfigSlot(MachineContext &ctx, uint8_t slot)
+{
+    const uint16_t addr = static_cast<uint16_t>(slot * 0x2000);
+    const auto page = m_nextReg.peek(0x04) & 0x7F;
+    if (page < 4)
+        ctx.mmu.map8k(addr, m_romBank, 2 * page + slot);
+    else if (page == 4 && slot == 0)
+        ctx.mmu.map8k(addr, m_divRomBank, 0);
+    else if (page == 4)
+        ctx.mmu.unmapPages1k(addr, 8);
+    else if (page == 5)
+        ctx.mmu.map8k(addr, slot == 0 ? m_mfRomBank : m_mfRamBank, 0);
+    else if (page < 8)
+        ctx.mmu.map8k(addr, m_altRomBank, 2 * (page - 6) + slot);
+    else if (page < 16)
+        ctx.mmu.map8k(addr, m_divRamBank, 2 * (page - 8) + slot);
+    else
+        ctx.mmu.map8k(addr, m_ramBank, 2 * (page - 16) + slot);
+}
+
 void ZxNextMachine::mapSlot(MachineContext &ctx, uint8_t slot)
 {
     const uint8_t page = m_nextReg.peek(static_cast<uint8_t>(0x50 + slot));
@@ -916,11 +961,15 @@ void ZxNextMachine::mapSlot(MachineContext &ctx, uint8_t slot)
         const bool contended = (page == 10 || page == 11 || page == 14 || page == 15) &&
                                !(m_nextReg.peek(0x08) & 0x40);
         ctx.mmu.map8k(addr, m_ramBank, page, contended);
+    } else if (slot < 2 && m_configMode) {
+        mapConfigSlot(ctx, slot);
     } else if (slot < 2) {
         mapRomSlot(ctx, slot);
     } else {
         ctx.mmu.unmapPages1k(addr, 8);
     }
+    if (slot < 2 && m_bootRomEnabled)
+        ctx.mmu.mapPages1k(addr, m_bootRomBank, 0, 8, true, false);
 }
 
 void ZxNextMachine::updateMemoryMap(MachineContext &ctx, UlaRenderer &ula)
@@ -999,8 +1048,10 @@ void ZxNextMachine::updateLayer2MemoryMapping(MachineContext &ctx)
     const uint8_t count = segment < 3 ? 1 : 3;
     for (uint8_t i = 0; i < count; ++i) {
         const std::size_t page16k = bank + first + i;
+        const bool readLayer2 = mapRead && (i != 0 || !m_bootRomEnabled);
         if (page16k * 2 + 1 < kFirstNonRamPage)
-            ctx.mmu.map16kReadWrite(static_cast<uint16_t>(i * 0x4000), m_ramBank, page16k, mapRead, mapWrite, false);
+            ctx.mmu.map16kReadWrite(static_cast<uint16_t>(i * 0x4000), m_ramBank, page16k,
+                                    readLayer2, mapWrite, false);
     }
 }
 
@@ -1017,8 +1068,10 @@ void ZxNextMachine::handOverState(bool hard)
 {
     // What the TBBlue firmware leaves behind when it starts NextZXOS (as CSpect
     // does); NextZXOS reprograms most of the rest itself.
-    m_machineType = 3; // +3, config mode off
-    m_timing = 3;
+    if (!m_bootRomBank) {
+        m_machineType = 3; // +3, config mode off
+        m_timing = 3;
+    }
     if (hard) {
         m_nextReg.setRaw(0x05, 0x01);
         m_nextReg.setRaw(0x06, 0x05);
@@ -1055,7 +1108,8 @@ void ZxNextMachine::reset(MachineContext &ctx, UlaRenderer &ula, ResetKind kind)
 {
     const bool hard = (kind == ResetKind::Hard);
     if (hard) {
-        if (ctx.romOverrideResolver) loadRoms(ctx);
+        if (!m_bootRomBank && ctx.romOverrideResolver)
+            loadRoms(ctx);
         ctx.mmu.bank(m_ramBank).fill(0x00);
         ctx.mmu.bank(m_divRamBank).fill(0x00);
     }
@@ -1064,6 +1118,15 @@ void ZxNextMachine::reset(MachineContext &ctx, UlaRenderer &ula, ResetKind kind)
     if (!hard)
         m_nextReg.setRaw(0x09, m_nextReg.peek(0x09) & static_cast<uint8_t>(~0x10));
     handOverState(hard);
+    if (hard) {
+        setConfigMode(ctx, m_bootRomBank != 0);
+        if (m_bootRomBank) {
+            m_machineType = 0;
+            m_timing = 0;
+            m_nextReg.setRaw(0x0A, 0x01);
+        }
+    }
+    m_bootRomEnabled = m_bootRomBank && m_configMode;
     m_resetType = hard ? 0x02 : 0x01;
 
     m_uart.reset(hard);
@@ -1087,6 +1150,7 @@ void ZxNextMachine::reset(MachineContext &ctx, UlaRenderer &ula, ResetKind kind)
     m_divAutomap = false;
     m_divNmiLatched = false;
     m_spiCs = 0xFF;
+    m_spiLatch = 0xFF;
     ctx.sdCard.setSelected(false);
     ctx.im2.setHardwareIm2Enabled(false);
 
@@ -1224,7 +1288,8 @@ void ZxNextMachine::saveState(StateWriter &w) const
     w.write(m_port7ffd);
     w.write(m_port1ffd);
     w.write(m_portDffd);
-    w.write(m_machineType);
+    // The high bits were unused in older native Next states.
+    w.write<uint8_t>(m_machineType | (m_configMode ? 0x40 : 0) | (m_bootRomEnabled ? 0x80 : 0));
     w.write(m_timing);
     w.write(m_resetType);
     w.writeBool(m_specialPaging);
@@ -1250,7 +1315,10 @@ void ZxNextMachine::loadState(StateReader &r, MachineContext &ctx, UlaRenderer &
     m_port7ffd      = r.read<uint8_t>();
     m_port1ffd      = r.read<uint8_t>();
     m_portDffd      = r.read<uint8_t>();
-    m_machineType   = r.read<uint8_t>();
+    const auto machine = r.read<uint8_t>();
+    m_machineType = machine & 7;
+    setConfigMode(ctx, (machine & 0x40) != 0);
+    m_bootRomEnabled = m_bootRomBank && (machine & 0x80);
     m_timing        = r.read<uint8_t>();
     m_resetType     = r.read<uint8_t>();
     m_specialPaging = r.readBool();

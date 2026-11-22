@@ -289,6 +289,11 @@ EmulatorConfig Tools::config(std::string profile) const
             throw std::invalid_argument("Incorrect ROM size for "s + std::string(name));
         return bytes;
     };
+    if (!m_romDirectory.empty()) {
+        auto bootRom = m_romDirectory / "nextboot.rom"sv;
+        if (std::filesystem::is_regular_file(bootRom))
+            configuration.nextBootRom = readFile(bootRom);
+    }
     return configuration;
 }
 

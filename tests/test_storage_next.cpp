@@ -535,6 +535,42 @@ void testZipStreaming()
     std::filesystem::remove(zipPath);
 }
 
+void testNextFirmwareMapping()
+{
+    EmulatorConfig config;
+    config.machineId = "next"s;
+    config.nextBootRom.resize(8192, 0xa5);
+    Emulator emulator(std::move(config));
+    auto &next = static_cast<ZxNextMachine &>(emulator.machine());
+    auto &nr = next.nextReg();
+    auto &mmu = emulator.mmu();
+
+    CHECK(nr.read(0x00) == 0x08 && nr.read(0x03) == 0);
+    CHECK(mmu.read(0) == 0xa5 && mmu.read(0x2000) == 0xa5);
+    nr.write(0x03, 0); // Disables FPGA BRAM while keeping the write window.
+    nr.write(0x04, 8);
+    mmu.write(0, 0x88);
+    CHECK(mmu.bank(mmu.findBank("divmmc_ram"sv)).bytes()[0] == 0x88);
+    nr.write(0x04, 0);
+    mmu.write(0, 0x01);
+    mmu.write(0x2000, 0x02);
+    nr.write(0x03, 0x91);
+    nr.write(0x82, 0xc0); // 48K personality disables legacy paging.
+    nr.write(0x85, 0); // Keep internal port enables across the firmware soft reset.
+    emulator.reset(ResetKind::Soft);
+    CHECK(next.is48kMode() && nr.read(0x03) == 0x11);
+    mmu.write(0, 0x33);
+    emulator.ioBus().write(0x7ffd, 7);
+    CHECK(mmu.read(0) == 0x01 && mmu.read(0x2000) == 0x02);
+    CHECK(nr.read(0x56) == 0);
+
+    const auto snapshot = emulator.saveSnapshot(".szx"sv);
+    emulator.reset(ResetKind::Hard);
+    CHECK(mmu.read(0) == 0xa5 && nr.read(0x03) == 0);
+    emulator.loadSnapshot(snapshot, ".szx"sv);
+    CHECK(next.is48kMode() && mmu.read(0) == 0x01);
+}
+
 void testZxNextMemoryAndDivMmc()
 {
     EmulatorConfig cfg;
@@ -868,6 +904,7 @@ int main()
     testSdCard();
     testFatVolume();
     testMachineScopedNextRoms();
+    testNextFirmwareMapping();
     testFatWriting(12, 2880);
     testFatWriting(16, 8192);
     testFatWriting(32, 4096);
