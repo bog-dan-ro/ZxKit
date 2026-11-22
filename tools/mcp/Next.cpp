@@ -17,14 +17,14 @@ constexpr auto defaultDistro = "https://www.specnext.com/distro/24.11/sn-emulato
 constexpr auto distroPage = "https://www.specnext.com/latestdistro/"sv;
 constexpr auto imageName = "cspect-next-1gb.img"sv;
 
-Object validateCard(const std::filesystem::path &path, bool nativeBoot = false)
+Object validateCard(const std::filesystem::path &path, bool requireNextZxOs = true)
 {
     SdCard card;
     card.insert(path, true);
     FatVolume volume([&card](uint64_t lba, std::span<uint8_t, 512> bytes) {
         return card.readBlock(lba, bytes);
     });
-    if (nativeBoot)
+    if (!requireNextZxOs)
         return { { "path", path.string() },
                  { "bytes", card.sizeBytes() },
                  { "fatBits", volume.fatBits() } };
@@ -184,10 +184,10 @@ std::string Tools::createNextSession(std::string sessionId, std::string image, b
             throw std::invalid_argument(
                     "Prepare the Next SD image with prepareNextSdCard or supply an existing image"s);
         auto configuration = config("48k"s);
-        validateCard(path, !configuration.nextBootRom.empty());
+        validateCard(path, false);
         checkSdSharing(path, readOnly);
-        // Install SD storage before selecting Next so the machine's constructor
-        // can resolve its ROMs from the card. The bootstrap uses an embedded ROM.
+        // Attach the card before the Next's first reset so it can load its ROMs.
+        // The initial 48K machine uses its embedded ROM.
         auto emulator = std::make_unique<Emulator>(std::move(configuration));
         emulator->insertSdCard(path, readOnly);
         emulator->selectMachine("next"sv);

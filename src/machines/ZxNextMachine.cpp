@@ -83,11 +83,6 @@ void ZxNextMachine::initialize(MachineContext &ctx, UlaRenderer &ula)
     m_divRamBank = ctx.mmu.registerBank("divmmc_ram", 16 * 8 * 1024, true, true);
     m_mfRomBank = ctx.mmu.registerBank("next_mf_rom", 8 * 1024, false, false);
     m_mfRamBank = ctx.mmu.registerBank("next_mf_ram", 8 * 1024, true, true);
-    loadBootRom(ctx);
-    // Scoped host overrides can change between hard resets. Those load below,
-    // once per reset; the traditional no-override path keeps its existing policy.
-    if (!m_bootRomBank && !ctx.romOverrideResolver)
-        loadRoms(ctx);
 
     ctx.cpu.setZ80nEnabled(true);
     ctx.audioMixer.setAyChipCount(3);
@@ -120,15 +115,15 @@ void ZxNextMachine::initialize(MachineContext &ctx, UlaRenderer &ula)
     wireMultiface(ctx, ula);
 }
 
-void ZxNextMachine::loadBootRom(MachineContext &ctx)
+void ZxNextMachine::loadBootRom(MachineContext &ctx, std::span<const uint8_t> rom)
 {
     constexpr std::size_t size = 8 * 1024;
-    if (ctx.nextBootRom.empty())
-        return;
-    if (ctx.nextBootRom.size() != size)
+    if (rom.size() != size)
         throw RomMissingException("nextboot.rom must be exactly 8192 bytes"sv);
-    m_bootRomBank = ctx.mmu.registerBank("next_boot_rom", size, false, false);
-    ctx.mmu.bank(m_bootRomBank).loadData(0, ctx.nextBootRom);
+    m_bootRomBank = ctx.mmu.findBank("next_boot_rom"sv);
+    if (!m_bootRomBank)
+        m_bootRomBank = ctx.mmu.registerBank("next_boot_rom"s, size, false, false);
+    ctx.mmu.bank(m_bootRomBank).loadData(0, rom);
 }
 
 void ZxNextMachine::setConfigMode(MachineContext &ctx, bool enabled)
@@ -140,14 +135,34 @@ void ZxNextMachine::setConfigMode(MachineContext &ctx, bool enabled)
 
 void ZxNextMachine::loadRoms(MachineContext &ctx)
 {
-    // Like the TBBlue firmware, take the ROMs from the SD card (/machines/next);
-    // the ROM resolver is the fallback.
+    if (!ctx.nextBootRom.empty()) {
+        loadBootRom(ctx, ctx.nextBootRom);
+        return;
+    }
+
+    const bool reuseDirectRoms = m_directRomsLoaded && !m_bootRomBank && !ctx.romOverrideResolver;
     std::optional<FatVolume> fat;
     if (ctx.sdCard.isInserted()) {
-        fat.emplace([&ctx](uint64_t lba, std::span<uint8_t, 512> out) {
-            return ctx.sdCard.readBlock(lba, out);
-        });
+        try {
+            fat.emplace([&ctx](uint64_t lba, std::span<uint8_t, 512> out) {
+                return ctx.sdCard.readBlock(lba, out);
+            });
+        } catch (const FormatException &) {
+            // A running machine with cached ROMs can still use a non-FAT card.
+            if (!reuseDirectRoms)
+                throw;
+        }
     }
+    if (fat) {
+        if (auto rom = fat->readFile("/machines/next/nextboot.rom"sv)) {
+            loadBootRom(ctx, *rom);
+            return;
+        }
+    }
+    if (reuseDirectRoms)
+        return;
+
+    // Without an FPGA loader, load the NextZXOS ROMs directly.
     const auto load = [&](std::string_view name, std::size_t size, bool optional = false) -> std::vector<uint8_t> {
         if (ctx.romOverrideResolver) {
             auto data = ctx.romOverrideResolver(name, size);
@@ -170,18 +185,20 @@ void ZxNextMachine::loadRoms(MachineContext &ctx)
         return {};
     };
 
-    if (auto rom = load("enNextZX.rom", 64 * 1024); !rom.empty())
-        ctx.mmu.bank(m_romBank).loadData(0, rom);
-    if (auto rom = load("enNxtmmc.rom", 8 * 1024); !rom.empty())
-        ctx.mmu.bank(m_divRomBank).loadData(0, rom);
-    if (auto rom = load("enNextMf.rom", 8 * 1024, true); !rom.empty())
-        ctx.mmu.bank(m_mfRomBank).loadData(0, rom);
-    else
-        ctx.mmu.bank(m_mfRomBank).fill(0x00); // removing an override must not retain its bytes
-
+    const auto loadBank = [&](BankId bank, std::string_view name, bool optional = false) {
+        auto &destination = ctx.mmu.bank(bank);
+        if (auto rom = load(name, destination.size(), optional); !rom.empty())
+            destination.loadData(0, rom);
+        else
+            destination.fill(0x00); // Do not retain bytes from the previous ROM source.
+    };
+    loadBank(m_romBank, "enNextZX.rom"sv);
+    loadBank(m_divRomBank, "enNxtmmc.rom"sv);
+    loadBank(m_mfRomBank, "enNextMf.rom"sv, true);
     // NextZXOS calls into the alt ROM while it boots
-    if (auto rom = load("enAltZX.rom", 32 * 1024); !rom.empty())
-        ctx.mmu.bank(m_altRomBank).loadData(0, rom);
+    loadBank(m_altRomBank, "enAltZX.rom"sv);
+    m_bootRomBank = 0;
+    m_directRomsLoaded = true;
 }
 
 void ZxNextMachine::wireNextRegs(MachineContext &ctx, UlaRenderer &ula)
@@ -1108,8 +1125,7 @@ void ZxNextMachine::reset(MachineContext &ctx, UlaRenderer &ula, ResetKind kind)
 {
     const bool hard = (kind == ResetKind::Hard);
     if (hard) {
-        if (!m_bootRomBank && ctx.romOverrideResolver)
-            loadRoms(ctx);
+        loadRoms(ctx);
         ctx.mmu.bank(m_ramBank).fill(0x00);
         ctx.mmu.bank(m_divRamBank).fill(0x00);
     }

@@ -317,6 +317,9 @@ void testMachineScopedNextRoms()
     volume.writeFile("/machines/next/enAltZX.rom", std::vector<uint8_t>(32768, 0xDD));
     const auto path = tempPath("scoped-roms.img");
     writeFile(path, image);
+    volume.writeFile("/machines/next/nextboot.rom"sv, std::vector<uint8_t>(8192, 0xA5));
+    const auto nativePath = tempPath("native-boot.img"sv);
+    writeFile(nativePath, image);
     bool custom = false;
     EmulatorConfig config;
     config.romResolver = [](std::string_view name, std::size_t size) {
@@ -342,7 +345,22 @@ void testMachineScopedNextRoms()
         CHECK(emulator.mmu().bank(emulator.machine().romBankId()).bytes()[0] == 0xBB);
         for (const auto &bank : emulator.mmu().banks())
             if (bank.name() == "next_mf_rom") CHECK(bank.bytes()[0] == 0x00);
+
+        // Frontends can swap SD cards without recreating the Next machine.
+        auto &next = static_cast<ZxNextMachine &>(emulator.machine());
+        emulator.insertSdCard(nativePath, true);
+        emulator.reset(ResetKind::Soft);
+        CHECK(next.nextReg().read(0x00) == 0x0A);
+        emulator.reset(ResetKind::Hard);
+        CHECK(next.nextReg().read(0x00) == 0x08);
+        CHECK(emulator.mmu().read(0) == 0xA5);
+
+        emulator.insertSdCard(path);
+        emulator.reset(ResetKind::Hard);
+        CHECK(next.nextReg().read(0x00) == 0x0A);
+        CHECK(emulator.mmu().read(0) == 0xBB);
     }
+    std::filesystem::remove(nativePath);
     std::filesystem::remove(path);
 }
 

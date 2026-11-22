@@ -34,9 +34,9 @@ namespace zxkit {
 /// NextREG control plane, Layer 2 / Sprites / Tilemap / Copper video compositor,
 /// ZXN-DMA, 4-channel CTC, 14-vector IM2 daisy-chain, 3x AY TurboSound, and 4x DACs.
 ///
-/// With an 8 KiB FPGA loader supplied in the emulator configuration, hard reset starts
-/// the FPGA loader, which boots TBBLUE.FW from the SD card.
-/// Otherwise the machine takes the NextZXOS (enNextZX.rom), DivMMC
+/// On hard reset, an 8 KiB FPGA loader from the emulator configuration or
+/// /machines/next/nextboot.rom starts TBBLUE.FW from the SD card.
+/// For direct NextZXOS boot, the machine takes the NextZXOS (enNextZX.rom), DivMMC
 /// (enNxtmmc.rom) and alt (enAltZX.rom) ROMs from /machines/next on the SD card
 /// (`Emulator::insertSdCard`), sets the NextREGs the way the firmware hands them
 /// over and starts at 0x0000. The built-in DivMMC (port 0xE3, NR 0xB8..0xBB
@@ -114,7 +114,7 @@ private:
     void rebuildExtendedMatrix() noexcept;
     void wireMultiface(MachineContext &ctx, UlaRenderer &ula);
     void loadRoms(MachineContext &ctx);
-    void loadBootRom(MachineContext &ctx);
+    void loadBootRom(MachineContext &ctx, std::span<const uint8_t> rom);
     void setConfigMode(MachineContext &ctx, bool enabled);
     void wireNextRegs(MachineContext &ctx, UlaRenderer &ula);
     void wirePorts(MachineContext &ctx, UlaRenderer &ula);
@@ -165,6 +165,7 @@ private:
     BankId m_divRomBank = 0; // DivMMC 8KB ROM (enNxtmmc.rom)
     BankId m_divRamBank = 0; // DivMMC 128KB RAM (16 x 8KB)
     BankId m_bootRomBank = 0;
+    bool m_directRomsLoaded = false;
     bool m_bootRomEnabled = false;
     bool m_configMode = false;
 

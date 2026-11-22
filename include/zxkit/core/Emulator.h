@@ -81,7 +81,8 @@ struct EmulatorConfig
     std::function<std::vector<uint8_t>(std::string_view machineId, std::string_view romName,
                                        std::size_t expectedSize)>
             machineRomResolver;
-    /// Optional 8 KiB FPGA loader for native Next firmware boot from SD.
+    /// Optional 8 KiB FPGA loader for native Next firmware boot. Overrides a
+    /// loader at /machines/next/nextboot.rom on the SD image.
     std::vector<uint8_t> nextBootRom;
 };
 
