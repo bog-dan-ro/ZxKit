@@ -96,6 +96,8 @@ public:
         return m_rtc;
     }
     void setExtendedKey(NextKey key, bool pressed) noexcept;
+    bool hasBootRom() const noexcept;
+    bool requestBootMenu() noexcept;
     bool canRequestNmi(bool multiface) const noexcept;
     /// Physical buttons respect NextREG 06 enables; software requests set NR02 causes.
     bool requestNmi(MachineContext &ctx, bool multiface, bool button = true);
@@ -168,6 +170,7 @@ private:
     bool m_directRomsLoaded = false;
     bool m_bootRomEnabled = false;
     bool m_configMode = false;
+    bool m_bootMenuPending = false;
 
     uint8_t m_machineType = 3; // NR 0x03: 1 = 48K, 2 = 128K, 3 = +3, 4 = Pentagon
     uint8_t m_timing = 3;

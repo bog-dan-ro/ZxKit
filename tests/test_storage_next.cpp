@@ -355,10 +355,30 @@ void testMachineScopedNextRoms()
         CHECK(next.nextReg().read(0x00) == 0x08);
         CHECK(emulator.mmu().read(0) == 0xA5);
 
+        CHECK(emulator.canOpenNextBootMenu());
+        CHECK(emulator.openNextBootMenu());
+        auto &io = emulator.ioBus();
+        CHECK(io.read(0x7FFE) & 1); // Leave the FPGA loader's own key scan alone.
+        const auto bootSnapshot = emulator.saveSnapshot(".szx"sv);
+        next.nextReg().write(0x03, 0); // TBBlue takes over in configuration mode.
+        CHECK(io.read(0xFEFE) & 1);
+        CHECK(!(io.read(0x7FFE) & 1));
+        CHECK(io.read(0x7FFE) & 1);
+        emulator.loadSnapshot(bootSnapshot, ".szx"sv);
+        next.nextReg().write(0x03, 0);
+        CHECK(!(io.read(0x7FFE) & 1));
+
+        CHECK(emulator.openNextBootMenu());
+        emulator.reset(ResetKind::Hard);
+        next.nextReg().write(0x03, 0);
+        CHECK(io.read(0x7FFE) & 1);
+
         emulator.insertSdCard(path);
         emulator.reset(ResetKind::Hard);
         CHECK(next.nextReg().read(0x00) == 0x0A);
         CHECK(emulator.mmu().read(0) == 0xBB);
+        CHECK(!emulator.canOpenNextBootMenu());
+        CHECK(!emulator.openNextBootMenu());
     }
     std::filesystem::remove(nativePath);
     std::filesystem::remove(path);

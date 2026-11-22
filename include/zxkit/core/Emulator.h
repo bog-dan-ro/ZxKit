@@ -159,6 +159,10 @@ public:
     OptionalRef<DiskImage> diskDrive(std::size_t drive) noexcept;
 
     void reset(ResetKind kind = ResetKind::Soft);
+    /// Whether the running Next has an FPGA loader and an SD card for native firmware boot.
+    bool canOpenNextBootMenu() const noexcept;
+    /// Hard-reset the Next and press Space at the firmware prompt. Returns false if unavailable.
+    bool openNextBootMenu();
     void triggerNmi() noexcept;
     void setKeyState(ZxKey key, bool pressed) noexcept;
     void setNextKeyState(NextKey key, bool pressed) noexcept;

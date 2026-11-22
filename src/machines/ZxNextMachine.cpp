@@ -98,6 +98,12 @@ void ZxNextMachine::initialize(MachineContext &ctx, UlaRenderer &ula)
                     if (!(row & (1u << i)))
                         keys &= m_extendedRows[i];
             }
+            // TBBlue polls the Space row after paging out the FPGA loader. Release the
+            // key after that read so the personality menu receives a fresh keypress.
+            if (m_bootMenuPending && row == 0x7F && m_configMode && !m_bootRomEnabled) {
+                keys &= 0xFE;
+                m_bootMenuPending = false;
+            }
             const bool tape = ctx.tape.readEar(ctx);
             const uint8_t ear = ctx.audioMixer.beeper().earBit() != tape ? 0x40 : 0;
             return {uint8_t(0xA0 | ear | (keys & 0x1F)), 0xFF};
@@ -129,8 +135,21 @@ void ZxNextMachine::loadBootRom(MachineContext &ctx, std::span<const uint8_t> ro
 void ZxNextMachine::setConfigMode(MachineContext &ctx, bool enabled)
 {
     m_configMode = enabled;
+    if (!enabled)
+        m_bootMenuPending = false;
     for (const auto bank : { m_romBank, m_divRomBank, m_mfRomBank })
         ctx.mmu.bank(bank).setWritable(enabled);
+}
+
+bool ZxNextMachine::hasBootRom() const noexcept
+{
+    return m_bootRomBank != 0;
+}
+
+bool ZxNextMachine::requestBootMenu() noexcept
+{
+    m_bootMenuPending = m_bootRomEnabled;
+    return m_bootMenuPending;
 }
 
 void ZxNextMachine::loadRoms(MachineContext &ctx)
@@ -1123,6 +1142,7 @@ void ZxNextMachine::handOverState(bool hard)
 
 void ZxNextMachine::reset(MachineContext &ctx, UlaRenderer &ula, ResetKind kind)
 {
+    m_bootMenuPending = false;
     const bool hard = (kind == ResetKind::Hard);
     if (hard) {
         loadRoms(ctx);
@@ -1305,7 +1325,8 @@ void ZxNextMachine::saveState(StateWriter &w) const
     w.write(m_port1ffd);
     w.write(m_portDffd);
     // The high bits were unused in older native Next states.
-    w.write<uint8_t>(m_machineType | (m_configMode ? 0x40 : 0) | (m_bootRomEnabled ? 0x80 : 0));
+    w.write<uint8_t>(m_machineType | (m_bootMenuPending ? 0x20 : 0) | (m_configMode ? 0x40 : 0)
+                     | (m_bootRomEnabled ? 0x80 : 0));
     w.write(m_timing);
     w.write(m_resetType);
     w.writeBool(m_specialPaging);
@@ -1335,6 +1356,7 @@ void ZxNextMachine::loadState(StateReader &r, MachineContext &ctx, UlaRenderer &
     m_machineType = machine & 7;
     setConfigMode(ctx, (machine & 0x40) != 0);
     m_bootRomEnabled = m_bootRomBank && (machine & 0x80);
+    m_bootMenuPending = m_bootRomBank && m_configMode && (machine & 0x20);
     m_timing        = r.read<uint8_t>();
     m_resetType     = r.read<uint8_t>();
     m_specialPaging = r.readBool();

@@ -418,6 +418,21 @@ void Emulator::reset(ResetKind kind)
     cancelRunControl();
 }
 
+bool Emulator::canOpenNextBootMenu() const noexcept
+{
+    const auto *next = dynamic_cast<const ZxNextMachine *>(m_machine.get());
+    return next && next->hasBootRom() && m_sdCard.isInserted();
+}
+
+bool Emulator::openNextBootMenu()
+{
+    if (!canOpenNextBootMenu())
+        return false;
+
+    reset(ResetKind::Hard);
+    return static_cast<ZxNextMachine &>(*m_machine).requestBootMenu();
+}
+
 void Emulator::triggerNmi() noexcept
 {
     m_cpu.requestNmi();
