@@ -1,4 +1,5 @@
 // Copyright (c) 2026, BogDan Vatra. SPDX-License-Identifier: GPL-3.0-or-later
+#include "Fat32Copy.h"
 #include "MediaImage.h"
 #include "zxkit/media/BasicCodec.h"
 #include "zxkit/media/MediaView.h"
@@ -360,6 +361,7 @@ void help()
   boot IMAGE BOOT_TRACKS           Install exactly the reserved CP/M tracks
   convert INPUT OUTPUT             Convert compatible containers/tapes; TAP -> WAV
   copy INPUT ENTRY OUTPUT NEWNAME [key=value ...]  Transfer bytes between images
+  fat32-copy INPUT OUTPUT           Copy a FAT card's files into a standard FAT32 layout
   basic compile INPUT OUTPUT       Tokenize numbered BASIC text
   basic decompile INPUT OUTPUT     Lossless editable BASIC listing and stored data
   basic list INPUT OUTPUT          Readable, unhacked listing (stored numbers, code in REMs)
@@ -538,6 +540,9 @@ int main(int argc, char **argv)
             } else
                 throw InvalidArgumentException("Use basic compile, decompile or list"sv);
             output(args[3], out, force);
+        } else if (command == "fat32-copy"sv) {
+            count(3);
+            copyFat32(args[1], args[2], opts.label, force);
         } else if (command == "copy"sv) {
             if (args.size() < 5)
                 throw InvalidArgumentException("copy INPUT ENTRY OUTPUT NEWNAME [attributes]"sv);

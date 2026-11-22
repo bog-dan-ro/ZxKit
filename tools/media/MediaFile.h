@@ -88,7 +88,7 @@ inline fs::path imagePath(const fs::path &path)
         return fs::canonical(path);
     return fs::weakly_canonical(fs::absolute(path));
 }
-inline void atomicWrite(const fs::path &input, std::span<const uint8_t> bytes, bool replace)
+template <class Writer> void atomicOutput(const fs::path &input, bool replace, Writer write)
 {
     auto path = imagePath(input);
     if (!replace && fs::exists(path))
@@ -113,16 +113,7 @@ inline void atomicWrite(const fs::path &input, std::span<const uint8_t> bytes, b
         }
     } cleanup{ stage };
     auto temporary = stage / "image"sv;
-    {
-        std::ofstream out(temporary, std::ios::binary | std::ios::trunc);
-        if (!out
-            || !out.write(reinterpret_cast<const char *>(bytes.data()),
-                          std::streamsize(bytes.size())))
-            throw IoException("Cannot write image transaction"sv);
-        out.flush();
-        if (!out)
-            throw IoException("Cannot flush image transaction"sv);
-    }
+    write(temporary);
     if (fs::exists(path))
         fs::permissions(temporary, fs::status(path).permissions());
 #ifdef _WIN32
@@ -149,6 +140,17 @@ inline void atomicWrite(const fs::path &input, std::span<const uint8_t> bytes, b
         ::close(directory);
     }
 #endif
+}
+inline void atomicWrite(const fs::path &input, std::span<const uint8_t> bytes, bool replace)
+{
+    atomicOutput(input, replace, [&](const fs::path &temporary) {
+        std::ofstream out(temporary, std::ios::binary | std::ios::trunc);
+        if (!out.write(reinterpret_cast<const char *>(bytes.data()), std::streamsize(bytes.size())))
+            throw IoException("Cannot write image transaction"sv);
+        out.close();
+        if (!out)
+            throw IoException("Cannot close image transaction"sv);
+    });
 }
 class MediaFile
 {

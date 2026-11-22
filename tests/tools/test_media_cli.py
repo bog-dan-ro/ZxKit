@@ -2,6 +2,7 @@
 # Copyright (c) 2026, BogDan Vatra. SPDX-License-Identifier: GPL-3.0-or-later
 """End-to-end image transactions and MC's real extfs command protocol."""
 import pathlib
+import os
 import subprocess
 import sys
 import tempfile
@@ -11,7 +12,8 @@ root = pathlib.Path(sys.argv[2])
 root.mkdir(parents=True, exist_ok=True)
 
 def run(*args, ok=True):
-    p = subprocess.run([str(exe), *map(str, args)], capture_output=True)
+    p = subprocess.run([str(exe), *map(str, args)], capture_output=True,
+                       env={**os.environ, 'SOURCE_DATE_EPOCH': '946684800'})
     assert (p.returncode == 0) == ok, (args, p.stdout, p.stderr)
     return p.stdout
 
@@ -124,4 +126,18 @@ with tempfile.TemporaryDirectory(dir=root) as tmp:
     run('attrs', card, 'nextzxos/cpm-a.p3d', 'readonly=0')
     assert card.stat().st_ino == inode
     run('list', f'{card}/nextzxos/missing.p3d', ok=False)
+    run('put', card, payload, 'nextzxos/Long File Name.txt',
+        'archive=1', 'hidden=1', 'readonly=1', 'system=1')
+    # Keep the 32 MiB FAT16 volume and give the destination enough room for FAT32.
+    with card.open('r+b') as file:
+        file.truncate(64 * 1024 * 1024)
+    clone = d/'repacked.img'
+    run('fat32-copy', card, clone)
+    assert run('list', card) == run('list', clone)
+    assert run('get', clone, 'nextzxos/Long File Name.txt', '-') == payload.read_bytes()
+    with clone.open('rb') as file:
+        file.seek(2048 * 512 + 82)
+        assert file.read(8) == b'FAT32   '
+    run('fat32-copy', card, card, '--force', ok=False)
+    run('fat32-copy', card, clone, ok=False)
 print('CLI and MC protocol tests passed')

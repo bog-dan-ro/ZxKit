@@ -20,7 +20,9 @@
 #include "zxkit/core/Exception.h"
 
 #include <algorithm>
+#include <charconv>
 #include <chrono>
+#include <cstdlib>
 #include <format>
 #include <string_view>
 #include <utility>
@@ -236,7 +238,20 @@ std::array<uint8_t, 11> generatedShortName(std::string_view name, Taken taken)
 std::pair<uint16_t, uint16_t> fatTimestamp()
 {
     using namespace std::chrono;
-    const auto now = system_clock::now();
+    auto now = floor<seconds>(system_clock::now());
+    if (const char *epoch = std::getenv("SOURCE_DATE_EPOCH")) {
+        const std::string_view text(epoch);
+        int64_t value = 0;
+        const auto end = text.data() + text.size();
+        const auto parsed = std::from_chars(text.data(), end, value);
+        const auto first = sys_days{ 1980y / January / 1 };
+        const auto last = sys_days{ 2108y / January / 1 };
+        if (parsed.ec == std::errc{} && parsed.ptr == end) {
+            now = sys_seconds{ std::clamp(
+                    seconds{ value }, duration_cast<seconds>(first.time_since_epoch()),
+                    duration_cast<seconds>(last.time_since_epoch()) - seconds{ 1 }) };
+        }
+    }
     const auto today = floor<days>(now);
     const year_month_day date{today};
     const hh_mm_ss time{floor<seconds>(now - today)};

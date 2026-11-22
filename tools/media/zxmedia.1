@@ -208,6 +208,13 @@ translated.
 Loaders are not rewritten, so a program does not become compatible with a
 different disk interface.
 .TP
+\fBfat32\-copy\fR \fIINPUT\fR \fIOUTPUT\fR
+Copy a raw FAT image's files, directories and R/H/S/A attributes to a separate,
+same-sized FAT32 image with a primary MBR partition. The files are reallocated
+and receive new timestamps and short aliases. This can repair images whose
+FAT32 label disagrees with their cluster count. Use \fB\-\-label\fR to set the
+destination volume label. An existing output requires \fB\-\-force\fR.
+.TP
 \fBbasic compile\fR \fIINPUT\fR \fIOUTPUT\fR
 Tokenize numbered BASIC text from the file
 .I INPUT
@@ -445,6 +452,10 @@ another one.
 The default for
 .BR \-\-filesystem .
 Midnight Commander sessions use it to select a profile for ambiguous images.
+.TP
+.B SOURCE_DATE_EPOCH
+If set to an integer number of seconds since the Unix epoch, use it for
+new FAT timestamps, clamped to the FAT date range.
 .SH EXIT STATUS
 0 on success.
 1 for every error, including usage errors, with a message starting with
