@@ -313,18 +313,18 @@ void DiskImage::parseDsk(std::span<const uint8_t> raw)
                 if (dataCursor + actualSize > raw.size())
                     break;
 
+                const auto sectorData = raw.subspan(dataCursor, actualSize);
                 m_sectors.push_back(Sector{
-                    .physTrack = t,
-                    .physSide = s,
-                    .track = sInfo[0],
-                    .side = sInfo[1],
-                    .sectorId = sInfo[2],
-                    .sizeCode = sInfo[3],
-                    .st1 = sInfo[4],
-                    .st2 = sInfo[5],
-                    .mfm = trkHdr[0x13] != 1,
-                    .data = std::vector<uint8_t>(std::from_range, raw.subspan(dataCursor, actualSize))
-                });
+                        .physTrack = t,
+                        .physSide = s,
+                        .track = sInfo[0],
+                        .side = sInfo[1],
+                        .sectorId = sInfo[2],
+                        .sizeCode = sInfo[3],
+                        .st1 = sInfo[4],
+                        .st2 = sInfo[5],
+                        .mfm = trkHdr[0x13] != 1,
+                        .data = std::vector<uint8_t>(sectorData.begin(), sectorData.end()) });
                 dataCursor += actualSize;
             }
             pos += trkSize;
