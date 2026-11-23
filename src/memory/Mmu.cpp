@@ -80,6 +80,7 @@ void Mmu::resetMappings() noexcept
         m_baseMap[i]  = {};
         m_overlayMap[i] = {};
         m_overlayActive[i] = false;
+        m_writeMirrors[i] = {};
     }
 }
 
@@ -111,6 +112,7 @@ void Mmu::mapPages1k(uint16_t startAddr,
             m_baseMap[slot].writeBankId = bankId;
             m_baseMap[slot].writePage1k = static_cast<uint16_t>(p1k);
             m_baseMap[slot].writable    = canWrite;
+            m_writeMirrors[slot] = {};
         }
         refreshSlot(slot);
     }
@@ -151,12 +153,28 @@ void Mmu::map1k(uint16_t startAddr, BankId bankId, std::size_t page1k, bool cont
     mapPages1k(startAddr, bankId, page1k, 1, true, true, contended, forceReadOnly);
 }
 
+void Mmu::mapWriteMirror1k(uint16_t startAddr, BankId bankId, std::size_t firstPage1k,
+                           std::size_t count1k)
+{
+    const std::size_t startSlot = startAddr >> kPageShift;
+    const auto &target = bank(bankId);
+    if (count1k > kSlotCount - startSlot || firstPage1k > target.count1kPages()
+        || count1k > target.count1kPages() - firstPage1k || !target.isWritable())
+        throw InvalidArgumentException("Invalid MMU write mirror");
+
+    for (std::size_t i = 0; i < count1k; ++i) {
+        m_writeMirrors[startSlot + i] = { bankId, firstPage1k + i };
+        refreshSlot(startSlot + i);
+    }
+}
+
 void Mmu::unmapPages1k(uint16_t startAddr, std::size_t count1k) noexcept
 {
     const std::size_t startSlot = startAddr >> kPageShift;
     const std::size_t endSlot = std::min<std::size_t>(startSlot + count1k, kSlotCount);
     for (std::size_t slot = startSlot; slot < endSlot; ++slot) {
         m_baseMap[slot] = {};
+        m_writeMirrors[slot] = {};
         refreshSlot(slot);
     }
 }
@@ -217,7 +235,7 @@ void Mmu::poke(uint16_t addr, uint8_t val, bool allowRomWrite) noexcept
     if ((m_flags[slot] & SlotFlags::Writable) != 0) {
         if (m_flags[slot] & SlotFlags::VideoWrite)
             m_videoWriteCallback();
-        m_writePages[slot][addr & kPageMask] = val;
+        writeMappedByte(slot, addr, val);
     } else if (allowRomWrite) {
         const auto &active = m_overlayActive[slot] ? m_overlayMap[slot] : m_baseMap[slot];
         if (active.bankId != 0) {
@@ -293,6 +311,7 @@ void Mmu::loadState(StateReader &r)
         throw FormatException("MMU bank count mismatch during loadState");
     for (auto &b : m_banks)
         b.loadState(r);
+    m_writeMirrors.fill({});
     for (std::size_t i = 0; i < kSlotCount; ++i) {
         m_baseMap[i].bankId      = r.read<BankId>();
         m_baseMap[i].readPage1k  = r.read<uint16_t>();
@@ -346,10 +365,25 @@ void Mmu::refreshSlot(std::size_t slot) noexcept
         f |= SlotFlags::CustomRead;
     if (m_customWrites[slot])
         f |= SlotFlags::CustomWrite;
-    if (m_videoWriteCallback && active.writable && active.writeBankId == m_videoBank
-        && active.writePage1k % 16 < 7)
+    const auto &mirror = m_writeMirrors[slot];
+    const bool mirrored = active.writable && !m_overlayActive[slot] && mirror.bankId != 0;
+    if (mirrored)
+        f |= SlotFlags::MirrorWrite;
+    if (m_videoWriteCallback && active.writable
+        && ((active.writeBankId == m_videoBank && active.writePage1k % 16 < 7)
+            || (mirrored && mirror.bankId == m_videoBank && mirror.page1k % 16 < 7)))
         f |= SlotFlags::VideoWrite;
     m_flags[slot] = f;
+}
+
+void Mmu::writeMappedByte(std::size_t slot, uint16_t addr, uint8_t val) noexcept
+{
+    const auto offset = addr & kPageMask;
+    m_writePages[slot][offset] = val;
+    if (m_flags[slot] & SlotFlags::MirrorWrite) {
+        const auto &mirror = m_writeMirrors[slot];
+        m_banks[mirror.bankId - 1].bytes()[mirror.page1k * kPageSize + offset] = val;
+    }
 }
 
 uint8_t Mmu::handleSlowRead(std::size_t slot, uint16_t addr, uint8_t val) const
@@ -368,7 +402,7 @@ void Mmu::handleSlowWrite(std::size_t slot, uint16_t addr, uint8_t val)
     if (m_customWrites[slot]) {
         m_customWrites[slot](addr, val);
     } else {
-        m_writePages[slot][addr & kPageMask] = val;
+        writeMappedByte(slot, addr, val);
     }
     if ((m_flags[slot] & SlotFlags::WatchWrite) && m_watchpointCb)
         m_watchpointCb(addr, val, true);

@@ -57,8 +57,9 @@ public:
         static constexpr uint8_t CustomRead = 0x10;
         static constexpr uint8_t CustomWrite = 0x20;
         static constexpr uint8_t VideoWrite = 0x40;
+        static constexpr uint8_t MirrorWrite = 0x80;
         static constexpr uint8_t SlowRead = WatchRead | CustomRead;
-        static constexpr uint8_t SlowWrite = WatchWrite | CustomWrite | VideoWrite;
+        static constexpr uint8_t SlowWrite = WatchWrite | CustomWrite | VideoWrite | MirrorWrite;
     };
 
     struct SlotMapping
@@ -112,6 +113,11 @@ public:
                bool forceReadOnly = false);
     void map1k(uint16_t startAddr, BankId bankId, std::size_t page1k, bool contended = false,
                bool forceReadOnly = false);
+
+    /// Also writes to these pages when using the current base write mapping.
+    /// Replacing that mapping clears the mirror. The machine restores mirrors on state load.
+    void mapWriteMirror1k(uint16_t startAddr, BankId bankId, std::size_t firstPage1k,
+                          std::size_t count1k);
 
     /// Unmaps `count1k` pages: reads return 0xFF (floating bus), writes are discarded.
     void unmapPages1k(uint16_t startAddr, std::size_t count1k) noexcept;
@@ -181,6 +187,7 @@ public:
 
 private:
     void refreshSlot(std::size_t slot) noexcept;
+    void writeMappedByte(std::size_t slot, uint16_t addr, uint8_t val) noexcept;
     uint8_t handleSlowRead(std::size_t slot, uint16_t addr, uint8_t val) const;
     void handleSlowWrite(std::size_t slot, uint16_t addr, uint8_t val);
 
@@ -208,6 +215,13 @@ private:
     std::array<SlotMapping, kSlotCount> m_baseMap{};
     std::array<SlotMapping, kSlotCount> m_overlayMap{};
     std::array<bool, kSlotCount> m_overlayActive{};
+
+    struct WriteMirror
+    {
+        BankId bankId = 0;
+        std::size_t page1k = 0;
+    };
+    std::array<WriteMirror, kSlotCount> m_writeMirrors{};
 
     std::array<CustomReadHandler, kSlotCount> m_customReads{};
     std::array<CustomWriteHandler, kSlotCount> m_customWrites{};

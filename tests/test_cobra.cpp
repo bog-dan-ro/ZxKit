@@ -21,6 +21,9 @@
 
 #include "RomTestSupport.h"
 
+#include "zxkit/debug/Assembler.h"
+#include "zxkit/media/MediaArchive.h"
+
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -579,15 +582,50 @@ void testCobraBasicBoot(const std::filesystem::path &fixtures)
 
 void testCobraRomCpm(const std::filesystem::path &fixtures)
 {
-    // CTRL+0 at the boot manager: the ROM's CP/M with an empty disk in drive A
+    // A CP/M transient loads code into DRAM#1 and uses the boot ROM's game handoff.
+    std::vector<uint8_t> program;
+    const auto append = [&program](std::initializer_list<std::string_view> instructions) {
+        for (const auto instruction : instructions) {
+            const auto origin = static_cast<uint16_t>(0x0100 + program.size());
+            const auto bytes = Assembler::assembleOne(instruction, origin);
+            program.insert(program.end(), bytes.begin(), bytes.end());
+        }
+    };
+    append({ "DI"sv, "LD SP,$9100"sv, "XOR A"sv, "OUT ($FE),A"sv, "LD HL,$0140"sv, "LD DE,$6000"sv,
+             "LD BC,$0020"sv, "LDIR"sv, "LD A,$5A"sv, "LD ($5FFF),A"sv, "LD A,$C3"sv,
+             "OUT ($FE),A"sv, "LD ($5FFF),A"sv, "LD ($6100),A"sv, "LD HL,$6000"sv, "EXX"sv,
+             "LD HL,$0038"sv, "LD R,A"sv, "JP (HL)"sv });
+    program.resize(0x40);
+    // Runs at $6000 in BASIC. Read from DRAM#1, then write on both sides of the VRAM mirror.
+    append({ "LD A,$80"sv, "LD R,A"sv, "LD A,($5FFF)"sv, "LD ($9000),A"sv, "LD ($5FFF),A"sv,
+             "LD ($6100),A"sv, "HALT"sv });
+    program.resize(0x60);
+    auto disk = MediaArchive::create(".img"sv, { .filesystem = "cobra-cpm"s });
+    disk.put("MAPTEST.COM"sv, program);
+
+    // CTRL+0 at the boot manager runs CP/M from ROM with this disk in drive A.
     Emulator emulator(zxkit::test::romConfig(fixtures / "roms", "cobra_80k"s));
-    emulator.insertDisk(0, std::vector<uint8_t>(80 * 2 * 9 * 512, 0xE5), ".img");
+    emulator.insertDisk(0, disk.encode(), ".img");
     emulator.runFrames(100);
     zxkit::test::tap(emulator, {ZxKey::Ctrl, ZxKey::Num0});
     emulator.runFrames(300);
     zxkit::test::type(emulator, "save 2 y.com\n");
     emulator.runFrames(300);
     assert(hasCpmFile(emulator, "Y       COM"));
+
+    test::type(emulator, "maptest\n"sv);
+    emulator.runFrames(200);
+    assert(cobra(emulator).isSpectrumModeLocked());
+    assert(cobra(emulator).poFlipFlop() == 0 && cobra(emulator).lo6FlipFlop() == 0);
+    assert(emulator.cpu().registers().halted);
+    auto &mmu = emulator.mmu();
+    assert(mmu.peek(0x9000) == 0x5A);
+    assert(mmu.peek(0x5FFF) == 0x5A && mmu.peek(0x6100) == 0x5A);
+
+    const auto vram = mmu.bank(cobra(emulator).ramBankId()).span16k(1);
+    assert(vram[0x1FFF] == 0x5A && vram[0x2100] == 0xC3);
+    mmu.poke(0x4000, 0xA5);
+    assert(mmu.peek(0x4000) == 0xA5 && vram[0] == 0xA5);
 }
 
 void testDevilCatalog(const std::filesystem::path &fixtures)

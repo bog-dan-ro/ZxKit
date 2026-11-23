@@ -21,6 +21,7 @@
 #include "zxkit/cpu/Z80Cpu.h"
 #include "zxkit/machines/SinclairMachines.h"
 
+#include <algorithm>
 #include <format>
 #include <string_view>
 #include <utility>
@@ -299,6 +300,8 @@ void CobraMachine::initialize(MachineContext &ctx, UlaRenderer &ula)
 
     // R7 refresh-bit flip-flop hook
     ctx.cpu.setRfshHook([this, &ctx, &ula](uint8_t r7Bit) {
+        if (m_locked)
+            return;
         m_po = (r7Bit != 0) ? 1 : 0;
         // On the falling edge of R7 (PO -> 0), latch 8255 Port C bit 6 into LO6
         if (m_po == 0) {
@@ -435,10 +438,16 @@ void CobraMachine::loadState(StateReader &r, MachineContext &ctx, UlaRenderer &u
     m_wideLatch = r.readBool();
     m_terminalCount = r.readBool();
     m_ctc.loadState(r);
-    // the locked BASIC map is mapped again too
-    const bool locked = std::exchange(m_locked, false);
+    if (std::exchange(m_locked, false)) {
+        m_po = m_lo6 = 0;
+        // Older 80K BASIC states used VRAM as the CPU's entire 4000-7FFF window.
+        const auto &mapping = ctx.mmu.effectiveMapping(0x4000 >> Mmu::kPageShift);
+        if (m_mode80k && mapping.bankId == m_ramBank && mapping.readPage1k == 16) {
+            auto &ram = ctx.mmu.bank(m_ramBank);
+            std::ranges::copy(ram.span16k(1), ram.span16k(4).begin());
+        }
+    }
     updateMemoryMap(ctx, ula);
-    m_locked = locked;
 }
 
 uint8_t CobraMachine::poFlipFlop() const noexcept
@@ -527,7 +536,11 @@ void CobraMachine::updateMemoryMap(MachineContext &ctx, UlaRenderer &ula)
         m_wide = false;
         m_locked = true;
         ctx.mmu.map16k(0x0000, m_ramBank, 0, false, /*forceReadOnly=*/true);
-        ctx.mmu.map16k(0x4000, m_ramBank, 1, false);
+        // On the 80K board BASIC uses DRAM#1 for CPU access. Writes to its lower 8KB
+        // also reach video RAM, as shown in the CoBra v1.3 schematic (sheet 18).
+        ctx.mmu.map16k(0x4000, m_ramBank, m_mode80k ? 4 : 1, false);
+        if (m_mode80k)
+            ctx.mmu.mapWriteMirror1k(0x4000, m_ramBank, 16, 8);
         ctx.mmu.map16k(0x8000, m_ramBank, 2, false);
         ctx.mmu.map16k(0xC000, m_ramBank, 3, false);
         ula.setVramSource(m_ramBank, 1);
