@@ -1,3 +1,12 @@
+zxkit (1.0.0-5) unstable; urgency=medium
+
+  * Expand zx-mcp with screen text extraction and emulator controls.
+  * Add native ZX Spectrum Next firmware boot and FAT32 SD image copying.
+  * Emulate the ZX Printer and add native BASIC printer output.
+  * Fix CoBra 80K game launches from CP/M.
+
+ -- BogDan Vatra <bogdan@kde.org>  Tue, 24 Nov 2026 21:07:16 +0200
+
 zxkit (1.0.0-4) unstable; urgency=medium
 
   * Build and include zx-mcp and its documentation in zxkit-tools.
