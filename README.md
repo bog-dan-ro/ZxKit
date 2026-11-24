@@ -148,7 +148,7 @@ zxrun --machine cobra_80k --roms DIR "disk:0:KRYS80_CL_SYSDISK.img" wait:100 key
 include(FetchContent)
 FetchContent_Declare(ZxKit
     GIT_REPOSITORY https://github.com/bog-dan-ro/ZxKit.git
-    GIT_TAG main)
+    GIT_TAG master)
 FetchContent_MakeAvailable(ZxKit)
 
 target_link_libraries(myapp PUBLIC ZX::Kit)
