@@ -4,7 +4,9 @@
 #include "Support.h"
 #include <mcp++/annotations.hpp>
 #include <zxkit/core/Emulator.h>
+#include <chrono>
 #include <exception>
+#include <functional>
 #include <optional>
 #include <map>
 #include <memory>
@@ -183,6 +185,16 @@ public:
     [[= mcp::tool_t{ "Press a key chord such as CS+8 for holdFrames, then release and run "
                      "releaseFrames. Stops early on debugger traps." }]] std::string
             tapKeys(std::string sessionId, std::string keys, int holdFrames, int releaseFrames);
+    [[= mcp::tool_t{ "Run frame-timed inputs from a JSON array of actions. Each action specifies "
+                     "frames and one of keys (chord), nextKeys (chord), text (ASCII keystrokes, "
+                     "frames per press and release), joystick (bitmask), or mouse "
+                     "({dx,dy,buttons}). An action with only frames waits. Stops at traps "
+                     "or budget limits and releases temporary inputs." }]] std::string
+            runInputSequence(std::string sessionId, std::string actionsJson, int maxFrames,
+                             int maxMilliseconds);
+    [[= mcp::tool_t{ "Attach Kempston input devices before recording RZX. Input sequences can "
+                     "also attach these devices automatically outside recording." }]] std::string
+            attachInputDevices(std::string sessionId, bool joystick, bool mouse);
     [[= mcp::tool_t{ "Trigger a non-maskable interrupt in one session." }]] std::string
             triggerNmi(std::string sessionId);
     [[= mcp::tool_t{ "Load a tape, snapshot, disk, screen or recording from a host path into one "
@@ -247,6 +259,22 @@ public:
     [[= mcp::tool_t{ "Capture the current screen as PNG; refreshes rendering without advancing the "
                      "CPU." }]] std::string captureScreen(std::string sessionId, std::string path,
                                                           bool overwrite);
+    [[= mcp::tool_t{
+            "Return the last completed raster frame as PNG, without refreshing or "
+            "advancing the emulator. Run a frame if no completed frame is available." }]] std::
+            string captureLastFrame(std::string sessionId, std::string path, bool overwrite);
+    [[= mcp::tool_t{ "Inspect the live scanline, horizontal T-state, frame timing, ULA display "
+                     "page and IM2 interrupt masks without advancing the emulator." }]] std::string
+            readRasterState(std::string sessionId);
+    [[= mcp::tool_t{ "Read 32 by 24 aligned 8-by-8 text from standard ULA screen memory, including "
+                     "shadow RAM. font is auto (guest CHARS or ROM) or rom. Unknown cells are "
+                     "reported by column. Use captureScreen for composited video." }]] std::string
+            readScreenText(std::string sessionId, std::string font);
+    [[= mcp::tool_t{ "Look for a case-sensitive substring within one standard ULA text row "
+                     "immediately and after each completed frame. font is auto or rom. Stops "
+                     "on a match, debugger trap, frame budget or wall-clock budget." }]] std::string
+            waitForScreenText(std::string sessionId, std::string text, std::string font,
+                              int maxFrames, int maxMilliseconds);
     [[= mcp::tool_t{ "Render caller-provided 6912-byte Spectrum SCR data to PNG." }]] std::string
             renderScreen(std::string hexData, std::string path, bool overwrite);
     [[= mcp::tool_t{
@@ -322,14 +350,94 @@ public:
     [[= mcp::tool_t{ "Rename/move an SD file or directory. Requires a writable image; reset after "
                      "edits." }]] std::string renameSdFile(std::string sessionId, std::string path,
                                                            std::string destination);
+    [[= mcp::tool_t{
+            "Inspect Next Copper execution and RAM, DMA, CTC, video layers, clip "
+            "windows, sprite attributes and palettes. Set includeSpritePatterns for "
+            "sprite pattern RAM. Inspection does not advance or alter hardware." }]] std::string
+            readNextHardware(std::string sessionId, bool includeSpritePatterns);
+    [[= mcp::tool_t{
+            "Queue hexadecimal bytes on Next UART channel 0 or 1. Reports bytes "
+            "accepted into the wire queue. The guest receives them as emulation runs." }]] std::
+            string sendNextUart(std::string sessionId, int channel, std::string hexData);
+    [[= mcp::tool_t{
+            "Run bounded frames while collecting transmitted bytes from both Next UARTs. "
+            "maxBytes is the per-channel capture limit. Reports total counts." }]] std::string
+            captureNextUart(std::string sessionId, int frameCount, int maxMilliseconds,
+                            int maxBytes);
+
+    [[= mcp::tool_t{
+            "List mounted floppy drives and Microdrive cartridges, including activity, "
+            "geometry and modification or write-protection flags where available." }]] std::string
+            listMountedMedia(std::string sessionId);
+    [[= mcp::tool_t{
+            "Insert a floppy image into a zero-based drive. The guest can write when "
+            "writeProtected is false. Replacing a modified disk requires discardChanges." }]] std::
+            string insertFloppy(std::string sessionId, int drive, std::string path,
+                                bool writeProtected, bool discardChanges);
+    [[= mcp::tool_t{ "Eject a zero-based floppy drive. Ejecting a modified disk requires "
+                     "discardChanges." }]] std::string ejectFloppy(std::string sessionId, int drive,
+                                                                   bool discardChanges);
+    [[= mcp::tool_t{
+            "Schedule autoboot of floppy drive A on supported +3 and TR-DOS machines. "
+            "Follow with runFrames. TR-DOS may write a boot entry to the mounted disk." }]] std::
+            string autoBootDisk(std::string sessionId);
+    [[= mcp::tool_t{ "Read a mounted floppy track in physical sector order, with ID fields, "
+                     "controller status and weak-sector read cursors. Set includeData for the "
+                     "stored bytes including weak-sector variants." }]] std::string
+            readFloppyTrack(std::string sessionId, int drive, int track, int side,
+                            bool includeData);
+    [[= mcp::tool_t{ "Attach ZX Interface 1 for a compatible machine. Empty romPath uses "
+                     "if1-2.rom from --roms." }]] std::string
+            attachInterface1(std::string sessionId, std::string romPath);
+    [[= mcp::tool_t{ "Insert an MDR cartridge in a zero-based Interface 1 drive. Replacing a "
+                     "modified cartridge requires discardChanges." }]] std::string
+            insertMicrodrive(std::string sessionId, int drive, std::string path,
+                             bool discardChanges);
+    [[= mcp::tool_t{ "Eject a zero-based Microdrive cartridge. Ejecting a modified cartridge "
+                     "requires discardChanges." }]] std::string
+            ejectMicrodrive(std::string sessionId, int drive, bool discardChanges);
+    [[= mcp::tool_t{ "Export a mounted Microdrive cartridge as MDR and mark the saved disk "
+                     "contents clean." }]] std::string
+            saveMicrodrive(std::string sessionId, int drive, std::string path, bool overwrite);
+    [[= mcp::tool_t{ "Attach the emulated printer on a supported machine. Its captured paper "
+                     "can be read with capturePrinter." }]] std::string
+            attachPrinter(std::string sessionId);
+    [[= mcp::tool_t{
+            "Read captured printer text with paper row positions and unknown columns. "
+            "Empty path returns text only. A PNG path exports the entire paper." }]] std::string
+            capturePrinter(std::string sessionId, std::string path, bool overwrite);
+    [[= mcp::tool_t{ "Clear the attached emulated printer's paper." }]] std::string
+            clearPrinter(std::string sessionId);
+
+    [[= mcp::tool_t{ "Inspect RZX playback or recording state, interval counts, positions, "
+                     "seek progress and errors." }]] std::string rzxStatus(std::string sessionId);
+    [[= mcp::tool_t{ "Begin recording RZX input on a supported machine." }]] std::string
+            startRzxRecording(std::string sessionId);
+    [[= mcp::tool_t{ "Finalize and save the recording at the current cursor as RZX. Retry "
+                     "with a writable path if publishing fails." }]] std::string
+            stopRzxRecording(std::string sessionId, std::string path, bool overwrite);
+    [[= mcp::tool_t{ "Stop RZX playback and retain its progress counters." }]] std::string
+            stopRzxPlayback(std::string sessionId);
+    [[= mcp::tool_t{ "Prepare an RZX seek by recorded interval (unit frames) or milliseconds. "
+                     "Use advanceRzxSeek to replay up to the target." }]] std::string
+            beginRzxSeek(std::string sessionId, int target, std::string unit);
+    [[= mcp::tool_t{ "Advance a prepared RZX seek in bounded batches. Returns seek progress "
+                     "and stop reason. Repeat after a budget stop." }]] std::string
+            advanceRzxSeek(std::string sessionId, int maxFrames, int maxMilliseconds);
+    [[= mcp::tool_t{ "Cancel the active RZX seek at its current position." }]] std::string
+            cancelRzxSeek(std::string sessionId);
+    [[= mcp::tool_t{ "Resume a reviewed RZX recording from the cursor and replace its future "
+                     "with new input." }]] std::string resumeRzxRecording(std::string sessionId);
 
 private:
+    using Deadline = std::chrono::steady_clock::time_point;
     struct Session
     {
         std::string id;
         std::unique_ptr<Emulator> emulator;
         std::optional<PauseEvent> lastPause;
         std::map<uint32_t, std::string> conditions;
+        Bytes pendingRzx;
     };
     std::map<std::string, Session, std::less<>> m_sessions;
     std::string m_current;
@@ -339,6 +447,10 @@ private:
     EmulatorConfig config(std::string profile) const;
     Json status(Session &current) const;
     Json execute(Session &current, int frames, int milliseconds, OptionalRef<Bytes> audio = {});
+    Json executeUntil(Session &current, int frames, Deadline deadline,
+                      OptionalRef<Bytes> audio = {},
+                      const std::function<bool()> &frameMatches = {});
+    static std::vector<ZxKey> parseKeyChord(std::string_view keys);
     std::filesystem::path outputPath(std::string_view path) const;
     void checkSdSharing(const std::filesystem::path &image, bool readOnly,
                         std::string_view exceptSession = {}) const;

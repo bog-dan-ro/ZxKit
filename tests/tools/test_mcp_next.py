@@ -129,6 +129,43 @@ def main():
             assert len(client.call("readNextRegisters", sessionId="next")["values"]) == 256
             client.call("writeNextRegister", sessionId="next", index=0x4A, value=0xE3)
             assert client.call("readNextRegisters", sessionId="next")["values"][0x4A] == 0xE3
+            client.call("readScreenText", sessionId="next", font="auto", expect_error=True)
+            client.call("writeNextRegister", sessionId="next", index=0x34, value=3)
+            client.call("writeNextRegister", sessionId="next", index=0x35, value=123)
+            client.call("writeNextRegister", sessionId="next", index=0x12, value=14)
+            client.call("writeNextRegister", sessionId="next", index=0x60, value=0xAB)
+            before = client.call("sessionStatus", sessionId="next")
+            hardware = client.call("readNextHardware", sessionId="next", includeSpritePatterns=True)
+            assert hardware["spriteAttributesHex"][3].startswith("7b")
+            assert hardware["layer2"]["bank"] == 14
+            assert hardware["copper"]["instructionRamHex"].startswith("ab")
+            assert len(hardware["palettes"]) == 8 and len(hardware["palettes"][0]["rgb333"]) == 256
+            assert len(bytes.fromhex(hardware["spritePatternHex"])) == 16384
+            assert client.call("sessionStatus", sessionId="next") == before
+
+            client.call("assembleToMemory", sessionId="next", address=32768, source=(
+                "LD BC,9275\nLD A,176\nOUT (C),A\nINC B\nIN A,(C)\nLD (40000),A\nJP 32768"
+            ))
+            client.call("setRegister", sessionId="next", name="PC", value=32768)
+            keys = client.call("runInputSequence", sessionId="next", actionsJson='[{"nextKeys":"LEFT","frames":1}]',
+                               maxFrames=1, maxMilliseconds=1000)
+            assert keys["completedActions"] == 1 and keys["stopReason"] == "sequenceComplete"
+            assert client.call("peekMemory", sessionId="next", address=40000, length=1)["hex"] == "02"
+            assert client.call("readPort", sessionId="next", port=0x253B)["value"] == 0
+
+            client.call("assembleToMemory", sessionId="next", address=32768, source=(
+                "LD BC,4923\nLD A,65\nOUT (C),A\nLD A,66\nOUT (C),A\nHALT"
+            ))
+            client.call("setRegister", sessionId="next", name="PC", value=32768)
+            client.call("setRegister", sessionId="next", name="IFF1", value=0)
+            assert client.call("sendNextUart", sessionId="next", channel=0, hexData="63")["accepted"] == 1
+            uart = client.call("captureNextUart", sessionId="next", frameCount=1, maxMilliseconds=1000,
+                               maxBytes=1)
+            assert uart["channels"] == [
+                {"channel": 0, "hex": "41", "totalBytes": 2, "truncated": True},
+                {"channel": 1, "hex": "", "totalBytes": 0, "truncated": False},
+            ], uart
+            assert client.call("readPort", sessionId="next", port=0x143B)["value"] == 0x63
             assert any(entry["name"].lower() == "machines" for entry in client.call("listSdFiles", sessionId="next", path="/")["entries"])
             client.call("cloneSession", sessionId="next", newSessionId="next-clone")
             assert client.call("sessionStatus", sessionId="next-clone")["profile"] == "next"

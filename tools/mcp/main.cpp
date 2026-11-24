@@ -57,8 +57,11 @@ void normalizeResult(Json &response, const Json &request, bool legacy)
                 auto tool = params.if_contains("name");
                 if (!decoded.as_object().contains("error") && tool && tool->is_string()
                     && (tool->as_string() == "captureScreen"sv
+                        || tool->as_string() == "captureLastFrame"sv
                         || tool->as_string() == "renderScreen"sv
-                        || tool->as_string() == "renderGraphics"sv)) {
+                        || tool->as_string() == "renderGraphics"sv
+                        || (tool->as_string() == "capturePrinter"sv
+                            && decoded.as_object().contains("path")))) {
                     auto bytes = readFile(std::string(decoded.at("path").as_string()));
                     content.push_back(Object{ { "type", "image" },
                                               { "mimeType", "image/png" },

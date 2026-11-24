@@ -2,11 +2,37 @@
 
 ## Media and BASIC
 
-Use `inspectMedia` for a container's files and `listMediaProfiles` for disk
-profiles. Read or extract named entries rather than assuming tape block order.
+With shell access, find `zxmedia` on PATH with `command -v zxmedia`, or use
+`build/tools/zxmedia` from a ZxKit checkout. Use its `--help` and `profiles`
+commands for the available operations and filesystem profiles. Examples:
+
+```sh
+zxmedia list game.tap
+zxmedia view game.tap files/LOADER --as unhacked
+zxmedia view game.tap files/CODE --as disassembly --from 32768
+zxmedia list card.img/nextzxos/cpm-a.p3d
+zxmedia convert game.tap build/zx-mcp/game.wav
+zxmedia fat32-copy card.img build/zx-mcp/repacked.img
+```
+
+Create the output directory before calling `zxmedia`. Commands such as
+`put`, `rename`, `attrs`, `copy`, `mkdir` and `boot` edit the destination
+image in place, including when the destination is nested. Work on a copy of
+the reference image and eject it from emulators before offline edits. An
+explicit `--filesystem` applies to the innermost image.
+
+With MCP alone, use `inspectMedia` for a flat container and
+`listMediaProfiles` for disk profiles. Read or extract named entries.
 For a loaded tape, `inspectTape` and `readTapeBlock` expose block contents and
 header/checksum information. Look up their current schemas in the tool catalog.
 Checksums establish block integrity, not a program's memory layout.
+
+List live drives with `listMountedMedia` and use `insertFloppy` and
+`ejectFloppy` for explicit zero-based drive numbers. `readFloppyTrack` shows
+controller sector IDs and weak copies without consuming a read. On a supported
+machine, `autoBootDisk` starts drive A; follow it with bounded execution.
+Attach Interface 1 with `attachInterface1`, supplying a ROM path or using
+`--roms`, then use `insertMicrodrive`, `saveMicrodrive` and `ejectMicrodrive`.
 
 BASIC decompilation distinguishes three representations:
 
@@ -67,6 +93,46 @@ Use `captureIo` with a port mask to focus an experiment, and shorter captures
 when unrelated writes consume the event budget. Keep AY and beeper analysis
 distinct when both are active.
 
+Use `readRasterState` for beam timing and pending and in-service IM2 vector
+masks. `captureLastFrame` returns the last completed raster, including changes
+made mid-frame. `captureScreen` redraws from the current paused state.
+
+## Screen text, input and replay
+
+Use `readScreenText` with `font: "auto"` for exact 8×8 glyph matches on
+the active standard ULA screen, including shadow RAM. Select `font: "rom"`
+to use the BASIC ROM font when guest `CHARS` is unrelated to the screen.
+Rows and columns are zero-based, and unrecognized cells are listed as
+`unknownColumns`. For unaligned text, proportional fonts or Next composited
+video, use a screenshot with a vision client or an available OCR tool.
+
+`waitForScreenText` checks for a case-sensitive substring in one row before
+execution and at each completed frame. Read `stopReason` and `match` to tell
+whether it observed the expected prompt, hit a debugger trap or reached a
+budget. A preexisting match uses zero frames.
+
+`runInputSequence` takes a JSON-encoded array in `actionsJson`. For example,
+`[{"keys":"ENTER","frames":3},{"frames":15},{"joystick":17,"frames":8}]`
+presses Enter, waits, then holds right and fire. Use `text` to type characters
+as physical keystrokes, with `frames` for each press and release. In 48K BASIC's
+keyword mode, send the relevant token key as a `keys` action. Other actions
+include Next `nextKeys` and `mouse: {"dx":12,"dy":-4,"buttons":2}` for a left
+click with motion. All phases share the same frame and wall-clock budgets.
+
+To record a run, attach any Kempston input devices first with
+`attachInputDevices`, then call `startRzxRecording` and drive the emulator.
+`stopRzxRecording` saves the run as an RZX file. To replay, use `loadMedia`
+and bounded runs and check `rzxStatus`. Use `beginRzxSeek` with unit
+`frames` for recorded intervals or `milliseconds` for presentation time.
+Call `advanceRzxSeek` until it completes, stops at a trap or needs another
+budget. After seeking inside a recording, `resumeRzxRecording` starts a
+new branch at the cursor. Save the original run first if you need its future.
+RZX support depends on the snapshot format and machine speed.
+
+For guest printer output, `attachPrinter`, run the print command, then call
+`capturePrinter` with an empty path for text and row positions or a PNG path
+to include the paper image. `clearPrinter` clears accumulated paper.
+
 ## Next and port comparison
 
 Inspect `nextPlatformInfo` before downloading. `prepareNextSdCard` can reuse
@@ -85,6 +151,12 @@ Use `readNextRegisters`, `memoryMap`, and physical bank reads alongside screen
 captures. Track MMU mappings, display modes, palettes, layer priority, sprite
 attributes and CPU speed when those affect the task. Do not infer visible pixel
 colors solely from ULA attributes when Next video layers are active.
+
+`readNextHardware` includes Copper RAM and PC, DMA activity, CTC counters,
+Layer 2 and tilemap setup, clip windows, sprite attributes and RGB333 palettes.
+Request sprite pattern RAM when comparing assets. For guest serial tests,
+queue bytes with `sendNextUart` and run `captureNextUart`. The guest's baud
+rate controls when bytes arrive, and capture reports truncation per channel.
 
 For a port, preserve a reference machine and a separate target session. Align
 comparisons at an observed input loop, interrupt count or other program event;

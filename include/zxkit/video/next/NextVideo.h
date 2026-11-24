@@ -92,6 +92,14 @@ public:
     {
         return m_nrSprite;
     }
+    const std::array<uint8_t, 5> &spriteAttributes(std::size_t index) const
+    {
+        return m_sprites.at(index).b;
+    }
+    std::span<const uint8_t> spritePatternRam() const noexcept
+    {
+        return m_patternRam;
+    }
 
     // Palettes: NR 0x40, 0x41, 0x43, 0x44
     void setPaletteIndex(uint8_t idx) noexcept;
@@ -104,6 +112,14 @@ public:
     void writePalette9Bit(uint8_t val) noexcept;
     uint8_t readPalette8Bit() const noexcept;
     uint8_t readPalette9Bit() const noexcept;
+    std::span<const uint16_t> paletteColors(std::size_t palette) const
+    {
+        return m_palettes.at(palette);
+    }
+    std::span<const uint8_t> palettePriorities(std::size_t palette) const
+    {
+        return m_palettePriority.at(palette);
+    }
     void resetPaletteSequence() noexcept
     {
         m_pal9BitAwaitingSecond = false;
@@ -115,6 +131,10 @@ public:
     uint8_t readClip(ClipLayer layer) const noexcept;
     void resetClipIndexes(uint8_t mask) noexcept;
     uint8_t clipIndexes() const noexcept;
+    const std::array<uint8_t, 4> &clipWindow(ClipLayer layer) const
+    {
+        return m_clip.at(layer);
+    }
 
     // Timex SCLD port 0xFF (mirrored in NR 0x69 bits 5:0)
     void setTimexPort(uint8_t val) noexcept

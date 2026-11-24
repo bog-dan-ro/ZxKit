@@ -51,6 +51,7 @@ public:
     void ejectCartridge(std::size_t driveIdx);
     bool hasCartridge(std::size_t driveIdx) const noexcept;
     bool cartridgeModified(std::size_t driveIdx) const noexcept;
+    bool cartridgeWriteProtected(std::size_t driveIdx) const noexcept;
     std::vector<uint8_t> saveCartridge(std::size_t driveIdx) const;
     /// Clears the modified flag if the saved bytes still match the cartridge.
     void markCartridgeSaved(std::size_t driveIdx, std::span<const uint8_t> savedBytes) noexcept;

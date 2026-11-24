@@ -171,6 +171,11 @@ bool Interface1Peripheral::cartridgeModified(std::size_t driveIdx) const noexcep
     return hasCartridge(driveIdx) && m_cartridges[driveIdx].modified;
 }
 
+bool Interface1Peripheral::cartridgeWriteProtected(std::size_t driveIdx) const noexcept
+{
+    return hasCartridge(driveIdx) && m_cartridges[driveIdx].protection.value_or(0) != 0;
+}
+
 std::vector<uint8_t> Interface1Peripheral::saveCartridge(std::size_t driveIdx) const
 {
     if (!hasCartridge(driveIdx))

@@ -16,6 +16,203 @@ sys.path.insert(0, sys.argv[3])
 from client import Client
 
 
+def test_screen_text(client, output):
+    session = {"sessionId": "screen-text"}
+    client.call("createSession", **session, profile="48k")
+    client.call("captureLastFrame", **session, expect_error=True, path="raster.png", overwrite=False)
+    font = bytearray.fromhex(client.call("peekMemory", **session, address=0x3D00, length=768)["hex"])
+    screen = bytearray(6912)
+
+    def draw(column, glyph, attribute=0x38):
+        row = 17
+        for y, value in enumerate(glyph, row * 8):
+            offset = ((y & 0xC0) << 5) | ((y & 7) << 8) | ((y & 0x38) << 2)
+            screen[offset + column] = value
+        screen[6144 + row * 32 + column] = attribute
+
+    for column, character in enumerate("READY? \x60", 3):
+        start = (ord(character) - 32) * 8
+        draw(column, bytes(value ^ 255 for value in font[start:start + 8]))
+    draw(0, b"\x96" * 8)
+    draw(1, b"\x96" * 8, attribute=0)
+    client.call("loadMediaData", **session, hexData=screen.hex(), extension=".scr")
+    before = client.call("sessionStatus", **session)
+    text = client.call("readScreenText", **session, font="auto")
+    assert len(text["rows"]) == 24 and text["columns"] == 32
+    assert text["rows"][17]["text"].startswith("\ufffd  READY? \u00a3")
+    assert text["rows"][17]["unknownColumns"] == [0] and text["unknownCells"] == 1
+    assert client.call("sessionStatus", **session) == before
+    wait = {"font": "rom", "maxFrames": 10, "maxMilliseconds": 1000}
+    found = client.call("waitForScreenText", **session, **wait, text="READY?")
+    assert found["completedFrames"] == 0 and found["stopReason"] == "match"
+    assert found["match"] == {"row": 17, "column": 3, "text": "READY?"}
+    assert client.call("waitForScreenText", **session, **wait, text="\u00a3")["match"]["column"] == 10
+    client.call("waitForScreenText", **session, **wait, text="", expect_error=True)
+
+    custom = b"\x42\x81" * 4
+    start = (ord("X") - 32) * 8
+    font[start:start + 8] = custom
+    client.call("pokeMemory", **session, address=33000, hexData=font.hex(), allowRomWrite=False)
+    client.call("pokeMemory", **session, address=0x5C36, hexData=struct.pack("<H", 33000 - 256).hex(),
+                allowRomWrite=False)
+    draw(2, custom)
+    client.call("loadMediaData", **session, hexData=screen.hex(), extension=".scr")
+    text = client.call("readScreenText", **session, font="auto")
+    assert text["fontSource"] == "chars" and text["fontAddress"] == 33000
+    assert text["rows"][17]["text"][2] == "X"
+    assert client.call("readScreenText", **session, font="rom")["rows"][17]["unknownColumns"] == [0, 2]
+
+    shadow = {"sessionId": "shadow-text"}
+    client.call("createSession", **shadow, profile="128k")
+    bank = client.call("readRasterState", **shadow)["vramBankId"]
+    client.call("writeMemoryBank", **shadow, bankId=bank, offset=7 * 16384, hexData=screen.hex(),
+                allowRomWrite=False)
+    client.call("writePort", **shadow, port=0x7FFD, value=8)
+    text = client.call("readScreenText", **shadow, font="auto")
+    assert text["page16k"] == 7 and "READY?" in text["rows"][17]["text"]
+    client.call("writePort", **shadow, port=0x7FFD, value=0)
+    assert "READY?" not in client.call("readScreenText", **shadow, font="rom")["text"]
+
+    blank = bytes(6912).hex()
+    client.call("loadMediaData", **session, hexData=blank, extension=".scr")
+    client.call("pokeMemory", **session, address=34000, hexData=screen.hex(), allowRomWrite=False)
+    client.call("assembleToMemory", **session, address=50000,
+                source="LD HL,34000\nLD DE,16384\nLD BC,6912\nLDIR\nHALT")
+    client.call("setRegister", **session, name="PC", value=50000)
+    client.call("setRegister", **session, name="IFF1", value=0)
+    client.call("addBreakpoint", **session, type="execute", address=50000, mask=65535,
+                bankId=-1, page1k=-1, temporary=True, condition="")
+    stopped = client.call("waitForScreenText", **session, **wait, text="READY?")
+    assert stopped["stopReason"] == "breakpoint" and stopped["match"] is None
+    found = client.call("waitForScreenText", **session, **wait, text="READY?")
+    assert 0 < found["completedFrames"] < wait["maxFrames"] and found["stopReason"] == "match"
+    missed = client.call("waitForScreenText", **session, text="ABSENT", font="rom", maxFrames=1,
+                         maxMilliseconds=1000)
+    assert missed["stopReason"] == "frameBudget" and missed["match"] is None
+    timed = client.call("waitForScreenText", **session, text="ABSENT", font="rom", maxFrames=10000,
+                        maxMilliseconds=1)
+    assert timed["stopReason"] == "timeBudget"
+
+    client.call("captureLastFrame", **session, path="raster.png", overwrite=False)
+    client.call("loadMediaData", **session, hexData=blank, extension=".scr")
+    client.call("captureScreen", **session, path="refreshed.png", overwrite=False)
+    client.call("captureLastFrame", **session, path="last-completed.png", overwrite=False)
+    assert (output / "last-completed.png").read_bytes() == (output / "raster.png").read_bytes()
+    assert (output / "last-completed.png").read_bytes() != (output / "refreshed.png").read_bytes()
+    for target in (session, shadow):
+        client.call("destroySession", **target)
+
+
+def test_input_rzx_printer(client, output):
+    session = {"sessionId": "input-replay"}
+    client.call("createSession", **session, profile="48k")
+    client.call("runFrames", **session, frameCount=120, maxMilliseconds=2000)
+
+    def run(actions, max_frames=400):
+        return client.call("runInputSequence", **session, actionsJson=json.dumps(actions),
+                           maxFrames=max_frames, maxMilliseconds=3000)
+
+    before = client.call("sessionStatus", **session)
+    client.call("runInputSequence", **session, expect_error=True, maxFrames=10, maxMilliseconds=1000,
+                actionsJson='[{"frames":1},{"frames":1,"text":"|"}]')
+    assert client.call("sessionStatus", **session) == before
+    assert run([{"text": "12", "frames": 3}])["completedFrames"] == 12
+    assert "12" in client.call("readScreenText", **session, font="rom")["text"]
+    client.call("resetSession", **session, hard=True)
+    client.call("runFrames", **session, frameCount=120, maxMilliseconds=2000)
+    client.call("attachPrinter", **session)
+    client.call("setBasicProgram", **session, source='10 LPRINT "MCP PAPER"\n')
+    run([{"keys": "R", "frames": 4}, {"frames": 4}, {"keys": "ENTER", "frames": 4}, {"frames": 160}])
+    paper = client.call("capturePrinter", **session, path="paper.png", overwrite=False)
+    assert "MCP PAPER" in paper["text"] and paper["textLines"][0]["row"] == 0
+    assert (output / "paper.png").read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
+    assert client.call("capturePrinter", **session, path="", overwrite=False)["text"] == paper["text"]
+    client.call("clearPrinter", **session)
+    assert client.call("capturePrinter", **session, path="", overwrite=False)["rows"] == 0
+
+    client.call("attachInputDevices", **session, joystick=True, mouse=True)
+    client.call("assembleToMemory", **session, address=50000,
+                source="LD BC,31\nIN A,(C)\nLD (60001),A\nLD BC,64479\nIN A,(C)\nLD (60002),A\n"
+                       "LD BC,64223\nIN A,(C)\nLD (60003),A\nJP 50000")
+    client.call("setRegister", **session, name="PC", value=50000)
+    client.call("setRegister", **session, name="IFF1", value=0)
+    assert run([{"joystick": 17, "frames": 2}])["completedActions"] == 1
+    assert client.call("peekMemory", **session, address=60001, length=1)["hex"] == "11"
+    assert client.call("readPort", **session, port=31)["value"] == 0
+    assert run([{"mouse": {"dx": 13, "dy": 0, "buttons": 2}, "frames": 2}])["completedActions"] == 1
+    assert client.call("peekMemory", **session, address=60002, length=2)["hex"] == "0dfd"
+    assert client.call("readPort", **session, port=64223)["value"] == 255
+    assert run([{"frames": 10}], max_frames=2)["stopReason"] == "frameBudget"
+
+    assert client.call("startRzxRecording", **session)["state"] == "recording"
+    assert run([{"joystick": 16, "frames": 4}])["completedFrames"] == 4
+    assert client.call("beginRzxSeek", **session, target=1, unit="frames")["seeking"]
+    seek = client.call("advanceRzxSeek", **session, maxFrames=10, maxMilliseconds=1000)
+    assert seek["state"] == "reviewing" and seek["completedIntervals"] == 1, seek
+    assert client.call("resumeRzxRecording", **session)["state"] == "recording"
+    run([{"joystick": 17, "frames": 3}])
+    (output / "exists.rzx").write_bytes(b"keep")
+    client.call("stopRzxRecording", **session, path="exists.rzx", overwrite=False, expect_error=True)
+    assert client.call("rzxStatus", **session)["state"] == "recording"
+    client.call("stopRzxRecording", **session, path="recorded.rzx", overwrite=False)
+    assert (output / "recorded.rzx").read_bytes().startswith(b"RZX!")
+    replay = {"sessionId": "replay"}
+    client.call("createSession", **replay, profile="48k")
+    client.call("loadMedia", **replay, path=str(output / "recorded.rzx"))
+    assert client.call("rzxStatus", **replay)["state"] == "playing"
+    client.call("beginRzxSeek", **replay, target=10, unit="milliseconds")
+    assert client.call("cancelRzxSeek", **replay)["seeking"] is False
+    assert client.call("runFrames", **replay, frameCount=10, maxMilliseconds=1000)["stopReason"] == "pause"
+    assert client.call("rzxStatus", **replay)["state"] == "completed"
+    client.call("stopRzxPlayback", **replay)
+    for target in (session, replay):
+        client.call("destroySession", **target)
+
+
+def test_mounted_media(client, output):
+    floppy = {"sessionId": "floppy"}
+    client.call("createSession", **floppy, profile="plus3")
+    client.call("createMedia", output="floppy.dsk", filesystem="plus3", overwrite=False)
+    path = str(output / "floppy.dsk")
+    client.call("insertFloppy", **floppy, drive=1, path=path, writeProtected=True, discardChanges=False)
+    drive = client.call("listMountedMedia", **floppy)["floppies"][1]
+    assert drive["inserted"] and drive["writeProtected"] and not drive["modified"]
+    track = client.call("readFloppyTrack", **floppy, drive=1, track=0, side=0, includeData=True)
+    assert len(track["sectors"]) == 9 and not track["truncated"]
+    assert len(bytes.fromhex(track["sectors"][0]["hex"])) == 512
+    invalid = output / "invalid.td0"
+    invalid.write_bytes(b"invalid")
+    client.call("insertFloppy", **floppy, drive=1, path=str(invalid), writeProtected=False,
+                discardChanges=False, expect_error=True)
+    assert client.call("listMountedMedia", **floppy)["floppies"][1] == drive
+    client.call("autoBootDisk", **floppy, expect_error=True)
+    client.call("insertFloppy", **floppy, drive=0, path=path, writeProtected=True, discardChanges=False)
+    client.call("autoBootDisk", **floppy)
+    assert not client.call("ejectFloppy", **floppy, drive=1, discardChanges=False)["inserted"]
+
+    microdrive = {"sessionId": "microdrive"}
+    client.call("createSession", **microdrive, profile="48k")
+    rom = output / "synthetic-if1.rom"
+    rom.write_bytes(bytes(8192))
+    client.call("attachInterface1", **microdrive, romPath=str(rom))
+    client.call("createMedia", output="cartridge.mdr", filesystem="", overwrite=False)
+    cartridge = output / "cartridge.mdr"
+    with cartridge.open("r+b") as image:
+        image.seek(-1, 2)
+        image.write(b"\x01")
+    client.call("insertMicrodrive", **microdrive, drive=2, path=str(output / "cartridge.mdr"),
+                discardChanges=False)
+    media = client.call("listMountedMedia", **microdrive)
+    assert media["interface1Attached"] and media["microdrives"][2]["inserted"]
+    assert media["microdrives"][2]["writeProtected"]
+    client.call("saveMicrodrive", **microdrive, drive=2, path="saved.mdr", overwrite=False)
+    assert (output / "saved.mdr").read_bytes() == (output / "cartridge.mdr").read_bytes()
+    client.call("ejectMicrodrive", **microdrive, drive=2, discardChanges=False)
+    assert not client.call("listMountedMedia", **microdrive)["microdrives"][2]["inserted"]
+    for target in (floppy, microdrive):
+        client.call("destroySession", **target)
+
+
 def main():
     executable = Path(sys.argv[1]).resolve()
     output = Path(sys.argv[2]).resolve()
@@ -23,7 +220,8 @@ def main():
         shutil.rmtree(output)
     output.mkdir(parents=True)
 
-    with Client(executable, output) as client:
+    roms = Path(sys.argv[3]).resolve().parents[1] / "tests" / "fixtures" / "roms"
+    with Client(executable, output, roms=roms) as client:
         tools = client.request("tools/list")["result"]["tools"]
         assert len(tools) >= 70, len(tools)
         assert len({tool["name"] for tool in tools}) == len(tools)
@@ -195,6 +393,9 @@ def main():
         assert audio["ioWrites"]["totalEvents"] > 0
         client.call("runFrames", sessionId="io", frameCount=1, maxMilliseconds=1000)
 
+        test_screen_text(client, output)
+        test_input_rzx_printer(client, output)
+        test_mounted_media(client, output)
         (output / "catalog.json").write_text(json.dumps(catalog, indent=2))
 
     with Client(executable, output, native=True) as client:

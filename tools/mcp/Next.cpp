@@ -42,6 +42,14 @@ Object validateCard(const std::filesystem::path &path, bool requireNextZxOs = tr
              { "fatBits", volume.fatBits() },
              { "roms", roms } };
 }
+
+ZxNextMachine &nextMachine(Emulator &emulator)
+{
+    auto *machine = dynamic_cast<ZxNextMachine *>(&emulator.machine());
+    if (!machine)
+        throw std::invalid_argument("Session is not a ZX Spectrum Next"s);
+    return *machine;
+}
 } // namespace
 
 void Tools::checkSdSharing(const std::filesystem::path &image, bool readOnly,
@@ -337,6 +345,132 @@ std::string Tools::renameSdFile(std::string sessionId, std::string path, std::st
     return result([&] {
         session(sessionId).emulator->sdCardVolume().rename(path, destination);
         return Object{ { "renamed", true }, { "resetRequired", true } };
+    });
+}
+
+std::string Tools::readNextHardware(std::string sessionId, bool includeSpritePatterns)
+{
+    return result([&] {
+        auto &machine = nextMachine(*session(sessionId).emulator);
+        const auto &video = machine.nextVideo();
+        const auto &copper = machine.copper();
+        const auto &registers = machine.nextReg();
+        Array sprites;
+        for (std::size_t index = 0; index < NextVideo::kSpriteCount; ++index)
+            sprites.emplace_back(hex(video.spriteAttributes(index)));
+
+        Array palettes;
+        constexpr std::array layers{ "ula", "layer2", "sprites", "tilemap" };
+        for (std::size_t index = 0; index < layers.size() * 2; ++index) {
+            Array colors;
+            for (auto color : video.paletteColors(index))
+                colors.emplace_back(color);
+            palettes.emplace_back(Object{ { "layer", layers[index % layers.size()] },
+                                          { "alternate", index >= layers.size() },
+                                          { "rgb333", std::move(colors) },
+                                          { "priorityHex", hex(video.palettePriorities(index)) } });
+        }
+        Object clipWindows;
+        for (std::size_t layer = 0; layer < layers.size(); ++layer) {
+            constexpr std::array order{ NextVideo::ClipUla, NextVideo::ClipLayer2,
+                                        NextVideo::ClipSprites, NextVideo::ClipTilemap };
+            Array bounds;
+            for (auto coordinate : video.clipWindow(order[layer]))
+                bounds.emplace_back(coordinate);
+            clipWindows[layers[layer]] = std::move(bounds);
+        }
+        Array ctc;
+        for (int channel = 0; channel < 4; ++channel)
+            ctc.emplace_back(machine.ctc().readChannel(channel));
+        Object output{
+            { "copper",
+              Object{ { "pc", copper.pc() },
+                      { "mode", copper.mode() },
+                      { "halted", copper.isHalted() },
+                      { "instructionRamHex", hex(copper.instructionRam()) } } },
+            { "dmaActive", machine.dma().isActive() },
+            { "ctcCounters", std::move(ctc) },
+            { "layer2",
+              Object{ { "controlPort", video.layer2ControlPort() },
+                      { "visible", video.isLayer2Visible() },
+                      { "readMapped", video.layer2ReadMapped() },
+                      { "writeMapped", video.layer2WriteMapped() },
+                      { "usesShadowBank", video.layer2UsesShadowBank() },
+                      { "segment", video.layer2Segment() },
+                      { "bankOffset", video.layer2BankOffset() },
+                      { "bank", registers.peek(0x12) },
+                      { "shadowBank", registers.peek(0x13) },
+                      { "xScroll",
+                        unsigned(registers.peek(0x16)) | ((registers.peek(0x71) & 1u) << 8) },
+                      { "yScroll", registers.peek(0x17) },
+                      { "control", registers.peek(0x70) } } },
+            { "tilemap",
+              Object{ { "control", registers.peek(0x6b) },
+                      { "mapBaseRegister", registers.peek(0x6e) },
+                      { "patternBaseRegister", registers.peek(0x6f) } } },
+            { "timexMode", video.timexPort() & 7 },
+            { "layerControl", registers.peek(0x15) },
+            { "clipWindows", std::move(clipWindows) },
+            { "spriteSelected", video.spriteNextRegSelection() },
+            { "spriteAttributesHex", std::move(sprites) },
+            { "palettes", std::move(palettes) }
+        };
+        if (includeSpritePatterns)
+            output["spritePatternHex"] = hex(video.spritePatternRam());
+        return output;
+    });
+}
+
+std::string Tools::sendNextUart(std::string sessionId, int channel, std::string hexData)
+{
+    return result([&] {
+        checked(channel, 0, 1, "channel"sv);
+        auto &emulator = *session(sessionId).emulator;
+        auto &machine = nextMachine(emulator);
+        const auto bytes = unhex(hexData);
+        const auto accepted =
+                machine.uart().receive(channel, bytes, machine.uartTime(emulator.context()));
+        return Object{ { "channel", channel },
+                       { "accepted", accepted },
+                       { "requested", bytes.size() } };
+    });
+}
+
+std::string Tools::captureNextUart(std::string sessionId, int frameCount, int maxMilliseconds,
+                                   int maxBytes)
+{
+    return result([&] {
+        checked(maxBytes, 1, 65536, "maxBytes"sv);
+        auto &current = session(sessionId);
+        auto &uart = nextMachine(*current.emulator).uart();
+        std::array<Bytes, 2> bytes;
+        std::array<std::size_t, 2> totals{};
+        for (auto &channel : bytes)
+            channel.reserve(maxBytes);
+        struct Disconnect
+        {
+            NextUart &uart;
+            ~Disconnect()
+            {
+                uart.setTransmitHandler({});
+            }
+        } disconnect{ uart };
+        uart.setTransmitHandler([&](unsigned channel, uint8_t byte) {
+            ++totals[channel];
+            if (bytes[channel].size() < std::size_t(maxBytes))
+                bytes[channel].push_back(byte);
+        });
+        auto output = execute(current, frameCount, maxMilliseconds).as_object();
+        Array channels;
+        for (std::size_t channel = 0; channel < bytes.size(); ++channel) {
+            channels.emplace_back(
+                    Object{ { "channel", channel },
+                            { "hex", hex(bytes[channel]) },
+                            { "totalBytes", totals[channel] },
+                            { "truncated", totals[channel] > bytes[channel].size() } });
+        }
+        output["channels"] = std::move(channels);
+        return output;
     });
 }
 } // namespace zxkit::mcp_tool

@@ -179,11 +179,16 @@ public:
     /// Runs `count` frames (stops early when the CPU stops) and returns the last complete frame.
     VideoFramePtr runFrames(uint32_t count = 1);
 
-    /// The last complete frame. Frames are never written again once published, so
+    /// The most recently published frame. Frames are never written again once published, so
     /// hosts can keep them for as long as they need (they are recycled afterwards).
     const VideoFramePtr &lastFrame() const noexcept
     {
         return m_lastFrame;
+    }
+    /// The last frame completed by execution, independent of paused screen refreshes.
+    const VideoFramePtr &lastCompletedFrame() const noexcept
+    {
+        return m_lastCompletedFrame;
     }
     /// Renders the current machine state into a new frame and publishes it as `lastFrame()`
     /// (e.g. to show a loaded snapshot while the emulation is paused).
@@ -481,6 +486,7 @@ private:
     // Video output: the frame being rendered, the last published one, and the recycled ones
     VideoFramePtr m_frame;
     VideoFramePtr m_lastFrame;
+    VideoFramePtr m_lastCompletedFrame;
     std::vector<VideoFramePtr> m_framePool;
     std::span<const int16_t> m_audioSamples;
 

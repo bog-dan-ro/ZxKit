@@ -203,6 +203,12 @@ void requireWritable(Emulator &emulator, int address, std::size_t length)
     }
 }
 
+void requireNoRzxSeek(const Emulator &emulator)
+{
+    if (emulator.isRzxSeeking())
+        throw std::invalid_argument("Advance or cancel the active RZX seek before running"s);
+}
+
 MediaArchive archive(const std::string &path, const std::string &filesystem)
 {
     auto media =
@@ -332,12 +338,20 @@ std::filesystem::path Tools::outputPath(std::string_view path) const
 
 Json Tools::execute(Session &current, int frames, int milliseconds, OptionalRef<Bytes> audio)
 {
-    checked(frames, 1, 10000, "frame count"sv);
     checked(milliseconds, 1, 30000, "maxMilliseconds"sv);
+    return executeUntil(current, frames,
+                        std::chrono::steady_clock::now() + std::chrono::milliseconds(milliseconds),
+                        audio);
+}
+
+Json Tools::executeUntil(Session &current, int frames, Deadline deadline, OptionalRef<Bytes> audio,
+                         const std::function<bool()> &frameMatches)
+{
+    checked(frames, 1, 10000, "frame count"sv);
     auto &emulator = *current.emulator;
+    requireNoRzxSeek(emulator);
     current.lastPause.reset();
     emulator.takePauseEvent();
-    auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(milliseconds);
     struct RunControlGuard
     {
         Emulator &emulator;
@@ -353,12 +367,7 @@ Json Tools::execute(Session &current, int frames, int milliseconds, OptionalRef<
             reason = "timeBudget"s;
             break;
         }
-        auto run = emulator.runScanline();
-        if (run == RunStatus::Stopped) {
-            current.lastPause = emulator.takePauseEvent();
-            reason = "breakpoint"s;
-            break;
-        }
+        const auto run = emulator.runScanline();
         if (run == RunStatus::FrameDone) {
             ++completed;
             if (audio) {
@@ -367,6 +376,15 @@ Json Tools::execute(Session &current, int frames, int milliseconds, OptionalRef<
                     audio->get().push_back(uint8_t(uint16_t(sample) >> 8));
                 }
             }
+        }
+        if (auto pause = emulator.takePauseEvent(); run == RunStatus::Stopped || pause) {
+            current.lastPause = pause;
+            reason = pause && pause->reason == PauseReason::UserRequest ? "pause"s : "breakpoint"s;
+            break;
+        }
+        if (run == RunStatus::FrameDone && frameMatches && frameMatches()) {
+            reason = "match"s;
+            break;
         }
     }
     auto output = status(current).as_object();
@@ -954,6 +972,7 @@ std::string Tools::stepInstructions(std::string sessionId, int count, int maxMil
         checked(maxMilliseconds, 1, 30000, "maxMilliseconds"sv);
         auto &current = session(sessionId);
         auto &emulator = *current.emulator;
+        requireNoRzxSeek(emulator);
         current.lastPause.reset();
         emulator.takePauseEvent();
         auto deadline =
@@ -988,6 +1007,7 @@ std::string Tools::runToAddress(std::string sessionId, int address, int maxFrame
         checked(maxFrames, 1, 10000, "maxFrames"sv);
         checked(maxMilliseconds, 1, 30000, "maxMilliseconds"sv);
         auto &current = session(sessionId);
+        requireNoRzxSeek(*current.emulator);
         if (!current.emulator->runTo(address))
             return status(current);
         return execute(current, maxFrames, maxMilliseconds);
@@ -1000,6 +1020,7 @@ std::string Tools::stepOver(std::string sessionId, int maxFrames, int maxMillise
         checked(maxFrames, 1, 10000, "maxFrames"sv);
         checked(maxMilliseconds, 1, 30000, "maxMilliseconds"sv);
         auto &current = session(sessionId);
+        requireNoRzxSeek(*current.emulator);
         if (!current.emulator->stepOver()) {
             current.lastPause = current.emulator->takePauseEvent();
             return status(current);
@@ -1014,6 +1035,7 @@ std::string Tools::stepOut(std::string sessionId, int maxFrames, int maxMillisec
         checked(maxFrames, 1, 10000, "maxFrames"sv);
         checked(maxMilliseconds, 1, 30000, "maxMilliseconds"sv);
         auto &current = session(sessionId);
+        requireNoRzxSeek(*current.emulator);
         if (!current.emulator->stepOut())
             return status(current);
         return execute(current, maxFrames, maxMilliseconds);
@@ -1262,23 +1284,29 @@ std::string Tools::setKey(std::string sessionId, std::string key, bool pressed)
     });
 }
 
+std::vector<ZxKey> Tools::parseKeyChord(std::string_view keys)
+{
+    std::vector<ZxKey> chord;
+    std::istringstream stream(upper(std::string(keys)));
+    std::string name;
+    while (std::getline(stream, name, '+')) {
+        auto found = keyNames().find(name);
+        if (found == keyNames().end())
+            throw std::invalid_argument("Unknown chord key; call listKeys"s);
+        chord.push_back(found->second);
+    }
+    if (chord.empty())
+        throw std::invalid_argument("Key chord is empty"s);
+    return chord;
+}
+
 std::string Tools::tapKeys(std::string sessionId, std::string keys, int holdFrames,
                            int releaseFrames)
 {
     return result([&] {
         checked(holdFrames, 1, 100, "holdFrames"sv);
         checked(releaseFrames, 1, 100, "releaseFrames"sv);
-        std::vector<ZxKey> chord;
-        std::istringstream stream(upper(keys));
-        std::string name;
-        while (std::getline(stream, name, '+')) {
-            auto found = keyNames().find(name);
-            if (found == keyNames().end())
-                throw std::invalid_argument("Unknown chord key; call listKeys"s);
-            chord.push_back(found->second);
-        }
-        if (chord.empty())
-            throw std::invalid_argument("Key chord is empty"s);
+        const auto chord = parseKeyChord(keys);
         auto &current = session(sessionId);
         for (auto key : chord)
             current.emulator->setKeyState(key, true);

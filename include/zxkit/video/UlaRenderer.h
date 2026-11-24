@@ -85,6 +85,10 @@ public:
     {
         return m_vramPage16k;
     }
+    uint16_t vramOffsetBytes() const noexcept
+    {
+        return m_vramOffsetBytes;
+    }
 
     void setBorderColor(uint8_t color) noexcept;
 

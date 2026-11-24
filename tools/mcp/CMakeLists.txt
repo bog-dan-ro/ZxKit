@@ -8,7 +8,19 @@ FetchContent_Declare(MCPpp
     GIT_TAG master)
 FetchContent_MakeAvailable(MCPpp)
 
-add_executable(zx-mcp main.cpp Tools.cpp Support.cpp Roms.cpp BasicListing.cpp Download.cpp Next.cpp)
+add_executable(zx-mcp
+    main.cpp
+    Tools.cpp
+    Support.cpp
+    Roms.cpp
+    BasicListing.cpp
+    Download.cpp
+    Next.cpp
+    Inputs.cpp
+    MountedMedia.cpp
+    Rzx.cpp
+    Screen.cpp
+)
 target_link_libraries(zx-mcp PRIVATE ZX::Kit mcp::mcpp Boost::json Boost::beast Boost::asio OpenSSL::SSL OpenSSL::Crypto)
 target_compile_features(zx-mcp PRIVATE cxx_std_26)
 

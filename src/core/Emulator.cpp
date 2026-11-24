@@ -187,6 +187,7 @@ void Emulator::selectMachine(std::unique_ptr<MachineProfile> machine)
 
 void Emulator::installMachine(std::unique_ptr<MachineProfile> machine)
 {
+    m_lastCompletedFrame = {};
     clearSnapshotInterface1();
     m_romBeforeSnapshot.clear();
     m_mediaBootFrame = 0;
@@ -393,6 +394,7 @@ OptionalRef<DiskImage> Emulator::diskDrive(std::size_t drive) noexcept
 void Emulator::reset(ResetKind kind)
 {
     if (m_rzx.isRecording() || m_rzx.isReviewing()) throw FormatException("Stop RZX recording before resetting the machine");
+    m_lastCompletedFrame = {};
     stopRzxPlayback();
     if (kind == ResetKind::Hard && !m_romBeforeSnapshot.empty()) {
         restoreConfiguredRom();
@@ -958,6 +960,7 @@ void Emulator::endFrame()
     // Publish the frame; the next one goes into a recycled frame nobody holds anymore
     VideoFramePtr next = acquireFrame();
     m_lastFrame = std::exchange(m_frame, std::move(next));
+    m_lastCompletedFrame = m_lastFrame;
     m_line = 0;
     m_frameStarted = false;
     if (m_rzx.isRecording()) captureRzxCheckpoint();
@@ -1075,6 +1078,7 @@ std::vector<uint8_t> Emulator::serializeState(std::vector<uint8_t> buffer) const
 
 void Emulator::deserializeState(std::span<const uint8_t> bytes)
 {
+    m_lastCompletedFrame = {};
     StateReader r(bytes);
     m_clock.loadState(r);
     m_cpu.loadState(r);
@@ -1292,6 +1296,7 @@ void Emulator::loadSnapshot(std::span<const uint8_t> data, std::string_view exte
         if (m_rzx.isRecording() || m_rzx.isReviewing()) throw FormatException("Stop recording before loading a snapshot");
         stopRzxPlayback();
     }
+    m_lastCompletedFrame = {};
     const std::string ext = normalizedExtension(extension);
     if (ext == ".szx" && !m_applyingRzxSnapshot && data.size() >= 8 && std::memcmp(data.data(), "ZXST", 4) == 0) {
         StateReader chunks(data.subspan(8));

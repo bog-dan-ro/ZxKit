@@ -85,7 +85,13 @@ a synchronous tool call; use short budgets for interactive investigation.
 - Keyboard chords, held keys, NMI and emulated port reads/writes.
 - Media loading/saving from files or supplied bytes; archive listing, extraction,
   editing and conversion; tape blocks, headers, checksums and transport controls.
-- PNG screenshots, SCR rendering, row-major 1bpp sprite/tile atlases and stereo WAV capture.
+- Frame-timed keyboard, joystick and mouse input, plus RZX recording, replay and seeking.
+- Mounted floppy and Microdrive controls, sector inspection, and ZX Printer text and PNG capture.
+- Live and last-completed PNG screenshots, exact ULA glyph recognition and bounded text waits.
+- Raster and IM2 inspection, Next video and Copper state, UART traffic and stereo WAV capture.
+
+The [portable workflows](skills/zx-mcp/references/workflows.md) describe tool
+arguments, offline `zxmedia` commands and examples of using these tools together.
 
 `assemble` accepts newline-separated inline instructions and DB, using ZxKit's
 debugger assembler. It is not a source-project assembler: labels, macros, ORG and

@@ -34,6 +34,9 @@ schemas without starting a persistent emulator session.
   `sessionId` arguments when comparing machines rather than changing the default.
 - Inspect supplied media before loading it. Use `loadMedia` for snapshots or
   programs; tapes may need `autoLoadTape` followed by bounded execution.
+- Use `zxmedia` for offline previews, nested image edits, conversions and FAT
+  maintenance when a shell is available. Keep live drive swaps and guest I/O
+  in the MCP session.
 - Wait for an observed entry point, loader state or input loop. A fixed frame
   delay alone does not establish that the program is ready.
 - Save an SZX checkpoint before modifying a live program. `cloneSession` copies
@@ -66,6 +69,8 @@ Read only the relevant section of [workflows.md](references/workflows.md):
   watchpoints and experiments across sessions.
 - **Graphics, maps and sound:** discovering data formats and capturing actual
   gameplay events rather than assuming a particular game's layout.
+- **Screen text, input and replay:** recognizing ULA text, driving reproducible
+  input sequences, and using RZX checkpoints to revisit a recorded run.
 - **Next and port comparison:** SD setup/sharing, registers, memory paging and
   comparisons at equivalent program states.
 - **Native display ports:** drawing contracts, direct display writes, sprite

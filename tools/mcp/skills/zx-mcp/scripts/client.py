@@ -9,9 +9,12 @@ import subprocess
 
 
 class Client:
-    def __init__(self, executable, output_directory, native=False, timeout=40):
+    def __init__(self, executable, output_directory, native=False, timeout=40, *, roms=None):
+        command = [str(Path(executable).resolve()), "--output-dir", str(Path(output_directory).resolve())]
+        if roms is not None:
+            command.extend(("--roms", str(Path(roms).resolve())))
         self.process = subprocess.Popen(
-            [str(Path(executable).resolve()), "--output-dir", str(Path(output_directory).resolve())],
+            command,
             stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True, encoding="utf-8",
         )
         self.selector = selectors.DefaultSelector()
