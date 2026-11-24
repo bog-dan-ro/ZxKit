@@ -410,7 +410,7 @@ void CobraMachine::updateFdcInterrupt(uint64_t now, bool byteMoved)
     m_ctc.setTrigger(0, m_fdc.interruptLine(now));
     // Channel 2's zero count ends the sector, which changes the line again
     while (std::exchange(m_terminalCount, false)) {
-        m_fdc.terminalCount();
+        m_fdc.terminalCount(m_fdc.interruptLine(now));
         m_ctc.setTrigger(0, m_fdc.interruptLine(now));
     }
 }

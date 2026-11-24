@@ -22,6 +22,7 @@
 #include "RomTestSupport.h"
 
 #include "zxkit/debug/Assembler.h"
+#include "zxkit/media/BasicCodec.h"
 #include "zxkit/media/MediaArchive.h"
 
 #include <algorithm>
@@ -663,6 +664,56 @@ void testDevilCatalog(const std::filesystem::path &fixtures)
     assert(text.contains("0 OK"));
 }
 
+void testDevilMultiTrackLoad(const std::filesystem::path &fixtures)
+{
+    auto disk = MediaArchive::create(".td0"sv, { .filesystem = "devil"s });
+    const auto loader = BasicCodec::compile("10 LOAD \"PICTURE\" SCREEN$\n"
+                                            "20 LOAD \"PAYLOAD\" CODE\n"
+                                            "30 LOAD \"KEY\" CODE\n"
+                                            "40 RANDOMIZE USR 32768\n"sv);
+    disk.put("launch"sv, loader, { { "type"s, 0 }, { "param1"s, 10 } });
+    constexpr std::size_t sideBytes = 18 * 256;
+    constexpr uint16_t codeAddress = 0x8000;
+    constexpr uint16_t markerAddress = 0xB000;
+    std::vector<uint8_t> picture(6912, 0x47);
+    picture[sideBytes] = 0xA5;
+    disk.put("PICTURE"sv, picture, { { "param1"s, 0x4000 } });
+    std::vector<uint8_t> payload(2 * sideBytes + 256, 0x3C);
+    // DI; LD A,($B001); LD ($B000),A; HALT
+    constexpr std::array<uint8_t, 8> code{ 0xF3, 0x3A, 0x01, 0xB0, 0x32, 0x00, 0xB0, 0x76 };
+    std::ranges::copy(code, payload.begin());
+    payload[sideBytes] = 0xB6;
+    payload[2 * sideBytes] = 0xC7;
+    disk.put("PAYLOAD"sv, payload, { { "param1"s, codeAddress } });
+    constexpr std::array<uint8_t, 1> key{ 0x5A };
+    disk.put("KEY"sv, key, { { "param1"s, markerAddress + 1 } });
+    const auto image = disk.encode();
+
+    for (const auto &machine : { "cobra_64k"s, "cobra_80k"s }) {
+        Emulator emulator(test::romConfig(fixtures / "roms", machine));
+        emulator.runFrames(100);
+        test::tap(emulator, { ZxKey::D });
+        emulator.runFrames(200);
+        emulator.insertDisk(0, image, ".td0"sv);
+        // The ROM matches the filename in the continuation entry after PAYLOAD.
+        auto &drive = emulator.diskDrive(0)->get();
+        const auto &header = drive.findSector(0, 0, 3)->get().data;
+        auto &continuation = drive.findSector(0, 0, 4)->get().data;
+        std::copy_n(header.begin() + 1, 10, continuation.begin() + 1);
+        test::tap(emulator, { ZxKey::J }); // LOAD
+        test::tap(emulator, { ZxKey::SymbolShift, ZxKey::P });
+        test::type(emulator, "launch"sv);
+        test::tap(emulator, { ZxKey::SymbolShift, ZxKey::P });
+        test::tap(emulator, { ZxKey::Enter });
+        emulator.runFrames(700);
+
+        assert(emulator.mmu().peek(0x4000 + sideBytes) == 0xA5);
+        assert(emulator.mmu().peek(codeAddress + sideBytes) == 0xB6);
+        assert(emulator.mmu().peek(codeAddress + 2 * sideBytes) == 0xC7);
+        assert(emulator.mmu().peek(markerAddress) == 0x5A);
+    }
+}
+
 } // namespace
 
 int main(int argc, char **argv)
@@ -682,6 +733,7 @@ int main(int argc, char **argv)
     testCobraBasicBoot(fixtures);
     testCobraRomCpm(fixtures);
     testDevilCatalog(fixtures);
+    testDevilMultiTrackLoad(fixtures);
     std::println("test_cobra: all tests passed");
     return 0;
 }

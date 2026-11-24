@@ -438,9 +438,13 @@ void Upd765Fdc::checkOverrun(uint64_t now) noexcept
     std::size_t idx = 0;
     while (idx + 1 < m_sectorEnds.size() && m_dataPos >= m_sectorEnds[idx])
         ++idx;
-    const uint8_t hu = static_cast<uint8_t>((m_xferSide << 2) | m_xferDrive);
-    setResult(static_cast<uint8_t>(kSt0AbnormalTermination | hu), static_cast<uint8_t>(m_xferSt1 | kSt1Overrun),
-              m_xferSt2, m_xferC, m_xferH, m_sectorIds.empty() ? 0 : m_sectorIds[idx], m_xferN);
+    const bool changedSide = idx >= m_secondSideStart;
+    const uint8_t side = m_xferSide ^ changedSide;
+    const uint8_t h = m_xferH ^ changedSide;
+    const uint8_t hu = static_cast<uint8_t>((side << 2) | m_xferDrive);
+    setResult(static_cast<uint8_t>(kSt0AbnormalTermination | hu),
+              static_cast<uint8_t>(m_xferSt1 | kSt1Overrun), m_xferSt2, m_xferC, h,
+              m_sectorIds.empty() ? 0 : m_sectorIds[idx], m_xferN);
     m_transferTimed = false;
 }
 
@@ -538,11 +542,11 @@ void Upd765Fdc::writeData(uint8_t val, uint64_t now)
     }
 }
 
-void Upd765Fdc::terminalCount() noexcept
+void Upd765Fdc::terminalCount(bool byteRequested) noexcept
 {
     if (m_phase == PhaseExecRead || m_phase == PhaseExecWrite) {
-        // In the middle of a sector the byte already presented still moves
-        if (m_dataPos == 0 || std::ranges::find(m_sectorEnds, m_dataPos) != m_sectorEnds.end())
+        if (!byteRequested
+            && (m_dataPos == 0 || std::ranges::find(m_sectorEnds, m_dataPos) != m_sectorEnds.end()))
             finishTransfer(true);
         else
             m_tcStop = m_dataPos + 1;
@@ -631,6 +635,7 @@ void Upd765Fdc::executeCommand(uint8_t cmd)
     m_tcCanNormalize = false;
     m_resultInt = false;
     m_tcStop = SIZE_MAX;
+    m_secondSideStart = SIZE_MAX;
     // The commands naming a drive (all but SPECIFY, SENSE INTERRUPT STATUS and VERSION)
     if (cmd != 0x03 && cmd != 0x08 && cmd != 0x10 && m_cmdBuf.size() > 1)
         m_drives[(m_cmdBuf[1] & 0x03) & m_unitMask].noteAccess();
@@ -844,6 +849,7 @@ void Upd765Fdc::startRead(uint8_t cmd)
             if (id == eot) {
                 if (!mt || side == 1)
                     break;
+                m_secondSideStart = m_sectorIds.size();
                 side = 1; // multi-track: continue on the second side
                 h ^= 1;
                 id = 0;
@@ -971,17 +977,24 @@ void Upd765Fdc::finishTransfer(bool byTerminalCount)
     const bool reachedEnd = m_dataPos >= m_dataBuf.size();
     const uint8_t eot = m_execCmd.size() > 6 ? m_execCmd[6] : m_sectorIds.back();
     const uint8_t lastId = m_sectorIds[idx];
-    const uint8_t hu = static_cast<uint8_t>((m_xferSide << 2) | m_xferDrive);
+    const bool multiTrackRead = m_phase == PhaseExecRead && (m_execCmd[0] & 0x80);
+    const bool changedSide = idx >= m_secondSideStart;
+    const uint8_t side = m_xferSide ^ changedSide;
 
     uint8_t c = m_xferC;
-    uint8_t h = m_xferH;
+    uint8_t h = m_xferH ^ changedSide;
     uint8_t r = static_cast<uint8_t>(lastId + 1);
     if (lastId == eot) {
-        c = static_cast<uint8_t>(c + 1);
+        // NEC uPD765 Table 2: an MT read wraps to sector 1 of the opposite head.
+        // The cylinder advances only after the second side.
+        if (!multiTrackRead || side == 1)
+            ++c;
+        if (multiTrackRead)
+            h ^= 1;
         r = 1;
     }
 
-    uint8_t st0 = hu;
+    uint8_t st0 = static_cast<uint8_t>((side << 2) | m_xferDrive);
     uint8_t st1 = m_xferSt1;
     if (reachedEnd && !byTerminalCount) {
         // Without TC the controller runs past EOT: abnormal termination, End of Cylinder

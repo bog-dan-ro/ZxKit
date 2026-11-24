@@ -127,11 +127,10 @@ public:
     uint8_t readMainStatus(uint64_t now) noexcept;
     uint8_t readData(uint64_t now);
     void writeData(uint8_t val, uint64_t now);
-    /// Terminal Count: ends the current read / write / format execution phase. Between two
-    /// sectors (software TC after the last byte) at once; in the middle of a sector (a
-    /// hardware TC from the byte request that presents a sector's last byte) once that
-    /// byte has moved.
-    void terminalCount() noexcept;
+    /// Terminal Count ends the current read, write or format execution phase.
+    /// When raised by a data request, the requested byte still transfers, including
+    /// at a sector boundary. Software TC between sectors stops immediately.
+    void terminalCount(bool byteRequested = false) noexcept;
     /// The INT pin: in non-DMA mode (SPECIFY) high while a byte waits for the CPU during the
     /// execution phase; high at the start of a transfer command's result phase (once the
     /// sector's CRC has gone by) until its first byte is read, and while a seek interrupt waits
@@ -200,6 +199,7 @@ private:
     std::size_t m_dataPos = 0;
     std::vector<std::size_t> m_sectorEnds; // data offsets at which each sector ends
     std::vector<uint8_t> m_sectorIds;
+    std::size_t m_secondSideStart = SIZE_MAX; // index of the first sector after a head change
     uint8_t m_xferDrive = 0;
     uint8_t m_xferTrack = 0;
     uint8_t m_xferSide = 0;
