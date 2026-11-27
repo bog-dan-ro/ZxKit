@@ -840,6 +840,34 @@ void testSnapshotExports()
     std::println("  Snapshot exports: headers, every RAM bank, paging, CPU and frame position: OK");
 }
 
+void testZ80SnapshotFrameCounters()
+{
+    EmulatorConfig config;
+    config.machineId = "128k"sv;
+    Emulator source(config);
+    source.cpu().registers().PC = 0x8000;
+    source.mmu().poke(0x8000, 0x76);
+    auto bytes = source.saveSnapshot(".z80"sv);
+    put16(bytes, 30, 54);
+    bytes.erase(bytes.begin() + 86);
+
+    // A legacy snapshot has this countdown, which points before the frame start.
+    put16(bytes, 55, 0x96D2);
+    bytes[57] = 0;
+    Emulator target;
+    target.loadSnapshot(bytes, ".z80"sv);
+    CHECK(target.clock().frameBaseTstates() == 0);
+    CHECK(target.machine().id() == "128k"sv);
+    CHECK(target.registers().PC == 0x8000);
+    CHECK(target.mmu().peek(0x8000) == 0x76);
+
+    // Fuse wraps the high counter and keeps the decoded position if it is in the frame.
+    constexpr uint32_t quarter = kTimings128k.tstatesPerFrame() / 4;
+    put16(bytes, 55, static_cast<uint16_t>(quarter));
+    bytes[57] = 4;
+    target.loadSnapshot(bytes, ".z80"sv);
+    CHECK(target.clock().frameBaseTstates() == quarter - 1);
+}
 
 void testSnapshotJoystickMetadata()
 {
@@ -938,6 +966,7 @@ void testSnapshotJoystickMetadata()
 int main()
 {
     testSnapshotExports();
+    testZ80SnapshotFrameCounters();
     testSnapshotJoystickMetadata();
     testSdCard();
     testFatVolume();

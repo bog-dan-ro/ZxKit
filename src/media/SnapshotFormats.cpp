@@ -491,9 +491,11 @@ void SnapshotFormats::loadZ80(std::span<const uint8_t> data, SnapshotMachineStat
 
     if (extLen >= 54) {
         const uint32_t quarter = state.ctx.clock.timings().tstatesPerFrame() / 4;
-        const uint32_t low = readLe16(data, 55);
-        if (low >= quarter || data[57] > 3) throw FormatException("Invalid Z80 frame position");
-        state.ctx.clock.setFrameTstates(((data[57] + 1) % 4) * quarter + quarter - 1 - low);
+        const uint32_t quarterIndex = (data[57] + 1) % 4;
+        const uint32_t quarterEnd = (quarterIndex + 1) * quarter;
+        const uint32_t countdown = readLe16(data, 55) + 1u;
+        // Like Fuse, resume at the frame start if the countdown points before it.
+        state.ctx.clock.setFrameTstates(countdown <= quarterEnd ? quarterEnd - countdown : 0);
     }
     regs.PC = readLe16(data, 32);
     const uint8_t hwMode = data[34];
